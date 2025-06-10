@@ -313,6 +313,17 @@ export const useAuth = create<AuthState>()(
             // Continue with logout even if storage clear fails
           }
           
+          // Clear other related storage
+          try {
+            await AsyncStorage.removeItem('messages-storage');
+            await AsyncStorage.removeItem('favorites-storage');
+            await AsyncStorage.removeItem('quotes-storage');
+            await AsyncStorage.removeItem('settings-storage');
+            console.log('All storage cleared successfully');
+          } catch (storageError) {
+            console.error('Error clearing additional storage:', storageError);
+          }
+          
           console.log('User logged out successfully');
         } catch (error) {
           console.error('Error during logout:', error);

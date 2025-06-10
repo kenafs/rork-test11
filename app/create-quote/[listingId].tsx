@@ -44,7 +44,7 @@ export default function CreateQuoteScreen() {
   const allUsers = [...mockProviders, ...mockVenues];
   const conversationParticipant = conversationId ? allUsers.find(u => u.id === conversationId) : null;
   
-  // Only providers can create quotes, not business accounts
+  // Only providers can create quotes, not business accounts or clients
   if (!user || user.userType !== 'provider') {
     return (
       <View style={styles.container}>
@@ -52,7 +52,12 @@ export default function CreateQuoteScreen() {
         <View style={styles.errorContainer}>
           <FileText size={64} color={Colors.textLight} />
           <Text style={styles.errorTitle}>Accès restreint</Text>
-          <Text style={styles.errorText}>Seuls les prestataires peuvent créer des devis</Text>
+          <Text style={styles.errorText}>
+            {user?.userType === 'business' 
+              ? 'Les établissements ne peuvent pas créer de devis. Seuls les prestataires peuvent proposer des devis.'
+              : 'Seuls les prestataires peuvent créer des devis'
+            }
+          </Text>
           <Button 
             title="Retour"
             onPress={() => router.back()}
@@ -135,6 +140,8 @@ export default function CreateQuoteScreen() {
         validUntil,
       });
       
+      console.log('Quote created successfully:', quote);
+      
       // Add quote message to conversation if it's a conversation quote
       if (conversationParticipant && addContact) {
         addContact({
@@ -160,6 +167,7 @@ export default function CreateQuoteScreen() {
         }
       ]);
     } catch (error) {
+      console.error('Error creating quote:', error);
       Alert.alert('Erreur', 'Impossible de créer le devis');
     }
   };
@@ -537,6 +545,7 @@ const styles = StyleSheet.create({
     color: Colors.textLight,
     textAlign: 'center',
     marginBottom: 24,
+    lineHeight: 24,
   },
   backButton: {
     backgroundColor: Colors.textLight,

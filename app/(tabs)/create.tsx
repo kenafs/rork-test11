@@ -127,7 +127,7 @@ export default function CreateListingScreen() {
     }
     
     try {
-      await createListing({
+      const newListing = await createListing({
         title: title.trim(),
         description: description.trim(),
         createdBy: user.id,
@@ -146,6 +146,8 @@ export default function CreateListingScreen() {
         images,
         tags,
       });
+      
+      console.log('Listing created successfully:', newListing);
       
       Alert.alert(
         'Succès', 
@@ -193,7 +195,9 @@ export default function CreateListingScreen() {
         <View style={styles.headerContent}>
           <Text style={styles.headerTitle}>✨ Créer une annonce</Text>
           <Text style={styles.headerSubtitle}>
-            Partagez votre talent avec la communauté !
+            {user.userType === 'provider' ? 'Proposez vos services !' :
+             user.userType === 'business' ? 'Proposez votre établissement !' :
+             'Publiez votre demande !'}
           </Text>
         </View>
       </LinearGradient>
@@ -210,7 +214,11 @@ export default function CreateListingScreen() {
               style={styles.input}
               value={title}
               onChangeText={setTitle}
-              placeholder="Ex: DJ professionnel pour soirée d'entreprise"
+              placeholder={
+                user.userType === 'provider' ? "Ex: DJ professionnel pour soirée d'entreprise" :
+                user.userType === 'business' ? "Ex: Salle de réception avec terrasse" :
+                "Ex: Recherche DJ pour mariage"
+              }
               maxLength={100}
               placeholderTextColor={Colors.textLight}
             />
@@ -222,7 +230,11 @@ export default function CreateListingScreen() {
               style={[styles.input, styles.textArea]}
               value={description}
               onChangeText={setDescription}
-              placeholder="Décrivez votre service ou votre besoin en détail..."
+              placeholder={
+                user.userType === 'provider' ? "Décrivez vos services en détail..." :
+                user.userType === 'business' ? "Décrivez votre établissement et ses équipements..." :
+                "Décrivez votre besoin en détail..."
+              }
               multiline
               numberOfLines={6}
               textAlignVertical="top"

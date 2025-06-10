@@ -35,8 +35,12 @@ export default function NewConversationScreen() {
     setIsLoading(true);
     
     try {
+      console.log('Creating conversation with recipient:', recipient.id);
+      
       // Create conversation and send initial message
       const conversationId = await createConversation(recipient.id, message.trim());
+      
+      console.log('Conversation created successfully:', conversationId);
       
       // Add contact to the messages store
       addContact({

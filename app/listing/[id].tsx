@@ -100,12 +100,16 @@ export default function ListingDetailScreen() {
     }
 
     try {
+      console.log('Creating conversation with:', listing.createdBy);
+      
       // Create conversation with the listing creator
       const conversationId = await createConversation(
         listing.createdBy,
         `Bonjour, je suis intéressé(e) par votre annonce "${listing.title}".`,
         listing.id
       );
+      
+      console.log('Conversation created:', conversationId);
       
       // Navigate to the conversation with the participant ID
       router.push(`/conversation/${listing.createdBy}`);
@@ -141,11 +145,15 @@ export default function ListingDetailScreen() {
     } else {
       // Client or business can request a quote via message
       try {
+        console.log('Requesting quote via message for listing:', listing.id);
+        
         const conversationId = await createConversation(
           listing.createdBy,
           `Bonjour, je souhaiterais recevoir un devis pour votre annonce "${listing.title}". Pourriez-vous me faire une proposition ?`,
           listing.id
         );
+        
+        console.log('Quote request conversation created:', conversationId);
         
         // Navigate to the conversation with the participant ID
         router.push(`/conversation/${listing.createdBy}`);
@@ -237,7 +245,7 @@ export default function ListingDetailScreen() {
                   <RatingStars 
                     rating={listing.creatorRating} 
                     size="small" 
-                    showCount={false}
+                    showNumber={false}
                   />
                 )}
               </View>

@@ -101,6 +101,8 @@ export const useMessages = create<MessagesState>()(
           const user = useAuth.getState().user;
           if (!user) return;
           
+          console.log('Sending message:', { conversationId, content, receiverId });
+          
           const newMessage: Message = {
             id: `msg-${Date.now()}-${Math.random()}`,
             conversationId,
@@ -161,7 +163,7 @@ export const useMessages = create<MessagesState>()(
             });
           }
           
-          console.log('Message envoyé:', newMessage);
+          console.log('Message sent successfully:', newMessage);
         } catch (error) {
           console.error('Error sending message:', error);
           throw error;
@@ -173,12 +175,15 @@ export const useMessages = create<MessagesState>()(
           const user = useAuth.getState().user;
           if (!user) throw new Error('User must be logged in');
           
+          console.log('Creating conversation with participant:', participantId);
+          
           // Check if conversation already exists
           const existingConversation = get().conversations.find(conv =>
             conv.participants.includes(user.id) && conv.participants.includes(participantId)
           );
           
           if (existingConversation) {
+            console.log('Existing conversation found:', existingConversation.id);
             // Send initial message if provided
             if (initialMessage) {
               await get().sendMessage(existingConversation.id, initialMessage, participantId);
@@ -194,6 +199,8 @@ export const useMessages = create<MessagesState>()(
             createdAt: Date.now(),
             updatedAt: Date.now(),
           };
+          
+          console.log('Creating new conversation:', newConversation);
           
           set(state => ({
             conversations: [newConversation, ...state.conversations],
@@ -225,7 +232,7 @@ export const useMessages = create<MessagesState>()(
             });
           }
           
-          console.log('Nouvelle conversation créée:', conversationId);
+          console.log('New conversation created successfully:', conversationId);
           return conversationId;
         } catch (error) {
           console.error('Error creating conversation:', error);

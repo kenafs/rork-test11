@@ -27,7 +27,7 @@ interface ListingsState {
   deleteListing: (id: string) => Promise<boolean>;
 }
 
-// Category mapping from French to English
+// Category mapping from French to English and vice versa
 const categoryMapping: { [key: string]: string } = {
   'Tous': 'all',
   'DJ': 'DJ',
@@ -43,12 +43,8 @@ const categoryMapping: { [key: string]: string } = {
   'Nettoyage': 'Cleaning',
   'Matériel': 'Equipment',
   'Personnel': 'Staff',
-};
-
-// Reverse mapping from English to French
-const reverseCategoryMapping: { [key: string]: string } = {
+  // Reverse mapping
   'all': 'Tous',
-  'DJ': 'DJ',
   'Catering': 'Traiteur',
   'Photography': 'Photographe',
   'Venue': 'Lieu',
@@ -56,7 +52,6 @@ const reverseCategoryMapping: { [key: string]: string } = {
   'Music': 'Musique',
   'Entertainment': 'Animation',
   'Flowers': 'Fleurs',
-  'Transport': 'Transport',
   'Security': 'Sécurité',
   'Cleaning': 'Nettoyage',
   'Equipment': 'Matériel',
@@ -105,15 +100,19 @@ export const useListings = create<ListingsState>((set, get) => ({
     let filtered = [...listings];
     
     // Apply category filter
-    if (category && category !== 'Tous') {
+    if (category && category !== 'Tous' && category !== 'all') {
       // Map French category to English for filtering
       const englishCategory = categoryMapping[category] || category;
+      const frenchCategory = categoryMapping[category] || category;
+      
       filtered = filtered.filter(listing => {
         // Check both original category and mapped category
         return listing.category === category ||
                listing.category === englishCategory ||
+               listing.category === frenchCategory ||
                listing.category.toLowerCase() === category.toLowerCase() ||
-               listing.category.toLowerCase() === englishCategory.toLowerCase();
+               listing.category.toLowerCase() === englishCategory.toLowerCase() ||
+               listing.category.toLowerCase() === frenchCategory.toLowerCase();
       });
     }
     
@@ -147,13 +146,17 @@ export const useListings = create<ListingsState>((set, get) => ({
     }
     
     // Keep existing category filter
-    if (selectedCategory && selectedCategory !== 'Tous') {
+    if (selectedCategory && selectedCategory !== 'Tous' && selectedCategory !== 'all') {
       const englishCategory = categoryMapping[selectedCategory] || selectedCategory;
+      const frenchCategory = categoryMapping[selectedCategory] || selectedCategory;
+      
       filtered = filtered.filter(listing => {
         return listing.category === selectedCategory ||
                listing.category === englishCategory ||
+               listing.category === frenchCategory ||
                listing.category.toLowerCase() === selectedCategory.toLowerCase() ||
-               listing.category.toLowerCase() === englishCategory.toLowerCase();
+               listing.category.toLowerCase() === englishCategory.toLowerCase() ||
+               listing.category.toLowerCase() === frenchCategory.toLowerCase();
       });
     }
     
@@ -186,13 +189,17 @@ export const useListings = create<ListingsState>((set, get) => ({
     filtered = applyLocationFilter(filtered, latitude, longitude, radius);
     
     // Keep existing category filter
-    if (selectedCategory && selectedCategory !== 'Tous') {
+    if (selectedCategory && selectedCategory !== 'Tous' && selectedCategory !== 'all') {
       const englishCategory = categoryMapping[selectedCategory] || selectedCategory;
+      const frenchCategory = categoryMapping[selectedCategory] || selectedCategory;
+      
       filtered = filtered.filter(listing => {
         return listing.category === selectedCategory ||
                listing.category === englishCategory ||
+               listing.category === frenchCategory ||
                listing.category.toLowerCase() === selectedCategory.toLowerCase() ||
-               listing.category.toLowerCase() === englishCategory.toLowerCase();
+               listing.category.toLowerCase() === englishCategory.toLowerCase() ||
+               listing.category.toLowerCase() === frenchCategory.toLowerCase();
       });
     }
     
@@ -342,13 +349,17 @@ function applyCurrentFilters(listings: Listing[], state: ListingsState): Listing
   let filtered = [...listings];
   
   // Apply category filter
-  if (state.selectedCategory && state.selectedCategory !== 'Tous') {
+  if (state.selectedCategory && state.selectedCategory !== 'Tous' && state.selectedCategory !== 'all') {
     const englishCategory = categoryMapping[state.selectedCategory] || state.selectedCategory;
+    const frenchCategory = categoryMapping[state.selectedCategory] || state.selectedCategory;
+    
     filtered = filtered.filter(listing => {
       return listing.category === state.selectedCategory ||
              listing.category === englishCategory ||
-             listing.category.toLowerCase() === (state.selectedCategory || '').toLowerCase() ||
-             listing.category.toLowerCase() === englishCategory.toLowerCase();
+             listing.category === frenchCategory ||
+             listing.category.toLowerCase() === state.selectedCategory!.toLowerCase() ||
+             listing.category.toLowerCase() === englishCategory.toLowerCase() ||
+             listing.category.toLowerCase() === frenchCategory.toLowerCase();
     });
   }
   
