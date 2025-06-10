@@ -86,9 +86,12 @@ export interface Listing {
   updatedAt: number;
   status: 'active' | 'inactive' | 'pending';
   createdBy: string;
+  creatorType: UserType;
   creatorName: string;
+  creatorImage?: string;
   creatorRating?: number;
   creatorReviewCount?: number;
+  date?: number;
 }
 
 export interface Message {

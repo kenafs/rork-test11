@@ -37,8 +37,8 @@ export default function ProfileScreen() {
         { 
           text: 'Déconnexion', 
           style: 'destructive', 
-          onPress: () => {
-            logout();
+          onPress: async () => {
+            await logout();
             router.replace('/');
           }
         },
@@ -322,8 +322,8 @@ export default function ProfileScreen() {
               </Text>
               <Text style={styles.emptyText}>
                 {user.userType === 'provider' 
-                  ? 'Vous n\'avez pas encore publié d\'annonces.'
-                  : 'Vous n\'avez pas encore publié d\'offres.'
+                  ? "Vous n'avez pas encore publié d'annonces."
+                  : "Vous n'avez pas encore publié d'offres."
                 }
               </Text>
               <TouchableOpacity 

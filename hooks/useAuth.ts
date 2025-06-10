@@ -50,6 +50,9 @@ const mockUsers: User[] = [
       city: 'Paris',
     },
     createdAt: Date.now() - 86400000 * 60,
+    services: ['DJ', 'Animation', 'Sonorisation'],
+    priceRange: { min: 300, max: 1500 },
+    availability: ['Soir', 'Week-end'],
   } as Provider,
   {
     id: 'business-1',
@@ -69,6 +72,9 @@ const mockUsers: User[] = [
       city: 'Paris',
     },
     createdAt: Date.now() - 86400000 * 90,
+    venueType: 'Restaurant',
+    capacity: 80,
+    amenities: ['Terrasse', 'Cuisine équipée', 'Bar'],
   } as Venue,
 ];
 
@@ -281,10 +287,10 @@ export const useAuth = create<AuthState>()(
         
         // Clear persisted storage
         try {
-          await AsyncStorage.clear();
-          console.log('All storage cleared successfully');
+          await AsyncStorage.removeItem('auth-storage');
+          console.log('Auth storage cleared successfully');
         } catch (error) {
-          console.error('Error clearing storage:', error);
+          console.error('Error clearing auth storage:', error);
         }
         
         console.log('User logged out successfully');

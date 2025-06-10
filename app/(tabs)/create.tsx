@@ -104,6 +104,7 @@ export default function CreateListingScreen() {
         creatorName: user.name,
         creatorImage: user.profileImage,
         creatorRating: user.rating,
+        creatorReviewCount: user.reviewCount,
         location: {
           latitude: latitude || 48.8566,
           longitude: longitude || 2.3522,
