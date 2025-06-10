@@ -12,7 +12,7 @@ const demoAccounts = {
     email: 'marie@djpro.com',
     userType: 'provider' as const,
     profileImage: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&auto=format&fit=crop',
-    description: 'DJ professionnelle spécialisée dans les événements d\'entreprise et mariages.',
+    description: 'DJ professionnelle spécialisée dans les événements d\'entreprise et mariages. Plus de 10 ans d\'expérience.',
     specialties: 'DJ, Animation, Sonorisation',
     website: 'https://djpro-marie.com',
     instagram: '@djpro_marie',
@@ -25,7 +25,7 @@ const demoAccounts = {
     email: 'contact@legourmet.com',
     userType: 'business' as const,
     profileImage: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&auto=format&fit=crop',
-    description: 'Restaurant gastronomique avec terrasse, spécialisé dans l\'organisation d\'événements privés.',
+    description: 'Restaurant gastronomique avec terrasse, spécialisé dans l\'organisation d\'événements privés et réceptions.',
     address: '15 Rue de la Paix, 75001 Paris',
     website: 'https://legourmet-paris.fr',
     instagram: '@legourmet_paris',
@@ -38,6 +38,7 @@ const demoAccounts = {
     email: 'jean@example.com',
     userType: 'client' as const,
     profileImage: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&auto=format&fit=crop',
+    description: 'Organisateur d\'événements passionné, toujours à la recherche des meilleurs prestataires.',
     rating: 4.5,
     reviewCount: 23,
     city: 'Paris',
@@ -178,6 +179,21 @@ export default function DemoScreen() {
                 <Text style={styles.statLabel}>Ville</Text>
               </View>
             </View>
+            
+            {/* Additional info based on account type */}
+            {selectedType === 'provider' && selectedAccount.specialties && (
+              <View style={styles.additionalInfo}>
+                <Text style={styles.additionalInfoLabel}>Spécialités:</Text>
+                <Text style={styles.additionalInfoValue}>{selectedAccount.specialties}</Text>
+              </View>
+            )}
+            
+            {selectedType === 'business' && selectedAccount.address && (
+              <View style={styles.additionalInfo}>
+                <Text style={styles.additionalInfoLabel}>Adresse:</Text>
+                <Text style={styles.additionalInfoValue}>{selectedAccount.address}</Text>
+              </View>
+            )}
           </View>
         </View>
         
@@ -352,6 +368,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
+    marginBottom: 16,
   },
   statItem: {
     alignItems: 'center',
@@ -364,6 +381,19 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 12,
+    color: Colors.textLight,
+  },
+  additionalInfo: {
+    marginTop: 8,
+  },
+  additionalInfoLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.text,
+    marginBottom: 4,
+  },
+  additionalInfoValue: {
+    fontSize: 14,
     color: Colors.textLight,
   },
   actions: {

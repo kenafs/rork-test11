@@ -31,10 +31,10 @@ export default function SettingsScreen() {
     notifications, 
     emailNotifications, 
     pushNotifications,
-    setDarkMode,
-    setNotifications,
-    setEmailNotifications,
-    setPushNotifications
+    toggleDarkMode,
+    toggleNotifications,
+    toggleEmailNotifications,
+    togglePushNotifications
   } = useSettings();
   const { currentLanguage, setLanguage, t } = useLanguage();
   
@@ -48,7 +48,9 @@ export default function SettingsScreen() {
           text: 'Déconnexion', 
           style: 'destructive',
           onPress: () => {
+            console.log('Bouton déconnexion pressé');
             logout();
+            console.log('Logout appelé, redirection...');
             router.replace('/');
           }
         }
@@ -58,12 +60,15 @@ export default function SettingsScreen() {
 
   const handleLanguageSelect = () => {
     Alert.alert(
-      'Langue',
-      'Choisissez votre langue',
+      'Choisir la langue',
+      'Sélectionnez votre langue préférée',
       [
         ...LANGUAGES.map(lang => ({
           text: `${lang.flag} ${lang.name}`,
-          onPress: () => setLanguage(lang.code as any),
+          onPress: () => {
+            setLanguage(lang.code as any);
+            Alert.alert('Langue modifiée', `Langue changée vers ${lang.name}`);
+          },
         })),
         { text: 'Annuler', style: 'cancel' },
       ]
@@ -75,19 +80,63 @@ export default function SettingsScreen() {
   };
 
   const handlePrivacy = () => {
-    Alert.alert('Confidentialité', 'Cette fonctionnalité sera disponible prochainement.');
+    Alert.alert(
+      'Confidentialité et sécurité', 
+      'Paramètres de confidentialité:\n\n• Vos données sont protégées\n• Contrôlez qui peut vous voir\n• Gérez vos préférences de contact\n\nCette section sera bientôt disponible avec plus d\'options.'
+    );
   };
 
   const handlePayments = () => {
-    Alert.alert('Stripe Integration', 'L\'intégration Stripe sera disponible prochainement pour gérer vos paiements.');
+    Alert.alert(
+      'Moyens de paiement', 
+      'Gestion des paiements:\n\n• Ajouter une carte bancaire\n• Configurer les virements\n• Historique des transactions\n• Intégration Stripe sécurisée\n\nCette fonctionnalité sera disponible prochainement.'
+    );
   };
 
   const handleHelp = () => {
-    Alert.alert('Support', 'Contactez-nous à support@eventapp.com');
+    Alert.alert(
+      'Centre d\'aide', 
+      'Besoin d\'aide ?\n\n📧 Email: support@eventapp.com\n📞 Téléphone: +33 1 23 45 67 89\n💬 Chat en direct disponible\n\nNous sommes là pour vous aider !'
+    );
   };
 
   const handleAbout = () => {
-    Alert.alert('À propos', 'Event App v1.0.0\nDéveloppé avec ❤️');
+    Alert.alert(
+      'À propos de l\'application', 
+      'Event App v1.0.0\n\n🎉 Plateforme de mise en relation pour événements\n👥 Connecte clients, prestataires et établissements\n🇫🇷 Développé en France\n\n© 2024 Event App. Tous droits réservés.\n\nDéveloppé avec ❤️ par l\'équipe Event App'
+    );
+  };
+
+  const handleDarkModeToggle = () => {
+    toggleDarkMode();
+    Alert.alert(
+      'Mode d\'affichage', 
+      darkMode ? 'Mode clair activé' : 'Mode sombre activé'
+    );
+  };
+
+  const handleNotificationsToggle = () => {
+    toggleNotifications();
+    Alert.alert(
+      'Notifications', 
+      notifications ? 'Notifications désactivées' : 'Notifications activées'
+    );
+  };
+
+  const handleEmailNotificationsToggle = () => {
+    toggleEmailNotifications();
+    Alert.alert(
+      'Notifications email', 
+      emailNotifications ? 'Emails désactivés' : 'Emails activés'
+    );
+  };
+
+  const handlePushNotificationsToggle = () => {
+    togglePushNotifications();
+    Alert.alert(
+      'Notifications push', 
+      pushNotifications ? 'Notifications push désactivées' : 'Notifications push activées'
+    );
   };
   
   const settingsGroups = [
@@ -97,10 +146,10 @@ export default function SettingsScreen() {
         {
           icon: darkMode ? Moon : Sun,
           title: 'Mode sombre',
-          subtitle: 'Activer le thème sombre',
+          subtitle: darkMode ? 'Thème sombre activé' : 'Thème clair activé',
           type: 'switch' as const,
           value: darkMode,
-          onToggle: setDarkMode,
+          onToggle: handleDarkModeToggle,
         },
         {
           icon: Globe,
@@ -116,27 +165,27 @@ export default function SettingsScreen() {
       items: [
         {
           icon: Bell,
-          title: 'Notifications',
-          subtitle: 'Recevoir des notifications',
+          title: 'Notifications générales',
+          subtitle: notifications ? 'Activées' : 'Désactivées',
           type: 'switch' as const,
           value: notifications,
-          onToggle: setNotifications,
+          onToggle: handleNotificationsToggle,
         },
         {
           icon: Mail,
           title: 'Notifications email',
-          subtitle: 'Recevoir des emails',
+          subtitle: emailNotifications ? 'Activées' : 'Désactivées',
           type: 'switch' as const,
           value: emailNotifications,
-          onToggle: setEmailNotifications,
+          onToggle: handleEmailNotificationsToggle,
         },
         {
           icon: Phone,
           title: 'Notifications push',
-          subtitle: 'Notifications sur l\'appareil',
+          subtitle: pushNotifications ? 'Activées' : 'Désactivées',
           type: 'switch' as const,
           value: pushNotifications,
-          onToggle: setPushNotifications,
+          onToggle: handlePushNotificationsToggle,
         },
       ] as SettingItem[],
     },
@@ -153,14 +202,14 @@ export default function SettingsScreen() {
         {
           icon: Shield,
           title: 'Confidentialité',
-          subtitle: 'Paramètres de confidentialité',
+          subtitle: 'Sécurité et vie privée',
           type: 'navigation' as const,
           onPress: handlePrivacy,
         },
         {
           icon: CreditCard,
           title: 'Paiements',
-          subtitle: 'Gérer vos moyens de paiement',
+          subtitle: 'Cartes et virements',
           type: 'navigation' as const,
           onPress: handlePayments,
         },
@@ -171,8 +220,8 @@ export default function SettingsScreen() {
       items: [
         {
           icon: HelpCircle,
-          title: 'Aide',
-          subtitle: 'FAQ et contact',
+          title: 'Centre d\'aide',
+          subtitle: 'FAQ et assistance',
           type: 'navigation' as const,
           onPress: handleHelp,
         },

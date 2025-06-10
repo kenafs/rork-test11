@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { Listing } from '@/types';
 import { mockListings } from '@/mocks/listings';
 import { useAuth } from './useAuth';
+import { categoryMap } from '@/constants/categories';
 
 interface ListingsState {
   listings: Listing[];
@@ -65,16 +66,6 @@ export const useListings = create<ListingsState>((set, get) => ({
     
     // Apply category filter
     if (category && category !== 'all') {
-      // Map category IDs to actual category names
-      const categoryMap: { [key: string]: string } = {
-        'dj_services': 'Services DJ',
-        'catering': 'Traiteur',
-        'venue_rental': 'Location de Lieu',
-        'staff_services': 'Services de Personnel',
-        'decoration': 'Décoration',
-        'entertainment': 'Animation',
-      };
-      
       const categoryName = categoryMap[category] || category;
       filtered = filtered.filter(listing => 
         listing.category.toLowerCase().includes(categoryName.toLowerCase()) ||
@@ -113,15 +104,6 @@ export const useListings = create<ListingsState>((set, get) => ({
     
     // Keep existing category filter
     if (selectedCategory && selectedCategory !== 'all') {
-      const categoryMap: { [key: string]: string } = {
-        'dj_services': 'Services DJ',
-        'catering': 'Traiteur',
-        'venue_rental': 'Location de Lieu',
-        'staff_services': 'Services de Personnel',
-        'decoration': 'Décoration',
-        'entertainment': 'Animation',
-      };
-      
       const categoryName = categoryMap[selectedCategory] || selectedCategory;
       filtered = filtered.filter(listing => 
         listing.category.toLowerCase().includes(categoryName.toLowerCase()) ||
@@ -159,15 +141,6 @@ export const useListings = create<ListingsState>((set, get) => ({
     
     // Keep existing category filter
     if (selectedCategory && selectedCategory !== 'all') {
-      const categoryMap: { [key: string]: string } = {
-        'dj_services': 'Services DJ',
-        'catering': 'Traiteur',
-        'venue_rental': 'Location de Lieu',
-        'staff_services': 'Services de Personnel',
-        'decoration': 'Décoration',
-        'entertainment': 'Animation',
-      };
-      
       const categoryName = categoryMap[selectedCategory] || selectedCategory;
       filtered = filtered.filter(listing => 
         listing.category.toLowerCase().includes(categoryName.toLowerCase()) ||
@@ -209,7 +182,7 @@ export const useListings = create<ListingsState>((set, get) => ({
       id: `listing-${Date.now()}`,
       createdAt: Date.now(),
       status: 'active',
-      creatorName: user.name,
+      createdBy: user.id,
       ...listingData,
     };
     
@@ -278,7 +251,6 @@ function applySearchFilter(listings: Listing[], query: string): Listing[] {
   return listings.filter(listing => 
     listing.title.toLowerCase().includes(lowerQuery) ||
     listing.description.toLowerCase().includes(lowerQuery) ||
-    listing.creatorName.toLowerCase().includes(lowerQuery) ||
     (listing.tags && listing.tags.some(tag => tag.toLowerCase().includes(lowerQuery)))
   );
 }
@@ -304,15 +276,6 @@ function applyCurrentFilters(listings: Listing[], state: ListingsState): Listing
   
   // Apply category filter
   if (state.selectedCategory && state.selectedCategory !== 'all') {
-    const categoryMap: { [key: string]: string } = {
-      'dj_services': 'Services DJ',
-      'catering': 'Traiteur',
-      'venue_rental': 'Location de Lieu',
-      'staff_services': 'Services de Personnel',
-      'decoration': 'Décoration',
-      'entertainment': 'Animation',
-    };
-    
     const categoryName = categoryMap[state.selectedCategory] || state.selectedCategory;
     filtered = filtered.filter(listing => 
       listing.category.toLowerCase().includes(categoryName.toLowerCase()) ||

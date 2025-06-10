@@ -32,12 +32,14 @@ export default function HomeScreen() {
     city, 
     error, 
     isLoading: locationLoading, 
-    hasPermission, 
+    permissionStatus,
     requestPermission 
   } = useLocation();
   const { t } = useLanguage();
   
   const [refreshing, setRefreshing] = useState(false);
+  
+  const hasPermission = permissionStatus === 'granted';
   
   useEffect(() => {
     fetchListings();
@@ -157,7 +159,6 @@ export default function HomeScreen() {
           onChangeText={handleSearch}
           onClear={handleClearSearch}
           onLocationPress={handleLocationPress}
-          onSearch={handleSearch}
           placeholder="Rechercher un prestataire..."
         />
         
@@ -187,7 +188,6 @@ export default function HomeScreen() {
             <ListingCard
               key={listing.id}
               listing={listing}
-              onPress={() => router.push(`/listing/${listing.id}`)}
             />
           ))}
           

@@ -24,8 +24,13 @@ export default function CategoryFilter({ selectedCategory, onSelectCategory }: C
   };
   
   // Safety check for listingCategories
-  if (!listingCategories || !Array.isArray(listingCategories)) {
-    return null;
+  if (!listingCategories || !Array.isArray(listingCategories) || listingCategories.length === 0) {
+    console.warn('listingCategories is not properly defined');
+    return (
+      <View style={styles.container}>
+        <Text style={styles.errorText}>Catégories non disponibles</Text>
+      </View>
+    );
   }
   
   return (
@@ -81,5 +86,11 @@ const styles = StyleSheet.create({
   },
   selectedCategoryText: {
     color: '#fff',
+  },
+  errorText: {
+    fontSize: 14,
+    color: Colors.error,
+    textAlign: 'center',
+    padding: 16,
   },
 });

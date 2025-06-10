@@ -56,7 +56,7 @@ const mockUsers: User[] = [
     name: 'Restaurant Le Gourmet',
     email: 'contact@legourmet.com',
     userType: 'business',
-    profileImage: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&auto=format&fit=crop',
+    profileImage: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&auto=format&fit=crop',
     description: 'Restaurant gastronomique avec terrasse, spécialisé dans l\'organisation d\'événements privés.',
     address: '15 Rue de la Paix, 75001 Paris',
     website: 'https://legourmet-paris.fr',
@@ -173,12 +173,18 @@ export const useAuth = create<AuthState>()(
       },
       
       logout: () => {
-        console.log('Logging out user...');
+        console.log('Déconnexion en cours...');
+        // Clear all auth data immediately
         set({ 
           user: null, 
           isAuthenticated: false,
           isLoading: false
         });
+        
+        // Clear persisted storage
+        AsyncStorage.removeItem('auth-storage').catch(console.error);
+        
+        console.log('Utilisateur déconnecté avec succès');
       },
       
       updateProfile: async (updates: Partial<User>) => {

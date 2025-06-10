@@ -14,6 +14,7 @@ interface MessagesState {
   sendMessage: (conversationId: string, content: string, receiverId: string) => Promise<void>;
   createConversation: (participantId: string, initialMessage?: string) => Promise<string>;
   markAsRead: (conversationId: string) => Promise<void>;
+  refreshConversations: () => Promise<void>;
 }
 
 export const useMessages = create<MessagesState>()(
@@ -35,28 +36,11 @@ export const useMessages = create<MessagesState>()(
           return;
         }
         
-        // Mock conversations
-        const mockConversations: Conversation[] = [
-          {
-            id: 'conv-1',
-            participants: [user.id, 'provider-1'],
-            lastMessage: {
-              id: 'msg-1',
-              conversationId: 'conv-1',
-              senderId: 'provider-1',
-              receiverId: user.id,
-              content: 'Bonjour ! Je serais ravi de discuter de votre événement.',
-              timestamp: Date.now() - 3600000,
-              read: false,
-              type: 'text',
-            },
-            createdAt: Date.now() - 86400000,
-            updatedAt: Date.now() - 3600000,
-          },
-        ];
+        // Mock conversations - get existing ones from state
+        const existingConversations = get().conversations;
         
         set({ 
-          conversations: mockConversations,
+          conversations: existingConversations,
           isLoading: false 
         });
       },
@@ -73,24 +57,13 @@ export const useMessages = create<MessagesState>()(
           return;
         }
         
-        // Mock messages
-        const mockMessages: Message[] = [
-          {
-            id: 'msg-1',
-            conversationId,
-            senderId: 'provider-1',
-            receiverId: user.id,
-            content: 'Bonjour ! Je serais ravi de discuter de votre événement.',
-            timestamp: Date.now() - 3600000,
-            read: false,
-            type: 'text',
-          },
-        ];
+        // Get existing messages for this conversation
+        const existingMessages = get().messages[conversationId] || [];
         
         set(state => ({
           messages: {
             ...state.messages,
-            [conversationId]: mockMessages,
+            [conversationId]: existingMessages,
           },
           isLoading: false,
         }));
@@ -111,7 +84,7 @@ export const useMessages = create<MessagesState>()(
           type: 'text',
         };
         
-        // Add message to conversation
+        // Add message to conversation immediately
         set(state => ({
           messages: {
             ...state.messages,
@@ -122,19 +95,39 @@ export const useMessages = create<MessagesState>()(
           },
         }));
         
-        // Update conversation's last message
+        // Update conversation's last message and move to top
         set(state => ({
-          conversations: state.conversations.map(conv =>
-            conv.id === conversationId
-              ? { ...conv, lastMessage: newMessage, updatedAt: Date.now() }
-              : conv
-          ),
+          conversations: [
+            // Updated conversation at the top
+            ...state.conversations.filter(conv => conv.id === conversationId).map(conv => ({
+              ...conv,
+              lastMessage: newMessage,
+              updatedAt: Date.now(),
+            })),
+            // Other conversations
+            ...state.conversations.filter(conv => conv.id !== conversationId),
+          ],
         }));
+        
+        console.log('Message envoyé:', newMessage);
       },
       
       createConversation: async (participantId: string, initialMessage?: string) => {
         const user = useAuth.getState().user;
         if (!user) throw new Error('User must be logged in');
+        
+        // Check if conversation already exists
+        const existingConversation = get().conversations.find(conv =>
+          conv.participants.includes(user.id) && conv.participants.includes(participantId)
+        );
+        
+        if (existingConversation) {
+          // Send initial message if provided
+          if (initialMessage) {
+            await get().sendMessage(existingConversation.id, initialMessage, participantId);
+          }
+          return existingConversation.id;
+        }
         
         const conversationId = `conv-${Date.now()}`;
         
@@ -147,6 +140,10 @@ export const useMessages = create<MessagesState>()(
         
         set(state => ({
           conversations: [newConversation, ...state.conversations],
+          messages: {
+            ...state.messages,
+            [conversationId]: [],
+          },
         }));
         
         // Send initial message if provided
@@ -154,6 +151,7 @@ export const useMessages = create<MessagesState>()(
           await get().sendMessage(conversationId, initialMessage, participantId);
         }
         
+        console.log('Nouvelle conversation créée:', conversationId);
         return conversationId;
       },
       
@@ -169,6 +167,10 @@ export const useMessages = create<MessagesState>()(
             ),
           },
         }));
+      },
+      
+      refreshConversations: async () => {
+        await get().fetchConversations();
       },
     }),
     {
