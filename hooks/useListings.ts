@@ -235,7 +235,7 @@ export const useListings = create<ListingsState>((set, get) => ({
       if (!user) throw new Error('User must be logged in to create a listing');
       
       const newListing: Listing = {
-        id: `listing-${Date.now()}`,
+        id: `listing-${Date.now()}-${Math.random()}`,
         createdAt: Date.now(),
         updatedAt: Date.now(),
         status: 'active',
@@ -250,6 +250,7 @@ export const useListings = create<ListingsState>((set, get) => ({
         isLoading: false 
       });
       
+      console.log('Listing created successfully:', newListing);
       return newListing;
     } catch (error) {
       console.error('Error creating listing:', error);

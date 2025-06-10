@@ -344,7 +344,7 @@ export const useMessages = create<MessagesState>()(
             participantName: existingContact?.participantName || 'Utilisateur',
             participantImage: existingContact?.participantImage,
             participantType: existingContact?.participantType || 'client',
-            lastMessage: lastMessage?.content || 'Nouvelle conversation',
+            lastMessage: lastMessage?.content || existingContact?.lastMessage || 'Nouvelle conversation',
             unread: conversationMessages.filter(msg => !msg.read && msg.receiverId === user.id).length,
             timestamp: conv.updatedAt || conv.createdAt,
           };

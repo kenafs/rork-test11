@@ -3,72 +3,48 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface SettingsState {
+  // Appearance
   darkMode: boolean;
+  
+  // Notifications
   notifications: boolean;
   emailNotifications: boolean;
   pushNotifications: boolean;
   
+  // Actions
   toggleDarkMode: () => void;
   toggleNotifications: () => void;
   toggleEmailNotifications: () => void;
   togglePushNotifications: () => void;
+  
+  // Reset
   resetSettings: () => void;
-  setDarkMode: (value: boolean) => void;
-  setNotifications: (value: boolean) => void;
-  setEmailNotifications: (value: boolean) => void;
-  setPushNotifications: (value: boolean) => void;
 }
 
 export const useSettings = create<SettingsState>()(
   persist(
     (set, get) => ({
+      // Default values
       darkMode: false,
       notifications: true,
       emailNotifications: true,
       pushNotifications: true,
       
+      // Actions
       toggleDarkMode: () => {
-        const newValue = !get().darkMode;
-        set({ darkMode: newValue });
-        console.log('Dark mode toggled to:', newValue);
+        set(state => ({ darkMode: !state.darkMode }));
       },
       
       toggleNotifications: () => {
-        const newValue = !get().notifications;
-        set({ notifications: newValue });
-        console.log('Notifications toggled to:', newValue);
+        set(state => ({ notifications: !state.notifications }));
       },
       
       toggleEmailNotifications: () => {
-        const newValue = !get().emailNotifications;
-        set({ emailNotifications: newValue });
-        console.log('Email notifications toggled to:', newValue);
+        set(state => ({ emailNotifications: !state.emailNotifications }));
       },
       
       togglePushNotifications: () => {
-        const newValue = !get().pushNotifications;
-        set({ pushNotifications: newValue });
-        console.log('Push notifications toggled to:', newValue);
-      },
-      
-      setDarkMode: (value: boolean) => {
-        set({ darkMode: value });
-        console.log('Dark mode set to:', value);
-      },
-      
-      setNotifications: (value: boolean) => {
-        set({ notifications: value });
-        console.log('Notifications set to:', value);
-      },
-      
-      setEmailNotifications: (value: boolean) => {
-        set({ emailNotifications: value });
-        console.log('Email notifications set to:', value);
-      },
-      
-      setPushNotifications: (value: boolean) => {
-        set({ pushNotifications: value });
-        console.log('Push notifications set to:', value);
+        set(state => ({ pushNotifications: !state.pushNotifications }));
       },
       
       resetSettings: () => {
@@ -78,7 +54,6 @@ export const useSettings = create<SettingsState>()(
           emailNotifications: true,
           pushNotifications: true,
         });
-        console.log('Settings reset to defaults');
       },
     }),
     {

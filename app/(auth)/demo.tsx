@@ -1,233 +1,281 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { DemoAccount } from '@/types';
 import Colors from '@/constants/colors';
-import Button from '@/components/Button';
-import { User, Building2, Users, ArrowRight } from 'lucide-react-native';
+import { Image } from 'expo-image';
+import { Star, MapPin, Globe, Instagram, ArrowRight } from 'lucide-react-native';
 
-const demoAccounts: Record<'provider' | 'business' | 'client', DemoAccount> = {
-  provider: {
-    name: 'Marie Martin - DJ Pro',
-    email: 'marie@djpro.com',
+const demoAccounts: DemoAccount[] = [
+  {
+    name: 'Sophie Martin - DJ Pro',
+    email: 'sophie@djpro.com',
     userType: 'provider',
     profileImage: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&auto=format&fit=crop',
     description: 'DJ professionnelle spécialisée dans les événements d\'entreprise et mariages. Plus de 10 ans d\'expérience.',
     specialties: 'DJ, Animation, Sonorisation',
-    website: 'https://djpro-marie.com',
-    instagram: '@djpro_marie',
+    website: 'djpro-sophie.com',
+    instagram: '@djpro_sophie',
     rating: 4.8,
     reviewCount: 127,
     city: 'Paris',
     services: ['DJ', 'Animation', 'Sonorisation', 'Éclairage'],
-    priceRange: { min: 300, max: 800 },
-    availability: ['Vendredi', 'Samedi', 'Dimanche'],
+    priceRange: { min: 300, max: 1500 },
+    availability: ['Soir', 'Week-end', 'Jours fériés'],
   },
-  business: {
+  {
     name: 'Restaurant Le Gourmet',
     email: 'contact@legourmet.com',
     userType: 'business',
-    profileImage: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&auto=format&fit=crop',
+    profileImage: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&auto=format&fit=crop',
     description: 'Restaurant gastronomique avec terrasse, spécialisé dans l\'organisation d\'événements privés et réceptions.',
     address: '15 Rue de la Paix, 75001 Paris',
-    website: 'https://legourmet-paris.fr',
+    website: 'legourmet-paris.fr',
     instagram: '@legourmet_paris',
     rating: 4.6,
     reviewCount: 89,
     city: 'Paris',
     venueType: 'Restaurant',
-    capacity: 120,
-    amenities: ['Terrasse', 'Parking', 'Climatisation', 'Sonorisation'],
+    capacity: 80,
+    amenities: ['Terrasse', 'Cuisine équipée', 'Bar', 'Parking', 'Climatisation'],
   },
-  client: {
-    name: 'Jean Dupont',
-    email: 'jean@example.com',
-    userType: 'client',
+  {
+    name: 'Marc Dubois - Photographe',
+    email: 'marc@photopro.com',
+    userType: 'provider',
     profileImage: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&auto=format&fit=crop',
-    description: 'Organisateur d\'événements passionné, toujours à la recherche des meilleurs prestataires.',
+    description: 'Photographe professionnel spécialisé dans les mariages et événements d\'entreprise.',
+    specialties: 'Photographie, Vidéographie',
+    website: 'photopro-marc.com',
+    instagram: '@photopro_marc',
+    rating: 4.9,
+    reviewCount: 156,
+    city: 'Lyon',
+    services: ['Photographie', 'Vidéographie', 'Retouche', 'Drone'],
+    priceRange: { min: 500, max: 2000 },
+    availability: ['Journée', 'Soir', 'Week-end'],
+  },
+  {
+    name: 'Salle des Fêtes Élégance',
+    email: 'contact@elegance-events.com',
+    userType: 'business',
+    profileImage: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=800&auto=format&fit=crop',
+    description: 'Salle de réception moderne avec vue panoramique, parfaite pour vos événements d\'exception.',
+    address: '42 Avenue des Champs, 69000 Lyon',
+    website: 'elegance-events.com',
+    instagram: '@elegance_events',
+    rating: 4.7,
+    reviewCount: 203,
+    city: 'Lyon',
+    venueType: 'Salle de réception',
+    capacity: 150,
+    amenities: ['Vue panoramique', 'Cuisine équipée', 'Bar', 'Parking privé', 'Sonorisation', 'Éclairage LED'],
+  },
+  {
+    name: 'Emma Rousseau - Traiteur',
+    email: 'emma@saveurs-events.com',
+    userType: 'provider',
+    profileImage: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&auto=format&fit=crop',
+    description: 'Chef traiteur passionnée, spécialisée dans la cuisine française moderne et les buffets créatifs.',
+    specialties: 'Traiteur, Cuisine française, Buffets',
+    website: 'saveurs-events.com',
+    instagram: '@saveurs_events',
+    rating: 4.9,
+    reviewCount: 98,
+    city: 'Marseille',
+    services: ['Traiteur', 'Buffets', 'Cocktails', 'Service'],
+    priceRange: { min: 25, max: 80 },
+    availability: ['Journée', 'Soir', 'Week-end'],
+  },
+  {
+    name: 'Pierre Moreau',
+    email: 'pierre@client.com',
+    userType: 'client',
+    profileImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop',
+    description: 'Organisateur d\'événements d\'entreprise, toujours à la recherche des meilleurs prestataires.',
     rating: 4.5,
     reviewCount: 23,
-    city: 'Paris',
+    city: 'Toulouse',
   },
-};
+];
 
-export default function DemoScreen() {
+export default function DemoAccountsScreen() {
   const router = useRouter();
   const { loginWithDemo, isLoading } = useAuth();
-  const [selectedType, setSelectedType] = useState<'provider' | 'business' | 'client'>('provider');
-  
-  const handleDemoLogin = async () => {
-    const success = await loginWithDemo(demoAccounts[selectedType]);
-    if (success) {
-      router.replace('/(tabs)');
+  const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
+
+  const handleDemoLogin = async (account: DemoAccount) => {
+    setSelectedAccount(account.email);
+    
+    try {
+      const success = await loginWithDemo(account);
+      
+      if (success) {
+        Alert.alert(
+          'Connexion réussie !',
+          `Vous êtes maintenant connecté en tant que ${account.name}`,
+          [
+            {
+              text: 'Continuer',
+              onPress: () => router.replace('/(tabs)'),
+            },
+          ]
+        );
+      } else {
+        Alert.alert('Erreur', 'Impossible de se connecter avec ce compte démo');
+      }
+    } catch (error) {
+      console.error('Demo login error:', error);
+      Alert.alert('Erreur', 'Une erreur est survenue lors de la connexion');
+    } finally {
+      setSelectedAccount(null);
     }
   };
-  
-  const accountTypes = [
-    {
-      id: 'provider' as const,
-      title: 'Prestataire',
-      subtitle: 'DJ, Traiteur, Photographe...',
-      description: 'Créez vos annonces et développez votre activité',
-      icon: User,
-      color: Colors.primary,
-      features: ['Créer des annonces', 'Envoyer des devis', 'Gérer les réservations', 'Recevoir des messages']
-    },
-    {
-      id: 'business' as const,
-      title: 'Établissement',
-      subtitle: 'Restaurant, Salle, Hôtel...',
-      description: 'Proposez vos espaces et services',
-      icon: Building2,
-      color: Colors.secondary,
-      features: ['Publier des offres', 'Gérer les réservations', 'Recevoir des demandes', 'Promouvoir votre lieu']
-    },
-    {
-      id: 'client' as const,
-      title: 'Client',
-      subtitle: 'Organisateur d\'événements',
-      description: 'Trouvez les meilleurs prestataires',
-      icon: Users,
-      color: '#10B981',
-      features: ['Rechercher des prestataires', 'Demander des devis', 'Contacter directement', 'Laisser des avis']
-    },
-  ];
-  
-  const selectedAccount = demoAccounts[selectedType];
-  const selectedAccountType = accountTypes.find(type => type.id === selectedType);
-  
+
+  const renderAccount = (account: DemoAccount) => {
+    const isSelected = selectedAccount === account.email;
+    const isLoadingThis = isLoading && isSelected;
+
+    return (
+      <TouchableOpacity
+        key={account.email}
+        style={[styles.accountCard, isSelected && styles.selectedCard]}
+        onPress={() => handleDemoLogin(account)}
+        disabled={isLoading}
+      >
+        <View style={styles.accountHeader}>
+          <Image source={{ uri: account.profileImage }} style={styles.profileImage} />
+          <View style={styles.accountInfo}>
+            <Text style={styles.accountName}>{account.name}</Text>
+            <View style={styles.typeContainer}>
+              <Text style={styles.typeText}>
+                {account.userType === 'provider' ? '🎯 Prestataire' : 
+                 account.userType === 'business' ? '🏢 Établissement' : '👤 Client'}
+              </Text>
+            </View>
+            <View style={styles.ratingContainer}>
+              <Star size={16} color="#FFD700" fill="#FFD700" />
+              <Text style={styles.ratingText}>{account.rating}</Text>
+              <Text style={styles.reviewText}>({account.reviewCount} avis)</Text>
+            </View>
+          </View>
+          {isLoadingThis ? (
+            <View style={styles.loadingIndicator}>
+              <Text style={styles.loadingText}>...</Text>
+            </View>
+          ) : (
+            <ArrowRight size={20} color={Colors.primary} />
+          )}
+        </View>
+
+        <Text style={styles.description} numberOfLines={2}>
+          {account.description}
+        </Text>
+
+        <View style={styles.accountDetails}>
+          <View style={styles.locationContainer}>
+            <MapPin size={14} color={Colors.textLight} />
+            <Text style={styles.locationText}>{account.city}</Text>
+          </View>
+
+          {account.website && (
+            <View style={styles.linkContainer}>
+              <Globe size={14} color={Colors.primary} />
+              <Text style={styles.linkText}>{account.website}</Text>
+            </View>
+          )}
+
+          {account.instagram && (
+            <View style={styles.linkContainer}>
+              <Instagram size={14} color="#E4405F" />
+              <Text style={styles.linkText}>{account.instagram}</Text>
+            </View>
+          )}
+        </View>
+
+        {account.userType === 'provider' && account.services && (
+          <View style={styles.servicesContainer}>
+            {account.services.slice(0, 3).map((service, index) => (
+              <View key={index} style={styles.serviceTag}>
+                <Text style={styles.serviceText}>{service}</Text>
+              </View>
+            ))}
+            {account.services.length > 3 && (
+              <Text style={styles.moreServices}>+{account.services.length - 3}</Text>
+            )}
+          </View>
+        )}
+
+        {account.userType === 'business' && account.amenities && (
+          <View style={styles.servicesContainer}>
+            {account.amenities.slice(0, 3).map((amenity, index) => (
+              <View key={index} style={styles.serviceTag}>
+                <Text style={styles.serviceText}>{amenity}</Text>
+              </View>
+            ))}
+            {account.amenities.length > 3 && (
+              <Text style={styles.moreServices}>+{account.amenities.length - 3}</Text>
+            )}
+          </View>
+        )}
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ 
-        title: 'Comptes de démonstration',
-        headerStyle: { backgroundColor: Colors.primary },
-        headerTintColor: '#fff',
-        headerTitleStyle: { fontWeight: '700' }
-      }} />
+      <Stack.Screen 
+        options={{ 
+          title: 'Comptes démo',
+          headerStyle: { backgroundColor: Colors.primary },
+          headerTintColor: '#fff',
+          headerTitleStyle: { fontWeight: '700' }
+        }} 
+      />
       
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={styles.title}>Choisissez votre type de compte</Text>
+          <Text style={styles.title}>✨ Essayez avec un compte démo</Text>
           <Text style={styles.subtitle}>
-            Explorez l'application avec un compte de démonstration
+            Découvrez l'application avec des profils pré-configurés pour chaque type d'utilisateur
           </Text>
         </View>
-        
-        <View style={styles.accountTypes}>
-          {accountTypes.map((type) => (
-            <TouchableOpacity
-              key={type.id}
-              style={[
-                styles.accountTypeCard,
-                selectedType === type.id && styles.selectedCard,
-                { borderColor: selectedType === type.id ? type.color : Colors.border }
-              ]}
-              onPress={() => setSelectedType(type.id)}
-              activeOpacity={0.7}
-            >
-              <View style={styles.cardHeader}>
-                <View style={[styles.iconContainer, { backgroundColor: type.color }]}>
-                  <type.icon size={24} color="#fff" />
-                </View>
-                <View style={styles.cardInfo}>
-                  <Text style={styles.cardTitle}>{type.title}</Text>
-                  <Text style={styles.cardSubtitle}>{type.subtitle}</Text>
-                </View>
-                {selectedType === type.id && (
-                  <View style={[styles.checkmark, { backgroundColor: type.color }]}>
-                    <Text style={styles.checkmarkText}>✓</Text>
-                  </View>
-                )}
-              </View>
-              <Text style={styles.cardDescription}>{type.description}</Text>
-              
-              <View style={styles.featuresContainer}>
-                <Text style={styles.featuresTitle}>Fonctionnalités disponibles:</Text>
-                {type.features.map((feature, index) => (
-                  <View key={index} style={styles.featureItem}>
-                    <Text style={styles.featureBullet}>•</Text>
-                    <Text style={styles.featureText}>{feature}</Text>
-                  </View>
-                ))}
-              </View>
-            </TouchableOpacity>
-          ))}
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>🎯 Prestataires</Text>
+          <Text style={styles.sectionDescription}>
+            Proposez vos services et créez des devis
+          </Text>
+          {demoAccounts
+            .filter(account => account.userType === 'provider')
+            .map(renderAccount)}
         </View>
-        
-        <View style={styles.previewSection}>
-          <Text style={styles.previewTitle}>Aperçu du compte sélectionné</Text>
-          
-          <View style={styles.previewCard}>
-            <View style={styles.previewHeader}>
-              <Image 
-                source={{ uri: selectedAccount.profileImage }} 
-                style={styles.previewAvatar}
-              />
-              <View style={styles.previewInfo}>
-                <Text style={styles.previewName}>{selectedAccount.name}</Text>
-                <Text style={styles.previewEmail}>{selectedAccount.email}</Text>
-                <View style={styles.previewBadge}>
-                  <Text style={[styles.previewBadgeText, { color: selectedAccountType?.color }]}>
-                    {selectedAccountType?.title}
-                  </Text>
-                </View>
-              </View>
-            </View>
-            
-            {selectedAccount.description && (
-              <Text style={styles.previewDescription}>
-                {selectedAccount.description}
-              </Text>
-            )}
-            
-            <View style={styles.previewStats}>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>⭐ {selectedAccount.rating}</Text>
-                <Text style={styles.statLabel}>Note</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>{selectedAccount.reviewCount}</Text>
-                <Text style={styles.statLabel}>Avis</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>📍 {selectedAccount.city}</Text>
-                <Text style={styles.statLabel}>Ville</Text>
-              </View>
-            </View>
-            
-            {/* Additional info based on account type */}
-            {selectedType === 'provider' && 'specialties' in selectedAccount && (
-              <View style={styles.additionalInfo}>
-                <Text style={styles.additionalInfoLabel}>Spécialités:</Text>
-                <Text style={styles.additionalInfoValue}>{selectedAccount.specialties}</Text>
-              </View>
-            )}
-            
-            {selectedType === 'business' && 'address' in selectedAccount && (
-              <View style={styles.additionalInfo}>
-                <Text style={styles.additionalInfoLabel}>Adresse:</Text>
-                <Text style={styles.additionalInfoValue}>{selectedAccount.address}</Text>
-              </View>
-            )}
-          </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>🏢 Établissements</Text>
+          <Text style={styles.sectionDescription}>
+            Proposez vos lieux et espaces
+          </Text>
+          {demoAccounts
+            .filter(account => account.userType === 'business')
+            .map(renderAccount)}
         </View>
-        
-        <View style={styles.actions}>
-          <Button
-            title={`Se connecter en tant que ${selectedAccountType?.title}`}
-            onPress={handleDemoLogin}
-            loading={isLoading}
-            style={[styles.demoButton, { backgroundColor: selectedAccountType?.color }]}
-            icon={<ArrowRight size={20} color="#fff" />}
-          />
-          
-          <TouchableOpacity 
-            style={styles.backButton}
-            onPress={() => router.back()}
-          >
-            <Text style={styles.backButtonText}>Retour</Text>
-          </TouchableOpacity>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>👤 Clients</Text>
+          <Text style={styles.sectionDescription}>
+            Recherchez et contactez des prestataires
+          </Text>
+          {demoAccounts
+            .filter(account => account.userType === 'client')
+            .map(renderAccount)}
+        </View>
+
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>
+            💡 Ces comptes sont pré-remplis avec des données d'exemple pour vous permettre de tester toutes les fonctionnalités de l'application.
+          </Text>
         </View>
       </ScrollView>
     </View>
@@ -243,217 +291,174 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
+    backgroundColor: '#fff',
     padding: 24,
-    alignItems: 'center',
+    marginBottom: 20,
   },
   title: {
     fontSize: 24,
     fontWeight: '800',
     color: Colors.text,
-    textAlign: 'center',
     marginBottom: 8,
+    textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
     color: Colors.textLight,
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: 24,
   },
-  accountTypes: {
-    padding: 20,
-    gap: 16,
+  section: {
+    marginBottom: 32,
+    paddingHorizontal: 20,
   },
-  accountTypeCard: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 2,
-    borderColor: Colors.border,
-  },
-  selectedCard: {
-    borderWidth: 2,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  cardInfo: {
-    flex: 1,
-  },
-  cardTitle: {
-    fontSize: 18,
+  sectionTitle: {
+    fontSize: 20,
     fontWeight: '700',
     color: Colors.text,
     marginBottom: 4,
   },
-  cardSubtitle: {
+  sectionDescription: {
     fontSize: 14,
     color: Colors.textLight,
-  },
-  checkmark: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  checkmarkText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  cardDescription: {
-    fontSize: 14,
-    color: Colors.text,
-    lineHeight: 20,
     marginBottom: 16,
   },
-  featuresContainer: {
-    backgroundColor: Colors.backgroundAlt,
-    borderRadius: 12,
-    padding: 16,
-  },
-  featuresTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: Colors.text,
-    marginBottom: 8,
-  },
-  featureItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  featureBullet: {
-    fontSize: 16,
-    color: Colors.primary,
-    marginRight: 8,
-    fontWeight: '700',
-  },
-  featureText: {
-    fontSize: 14,
-    color: Colors.text,
-    flex: 1,
-  },
-  previewSection: {
-    padding: 20,
-  },
-  previewTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: Colors.text,
-    marginBottom: 16,
-  },
-  previewCard: {
+  accountCard: {
     backgroundColor: '#fff',
     borderRadius: 16,
     padding: 20,
+    marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
-    elevation: 4,
+    elevation: 3,
   },
-  previewHeader: {
+  selectedCard: {
+    borderWidth: 2,
+    borderColor: Colors.primary,
+  },
+  accountHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
   },
-  previewAvatar: {
+  profileImage: {
     width: 60,
     height: 60,
     borderRadius: 30,
     marginRight: 16,
   },
-  previewInfo: {
+  accountInfo: {
     flex: 1,
   },
-  previewName: {
-    fontSize: 18,
+  accountName: {
+    fontSize: 16,
     fontWeight: '700',
     color: Colors.text,
     marginBottom: 4,
   },
-  previewEmail: {
-    fontSize: 14,
-    color: Colors.textLight,
-    marginBottom: 8,
-  },
-  previewBadge: {
+  typeContainer: {
+    backgroundColor: 'rgba(10, 36, 99, 0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
     alignSelf: 'flex-start',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    backgroundColor: Colors.backgroundAlt,
-    borderRadius: 12,
+    marginBottom: 4,
   },
-  previewBadgeText: {
+  typeText: {
     fontSize: 12,
     fontWeight: '600',
-    textTransform: 'uppercase',
+    color: Colors.primary,
   },
-  previewDescription: {
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  ratingText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.text,
+    marginLeft: 4,
+  },
+  reviewText: {
+    fontSize: 12,
+    color: Colors.textLight,
+    marginLeft: 4,
+  },
+  loadingIndicator: {
+    width: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: Colors.primary,
+    fontWeight: '700',
+  },
+  description: {
     fontSize: 14,
     color: Colors.text,
     lineHeight: 20,
-    marginBottom: 16,
+    marginBottom: 12,
   },
-  previewStats: {
+  accountDetails: {
+    marginBottom: 12,
+  },
+  locationContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: Colors.border,
-    marginBottom: 16,
-  },
-  statItem: {
     alignItems: 'center',
-  },
-  statValue: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: Colors.text,
     marginBottom: 4,
   },
-  statLabel: {
+  locationText: {
     fontSize: 12,
     color: Colors.textLight,
+    marginLeft: 4,
   },
-  additionalInfo: {
-    marginTop: 8,
+  linkContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 2,
   },
-  additionalInfoLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: Colors.text,
-    marginBottom: 4,
-  },
-  additionalInfoValue: {
-    fontSize: 14,
+  linkText: {
+    fontSize: 12,
     color: Colors.textLight,
+    marginLeft: 4,
   },
-  actions: {
-    padding: 20,
-    gap: 16,
+  servicesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
   },
-  demoButton: {
+  serviceTag: {
+    backgroundColor: 'rgba(62, 146, 204, 0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     borderRadius: 12,
   },
-  backButton: {
-    alignItems: 'center',
-    paddingVertical: 16,
+  serviceText: {
+    fontSize: 12,
+    color: Colors.secondary,
+    fontWeight: '500',
   },
-  backButtonText: {
-    fontSize: 16,
+  moreServices: {
+    fontSize: 12,
     color: Colors.textLight,
     fontWeight: '500',
+    paddingVertical: 4,
+  },
+  footer: {
+    backgroundColor: '#fff',
+    padding: 20,
+    marginHorizontal: 20,
+    marginBottom: 40,
+    borderRadius: 12,
+  },
+  footerText: {
+    fontSize: 14,
+    color: Colors.textLight,
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });

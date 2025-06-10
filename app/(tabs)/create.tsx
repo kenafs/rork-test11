@@ -106,6 +106,7 @@ export default function CreateListingScreen() {
   
   // Handle form submission
   const handleSubmit = async () => {
+    // Validation
     if (!title.trim()) {
       Alert.alert('Erreur', 'Veuillez saisir un titre pour votre annonce.');
       return;
@@ -410,7 +411,7 @@ export default function CreateListingScreen() {
           <TouchableOpacity
             style={styles.submitButton}
             onPress={handleSubmit}
-            disabled={isLoading}
+            disabled={isLoading || !title.trim() || !description.trim() || !category}
           >
             <Text style={styles.submitButtonText}>
               {isLoading ? '🚀 Publication...' : `🚀 Publier ${user.userType === 'business' ? "l'offre" : "l'annonce"}`}

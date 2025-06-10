@@ -16,7 +16,7 @@ export default function CreateQuoteScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const { createQuote, isLoading } = useQuotes();
-  const { addContact } = useMessages();
+  const { addContact, createConversation } = useMessages();
   
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -136,33 +136,47 @@ export default function CreateQuoteScreen() {
         description,
         items,
         totalAmount,
-        status: 'draft',
+        status: 'pending',
         validUntil,
       });
       
       console.log('Quote created successfully:', quote);
       
-      // Add quote message to conversation if it's a conversation quote
-      if (conversationParticipant && addContact) {
-        addContact({
-          participantId: conversationParticipant.id,
-          participantName: conversationParticipant.name,
-          participantImage: conversationParticipant.profileImage,
-          participantType: conversationParticipant.userType === 'provider' ? 'provider' : 
-                          conversationParticipant.userType === 'business' ? 'business' : 'client',
-          lastMessage: `📋 Devis envoyé: ${title} - ${totalAmount.toFixed(2)}€`,
-          unread: 0,
-          timestamp: Date.now(),
-        });
+      // Create or get conversation and send quote message
+      const clientId = listing?.createdBy || conversationParticipant?.id;
+      if (clientId) {
+        try {
+          const conversationId = await createConversation(clientId);
+          
+          // Add quote message to conversation
+          const quoteMessage = `📋 Devis envoyé: ${title}\n💰 Montant: ${totalAmount.toFixed(2)}€\n📅 Valide jusqu'au: ${new Date(validUntil).toLocaleDateString('fr-FR')}`;
+          
+          // Add contact with quote message
+          const targetUser = allUsers.find(u => u.id === clientId) || 
+                            (listing ? { id: listing.createdBy, name: listing.creatorName, profileImage: listing.creatorImage, userType: listing.creatorType } : null);
+          
+          if (targetUser) {
+            addContact({
+              participantId: clientId,
+              participantName: targetUser.name,
+              participantImage: targetUser.profileImage,
+              participantType: targetUser.userType === 'provider' ? 'provider' : 
+                             targetUser.userType === 'business' ? 'business' : 'client',
+              lastMessage: quoteMessage,
+              unread: 0,
+              timestamp: Date.now(),
+            });
+          }
+          
+          console.log('Quote message sent to conversation');
+        } catch (messageError) {
+          console.error('Error sending quote message:', messageError);
+        }
       }
       
-      Alert.alert('Succès', 'Devis créé avec succès', [
+      Alert.alert('Succès', 'Devis créé et envoyé avec succès', [
         { 
-          text: 'Voir les devis', 
-          onPress: () => router.replace('/(tabs)/profile') 
-        },
-        { 
-          text: 'Retour aux messages', 
+          text: 'Voir les messages', 
           onPress: () => router.replace('/(tabs)/messages') 
         }
       ]);

@@ -7,7 +7,7 @@ import { User, Provider, Venue } from '@/types';
 import Colors from '@/constants/colors';
 import Button from '@/components/Button';
 import RatingStars from '@/components/RatingStars';
-import { MapPin, Mail, Phone, Calendar, Settings, LogOut, Edit, Plus, Globe, Instagram, ExternalLink, FileText } from 'lucide-react-native';
+import { MapPin, Mail, Phone, Calendar, Edit, Plus, Globe, Instagram, ExternalLink, FileText, LogOut } from 'lucide-react-native';
 import { mockListings } from '@/mocks/listings';
 import ListingCard from '@/components/ListingCard';
 
@@ -224,7 +224,7 @@ export default function ProfileScreen() {
           <Text style={styles.sectionTitle}>{sectionTitle}</Text>
           <TouchableOpacity 
             style={styles.viewAllButton}
-            onPress={() => router.push('/quotes')}
+            onPress={() => router.push('/(tabs)/messages')}
           >
             <Text style={styles.viewAllText}>Voir tout</Text>
           </TouchableOpacity>
@@ -232,7 +232,11 @@ export default function ProfileScreen() {
         
         {quotes.length > 0 ? (
           quotes.map(quote => (
-            <View key={quote.id} style={styles.quoteCard}>
+            <TouchableOpacity 
+              key={quote.id} 
+              style={styles.quoteCard}
+              onPress={() => router.push('/(tabs)/messages')}
+            >
               <View style={styles.quoteHeader}>
                 <FileText size={20} color={Colors.primary} />
                 <Text style={styles.quoteTitle}>Devis #{quote.id.slice(-6)}</Text>
@@ -240,11 +244,11 @@ export default function ProfileScreen() {
                   <Text style={styles.statusText}>{getStatusText(quote.status)}</Text>
                 </View>
               </View>
-              <Text style={styles.quoteTotal}>{quote.total}€</Text>
+              <Text style={styles.quoteTotal}>{quote.totalAmount}€</Text>
               <Text style={styles.quoteDate}>
                 {new Date(quote.createdAt).toLocaleDateString('fr-FR')}
               </Text>
-            </View>
+            </TouchableOpacity>
           ))
         ) : (
           <View style={styles.emptyListings}>
@@ -283,7 +287,7 @@ export default function ProfileScreen() {
       case 'business':
         return 'Publier une offre';
       default:
-        return 'Créer une annonce';
+        return 'Créer une demande';
     }
   };
   
@@ -331,13 +335,11 @@ export default function ProfileScreen() {
           onPress={() => router.push('/edit-profile')}
           style={styles.actionButton}
         />
-        {user.userType !== 'client' && (
-          <Button 
-            title={getCreateButtonText()}
-            onPress={() => router.push('/(tabs)/create')}
-            style={styles.actionButton}
-          />
-        )}
+        <Button 
+          title={getCreateButtonText()}
+          onPress={() => router.push('/(tabs)/create')}
+          style={styles.actionButton}
+        />
       </View>
       
       <View style={styles.card}>
@@ -393,7 +395,7 @@ export default function ProfileScreen() {
             </Text>
             <TouchableOpacity 
               style={styles.viewAllButton}
-              onPress={() => router.push('/my-listings')}
+              onPress={() => router.push('/(tabs)/search')}
             >
               <Text style={styles.viewAllText}>Voir tout</Text>
             </TouchableOpacity>
@@ -429,21 +431,13 @@ export default function ProfileScreen() {
       {/* Quotes section - only for providers and clients */}
       {renderQuotesSection()}
       
-      {/* Settings and logout */}
-      <View style={styles.settingsContainer}>
-        <TouchableOpacity 
-          style={styles.settingsButton}
-          onPress={() => router.push('/settings')}
-        >
-          <Settings size={20} color={Colors.text} style={styles.settingsIcon} />
-          <Text style={styles.settingsText}>Paramètres</Text>
-        </TouchableOpacity>
-        
+      {/* Logout section */}
+      <View style={styles.logoutContainer}>
         <TouchableOpacity 
           style={styles.logoutButton}
           onPress={handleLogout}
         >
-          <LogOut size={20} color={Colors.error} style={styles.settingsIcon} />
+          <LogOut size={20} color={Colors.error} style={styles.logoutIcon} />
           <Text style={styles.logoutText}>Déconnexion</Text>
         </TouchableOpacity>
       </View>
@@ -720,7 +714,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.textLight,
   },
-  settingsContainer: {
+  logoutContainer: {
     backgroundColor: '#fff',
     borderRadius: 12,
     marginHorizontal: 16,
@@ -732,24 +726,13 @@ const styles = StyleSheet.create({
     elevation: 2,
     overflow: 'hidden',
   },
-  settingsButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-  },
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
   },
-  settingsIcon: {
+  logoutIcon: {
     marginRight: 12,
-  },
-  settingsText: {
-    fontSize: 16,
-    color: Colors.text,
   },
   logoutText: {
     fontSize: 16,
