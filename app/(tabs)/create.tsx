@@ -179,11 +179,56 @@ export default function CreateListingScreen() {
       Alert.alert('Erreur', "Une erreur s'est produite lors de la publication de votre annonce.");
     }
   };
+
+  // Get appropriate title and subtitle based on user type
+  const getHeaderText = () => {
+    switch (user.userType) {
+      case 'provider':
+        return {
+          title: '✨ Créer une annonce',
+          subtitle: 'Proposez vos services !'
+        };
+      case 'business':
+        return {
+          title: '✨ Publier une offre',
+          subtitle: 'Proposez votre établissement !'
+        };
+      default:
+        return {
+          title: '✨ Créer une demande',
+          subtitle: 'Publiez votre besoin !'
+        };
+    }
+  };
+
+  // Get appropriate placeholder text based on user type
+  const getPlaceholders = () => {
+    switch (user.userType) {
+      case 'provider':
+        return {
+          title: "Ex: DJ professionnel pour soirée d'entreprise",
+          description: "Décrivez vos services en détail..."
+        };
+      case 'business':
+        return {
+          title: "Ex: Salle de réception avec terrasse",
+          description: "Décrivez votre établissement et ses équipements..."
+        };
+      default:
+        return {
+          title: "Ex: Recherche DJ pour mariage",
+          description: "Décrivez votre besoin en détail..."
+        };
+    }
+  };
+
+  const headerText = getHeaderText();
+  const placeholders = getPlaceholders();
   
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ 
-        title: "Créer une annonce",
+        title: user.userType === 'business' ? "Publier une offre" : "Créer une annonce",
         headerStyle: { backgroundColor: Colors.primary },
         headerTintColor: "#fff",
         headerTitleStyle: { fontWeight: "700" }
@@ -196,12 +241,8 @@ export default function CreateListingScreen() {
         end={{ x: 1, y: 1 }}
       >
         <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>✨ Créer une annonce</Text>
-          <Text style={styles.headerSubtitle}>
-            {user.userType === 'provider' ? 'Proposez vos services !' :
-             user.userType === 'business' ? 'Proposez votre établissement !' :
-             'Publiez votre demande !'}
-          </Text>
+          <Text style={styles.headerTitle}>{headerText.title}</Text>
+          <Text style={styles.headerSubtitle}>{headerText.subtitle}</Text>
         </View>
       </LinearGradient>
       
@@ -212,16 +253,12 @@ export default function CreateListingScreen() {
       >
         <View style={styles.formCard}>
           <View style={styles.formGroup}>
-            <Text style={styles.label}>🎯 Titre de l'annonce *</Text>
+            <Text style={styles.label}>🎯 Titre {user.userType === 'business' ? "de l'offre" : "de l'annonce"} *</Text>
             <TextInput
               style={styles.input}
               value={title}
               onChangeText={setTitle}
-              placeholder={
-                user.userType === 'provider' ? "Ex: DJ professionnel pour soirée d'entreprise" :
-                user.userType === 'business' ? "Ex: Salle de réception avec terrasse" :
-                "Ex: Recherche DJ pour mariage"
-              }
+              placeholder={placeholders.title}
               maxLength={100}
               placeholderTextColor={Colors.textLight}
             />
@@ -233,11 +270,7 @@ export default function CreateListingScreen() {
               style={[styles.input, styles.textArea]}
               value={description}
               onChangeText={setDescription}
-              placeholder={
-                user.userType === 'provider' ? "Décrivez vos services en détail..." :
-                user.userType === 'business' ? "Décrivez votre établissement et ses équipements..." :
-                "Décrivez votre besoin en détail..."
-              }
+              placeholder={placeholders.description}
               multiline
               numberOfLines={6}
               textAlignVertical="top"
@@ -360,7 +393,7 @@ export default function CreateListingScreen() {
                 </Text>
               </View>
               <Text style={styles.helperText}>
-                💡 Votre annonce sera visible en priorité aux personnes proches de cette localisation.
+                💡 Votre {user.userType === 'business' ? 'offre' : 'annonce'} sera visible en priorité aux personnes proches de cette localisation.
               </Text>
             </View>
           </View>
@@ -380,7 +413,7 @@ export default function CreateListingScreen() {
             disabled={isLoading}
           >
             <Text style={styles.submitButtonText}>
-              {isLoading ? '🚀 Publication...' : '🚀 Publier l\'annonce'}
+              {isLoading ? '🚀 Publication...' : `🚀 Publier ${user.userType === 'business' ? "l'offre" : "l'annonce"}`}
             </Text>
           </TouchableOpacity>
         </LinearGradient>

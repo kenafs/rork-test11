@@ -72,6 +72,7 @@ export default function DemoScreen() {
       description: 'Créez vos annonces et développez votre activité',
       icon: User,
       color: Colors.primary,
+      features: ['Créer des annonces', 'Envoyer des devis', 'Gérer les réservations', 'Recevoir des messages']
     },
     {
       id: 'business' as const,
@@ -80,6 +81,7 @@ export default function DemoScreen() {
       description: 'Proposez vos espaces et services',
       icon: Building2,
       color: Colors.secondary,
+      features: ['Publier des offres', 'Gérer les réservations', 'Recevoir des demandes', 'Promouvoir votre lieu']
     },
     {
       id: 'client' as const,
@@ -88,6 +90,7 @@ export default function DemoScreen() {
       description: 'Trouvez les meilleurs prestataires',
       icon: Users,
       color: '#10B981',
+      features: ['Rechercher des prestataires', 'Demander des devis', 'Contacter directement', 'Laisser des avis']
     },
   ];
   
@@ -138,6 +141,16 @@ export default function DemoScreen() {
                 )}
               </View>
               <Text style={styles.cardDescription}>{type.description}</Text>
+              
+              <View style={styles.featuresContainer}>
+                <Text style={styles.featuresTitle}>Fonctionnalités disponibles:</Text>
+                {type.features.map((feature, index) => (
+                  <View key={index} style={styles.featureItem}>
+                    <Text style={styles.featureBullet}>•</Text>
+                    <Text style={styles.featureText}>{feature}</Text>
+                  </View>
+                ))}
+              </View>
             </TouchableOpacity>
           ))}
         </View>
@@ -302,6 +315,34 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.text,
     lineHeight: 20,
+    marginBottom: 16,
+  },
+  featuresContainer: {
+    backgroundColor: Colors.backgroundAlt,
+    borderRadius: 12,
+    padding: 16,
+  },
+  featuresTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.text,
+    marginBottom: 8,
+  },
+  featureItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  featureBullet: {
+    fontSize: 16,
+    color: Colors.primary,
+    marginRight: 8,
+    fontWeight: '700',
+  },
+  featureText: {
+    fontSize: 14,
+    color: Colors.text,
+    flex: 1,
   },
   previewSection: {
     padding: 20,

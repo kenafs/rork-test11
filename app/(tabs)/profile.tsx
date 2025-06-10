@@ -2,21 +2,33 @@ import React from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Image, Alert, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
+import { useQuotes } from '@/hooks/useQuotes';
 import { User, Provider, Venue } from '@/types';
 import Colors from '@/constants/colors';
 import Button from '@/components/Button';
 import RatingStars from '@/components/RatingStars';
-import { MapPin, Mail, Phone, Calendar, Settings, LogOut, Edit, Plus, Globe, Instagram, ExternalLink } from 'lucide-react-native';
+import { MapPin, Mail, Phone, Calendar, Settings, LogOut, Edit, Plus, Globe, Instagram, ExternalLink, FileText } from 'lucide-react-native';
 import { mockListings } from '@/mocks/listings';
 import ListingCard from '@/components/ListingCard';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuth();
+  const { getQuotesByUser, getQuotesForUser } = useQuotes();
   
   // Get user's listings
   const userListings = user 
     ? mockListings.filter(listing => listing.createdBy === user.id).slice(0, 3)
+    : [];
+  
+  // Get user's quotes (only for providers)
+  const userQuotes = user && user.userType === 'provider' 
+    ? getQuotesByUser(user.id).slice(0, 3)
+    : [];
+  
+  // Get quotes received by user (only for clients)
+  const receivedQuotes = user && user.userType === 'client'
+    ? getQuotesForUser(user.id).slice(0, 3)
     : [];
   
   // Format date
@@ -28,7 +40,7 @@ export default function ProfileScreen() {
   };
   
   // Handle logout
-  const handleLogout = () => {
+  const handleLogout = async () => {
     Alert.alert(
       'Déconnexion',
       'Êtes-vous sûr de vouloir vous déconnecter ?',
@@ -42,11 +54,11 @@ export default function ProfileScreen() {
               console.log('Starting logout from profile...');
               await logout();
               console.log('Logout completed, redirecting...');
-              router.replace('/');
+              router.replace('/(auth)/login');
             } catch (error) {
               console.error('Logout error:', error);
               // Force logout even if there's an error
-              router.replace('/');
+              router.replace('/(auth)/login');
             }
           }
         },
@@ -193,6 +205,74 @@ export default function ProfileScreen() {
         )}
       </View>
     );
+  };
+
+  // Render quotes section (only for providers and clients)
+  const renderQuotesSection = () => {
+    if (user.userType === 'business') return null; // No quotes for business accounts
+    
+    const quotes = user.userType === 'provider' ? userQuotes : receivedQuotes;
+    const sectionTitle = user.userType === 'provider' ? 'Mes devis' : 'Devis reçus';
+    const emptyTitle = user.userType === 'provider' ? 'Aucun devis créé' : 'Aucun devis reçu';
+    const emptyText = user.userType === 'provider' 
+      ? "Vous n'avez pas encore créé de devis."
+      : "Vous n'avez pas encore reçu de devis.";
+    
+    return (
+      <View style={styles.listingsSection}>
+        <View style={styles.listingsHeader}>
+          <Text style={styles.sectionTitle}>{sectionTitle}</Text>
+          <TouchableOpacity 
+            style={styles.viewAllButton}
+            onPress={() => router.push('/quotes')}
+          >
+            <Text style={styles.viewAllText}>Voir tout</Text>
+          </TouchableOpacity>
+        </View>
+        
+        {quotes.length > 0 ? (
+          quotes.map(quote => (
+            <View key={quote.id} style={styles.quoteCard}>
+              <View style={styles.quoteHeader}>
+                <FileText size={20} color={Colors.primary} />
+                <Text style={styles.quoteTitle}>Devis #{quote.id.slice(-6)}</Text>
+                <View style={[styles.statusBadge, { backgroundColor: getStatusColor(quote.status) }]}>
+                  <Text style={styles.statusText}>{getStatusText(quote.status)}</Text>
+                </View>
+              </View>
+              <Text style={styles.quoteTotal}>{quote.total}€</Text>
+              <Text style={styles.quoteDate}>
+                {new Date(quote.createdAt).toLocaleDateString('fr-FR')}
+              </Text>
+            </View>
+          ))
+        ) : (
+          <View style={styles.emptyListings}>
+            <Text style={styles.emptyTitle}>{emptyTitle}</Text>
+            <Text style={styles.emptyText}>{emptyText}</Text>
+          </View>
+        )}
+      </View>
+    );
+  };
+
+  // Helper functions for quote status
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'accepted': return '#10B981';
+      case 'rejected': return '#EF4444';
+      case 'pending': return '#F59E0B';
+      default: return Colors.textLight;
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'accepted': return 'Accepté';
+      case 'rejected': return 'Refusé';
+      case 'pending': return 'En attente';
+      default: return status;
+    }
   };
 
   // Get appropriate action button text based on user type
@@ -345,6 +425,9 @@ export default function ProfileScreen() {
           )}
         </View>
       )}
+      
+      {/* Quotes section - only for providers and clients */}
+      {renderQuotesSection()}
       
       {/* Settings and logout */}
       <View style={styles.settingsContainer}>
@@ -593,6 +676,49 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#fff',
+  },
+  quoteCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  quoteHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  quoteTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.text,
+    marginLeft: 8,
+    flex: 1,
+  },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  quoteTotal: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: Colors.primary,
+    marginBottom: 4,
+  },
+  quoteDate: {
+    fontSize: 14,
+    color: Colors.textLight,
   },
   settingsContainer: {
     backgroundColor: '#fff',

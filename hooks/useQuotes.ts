@@ -68,12 +68,10 @@ export const useQuotes = create<QuotesState>()(
             ...quoteData,
           };
           
-          const updatedQuotes = [...get().quotes, newQuote];
-          
-          set({ 
-            quotes: updatedQuotes,
+          set(state => ({
+            quotes: [...state.quotes, newQuote],
             isLoading: false 
-          });
+          }));
           
           console.log('Devis créé avec succès:', newQuote);
           return newQuote;

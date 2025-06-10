@@ -134,12 +134,12 @@ export default function ListingDetailScreen() {
       return;
     }
 
-    // Only providers can send quotes, clients and businesses can request quotes
+    // Only providers can send quotes, clients can request quotes
     if (user.userType === 'provider') {
       // Provider can create a quote
       router.push(`/create-quote/${listing.id}`);
-    } else {
-      // Client or business can request a quote via message
+    } else if (user.userType === 'client') {
+      // Client can request a quote via message
       try {
         console.log('Requesting quote via message for listing:', listing.id);
         
@@ -157,6 +157,9 @@ export default function ListingDetailScreen() {
         console.error('Error creating quote request conversation:', error);
         Alert.alert('Erreur', 'Impossible de créer la demande de devis');
       }
+    } else {
+      // Business accounts cannot request quotes
+      Alert.alert('Non disponible', 'Cette fonctionnalité n\'est pas disponible pour les établissements.');
     }
   };
   
@@ -242,6 +245,7 @@ export default function ListingDetailScreen() {
                     rating={listing.creatorRating} 
                     size="small" 
                     showNumber={false}
+                    showCount={false}
                   />
                 )}
               </View>
@@ -305,7 +309,7 @@ export default function ListingDetailScreen() {
           />
           
           {/* Only show quote button for providers or when requesting quotes from providers */}
-          {(user?.userType === 'provider' || listing.creatorType === 'provider') && user?.userType !== 'business' && (
+          {(user?.userType === 'provider' || (listing.creatorType === 'provider' && user?.userType === 'client')) && (
             <Button
               title={user?.userType === 'provider' ? "📋 Créer devis" : "📋 Demander devis"}
               variant="outline"

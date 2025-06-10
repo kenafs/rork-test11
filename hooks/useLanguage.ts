@@ -134,6 +134,7 @@ export const useLanguage = create<LanguageState>()(
       
       setLanguage: (language: LanguageCode) => {
         set({ currentLanguage: language });
+        console.log('Language changed to:', language);
       },
       
       t: (key: string) => {

@@ -14,7 +14,6 @@ import {
   Shield, 
   CreditCard, 
   HelpCircle, 
-  LogOut, 
   ChevronRight,
   User,
   Mail,
@@ -25,7 +24,7 @@ import {
 
 export default function SettingsScreen() {
   const router = useRouter();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { 
     darkMode, 
     notifications, 
@@ -38,33 +37,6 @@ export default function SettingsScreen() {
   } = useSettings();
   const { currentLanguage, setLanguage, t } = useLanguage();
   
-  const handleLogout = async () => {
-    Alert.alert(
-      "Déconnexion",
-      "Êtes-vous sûr de vouloir vous déconnecter ?",
-      [
-        { text: "Annuler", style: "cancel" },
-        { 
-          text: "Déconnexion", 
-          style: "destructive",
-          onPress: async () => {
-            try {
-              console.log("Bouton déconnexion pressé dans settings");
-              await logout();
-              console.log("Logout appelé depuis settings, redirection...");
-              // Force navigation to index page
-              router.replace("/");
-            } catch (error) {
-              console.error('Logout error in settings:', error);
-              // Force navigation even if logout fails
-              router.replace("/");
-            }
-          }
-        }
-      ]
-    );
-  };
-
   const handleLanguageSelect = () => {
     Alert.alert(
       "Choisir la langue",
@@ -219,7 +191,7 @@ export default function SettingsScreen() {
           type: "navigation" as const,
           onPress: handlePrivacy,
         },
-        ...(user?.userType !== "client" ? [{
+        ...(user?.userType === "provider" ? [{
           icon: CreditCard,
           title: "Paiements",
           subtitle: "Cartes et virements",
@@ -334,13 +306,6 @@ export default function SettingsScreen() {
             </View>
           </View>
         ))}
-        
-        <View style={styles.logoutSection}>
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <LogOut size={20} color={Colors.error} />
-            <Text style={styles.logoutText}>Déconnexion</Text>
-          </TouchableOpacity>
-        </View>
       </ScrollView>
     </View>
   );
@@ -448,26 +413,6 @@ const styles = StyleSheet.create({
   },
   settingRight: {
     marginLeft: 12,
-  },
-  logoutSection: {
-    padding: 20,
-    marginBottom: 40,
-  },
-  logoutButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#fff",
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: Colors.error,
-    gap: 8,
-  },
-  logoutText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: Colors.error,
   },
   loginPrompt: {
     flex: 1,
