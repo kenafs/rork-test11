@@ -53,7 +53,7 @@ export default function ReviewsScreen() {
             <Text style={styles.reviewDate}>{formatDate(item.createdAt)}</Text>
           </View>
         </View>
-        <RatingStars rating={item.rating} size="small" />
+        <RatingStars rating={item.rating} size="small" showNumber={false} />
       </View>
       
       <Text style={styles.reviewComment}>{item.comment}</Text>
@@ -114,7 +114,7 @@ export default function ReviewsScreen() {
         <View style={styles.statsContainer}>
           <View style={styles.statItem}>
             <Text style={styles.statNumber}>{averageRating.toFixed(1)}</Text>
-            <RatingStars rating={averageRating} size="medium" />
+            <RatingStars rating={averageRating} size="medium" showNumber={false} />
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>

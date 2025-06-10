@@ -23,6 +23,11 @@ export default function CategoryFilter({ selectedCategory, onSelectCategory }: C
     });
   };
   
+  // Safety check for listingCategories
+  if (!listingCategories || !Array.isArray(listingCategories)) {
+    return null;
+  }
+  
   return (
     <ScrollView
       horizontal

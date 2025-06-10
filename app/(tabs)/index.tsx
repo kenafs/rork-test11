@@ -1,62 +1,86 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Image, RefreshControl } from 'react-native';
-import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, RefreshControl, Alert } from 'react-native';
+import { useRouter, Stack } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useListings } from '@/hooks/useListings';
 import { useLocation } from '@/hooks/useLocation';
+import { useLanguage } from '@/hooks/useLanguage';
 import Colors from '@/constants/colors';
 import SearchBar from '@/components/SearchBar';
 import CategoryFilter from '@/components/CategoryFilter';
 import ListingCard from '@/components/ListingCard';
 import LocationPermissionRequest from '@/components/LocationPermissionRequest';
-import { MapPin, Plus, Star, TrendingUp, Users } from 'lucide-react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { Plus, MapPin, Filter } from 'lucide-react-native';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { user, isAuthenticated } = useAuth();
-  const { listings, isLoading, fetchListings } = useListings();
-  const { latitude, longitude, city, permissionStatus, requestPermission } = useLocation();
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const { user } = useAuth();
+  const { 
+    filteredListings, 
+    isLoading, 
+    fetchListings, 
+    refreshListings,
+    filterByCategory, 
+    filterBySearch, 
+    filterByLocation,
+    selectedCategory,
+    searchQuery 
+  } = useListings();
+  const { 
+    latitude, 
+    longitude, 
+    city, 
+    error, 
+    isLoading: locationLoading, 
+    hasPermission, 
+    requestPermission 
+  } = useLocation();
+  const { t } = useLanguage();
+  
   const [refreshing, setRefreshing] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-
-  // Check if we have location permission
-  const hasPermission = permissionStatus === 'granted';
-
-  // Filter listings based on selected category
-  const filteredListings = selectedCategory 
-    ? listings.filter(listing => listing.category === selectedCategory)
-    : listings;
-
-  // Get featured listings (top rated)
-  const featuredListings = listings
-    .filter(listing => listing.creatorRating && listing.creatorRating >= 4.5)
-    .slice(0, 5);
-
-  const onRefresh = async () => {
+  
+  useEffect(() => {
+    fetchListings();
+  }, []);
+  
+  const handleRefresh = async () => {
     setRefreshing(true);
-    await fetchListings();
+    await refreshListings();
     setRefreshing(false);
   };
-
-  // Get greeting based on user type
-  const getGreeting = () => {
+  
+  const handleLocationPress = () => {
+    if (!hasPermission) {
+      requestPermission();
+    } else if (latitude && longitude) {
+      filterByLocation(latitude, longitude);
+      Alert.alert('Localisation', `Filtrage par votre position: ${city || 'Position actuelle'}`);
+    }
+  };
+  
+  const handleSearch = (query: string) => {
+    filterBySearch(query);
+  };
+  
+  const handleClearSearch = () => {
+    filterBySearch('');
+  };
+  
+  const getWelcomeMessage = () => {
     if (!user) return "Découvrez les meilleurs prestataires";
     
     switch (user.userType) {
       case 'provider':
-        return `Bonjour ${user.name.split(' ')[0]} ! 🎵`;
+        return `Bonjour ${user.name.split(' ')[0]} 👋`;
       case 'business':
-        return `Bonjour ${user.name} ! 🏢`;
+        return `Bienvenue ${user.name} 🏢`;
       case 'client':
-        return `Bonjour ${user.name.split(' ')[0]} ! 👋`;
+        return `Salut ${user.name.split(' ')[0]} 😊`;
       default:
-        return `Bonjour ${user.name.split(' ')[0]} !`;
+        return `Bonjour ${user.name.split(' ')[0]} 👋`;
     }
   };
-
-  // Get subtitle based on user type
+  
   const getSubtitle = () => {
     if (!user) return "Trouvez le prestataire parfait pour votre événement";
     
@@ -64,240 +88,131 @@ export default function HomeScreen() {
       case 'provider':
         return "Gérez vos annonces et développez votre activité";
       case 'business':
-        return "Gérez votre établissement et vos offres";
+        return "Proposez vos services et attirez de nouveaux clients";
       case 'client':
         return "Trouvez le prestataire parfait pour votre événement";
       default:
-        return "Bienvenue sur votre plateforme événementielle";
+        return "Trouvez le prestataire parfait pour votre événement";
     }
   };
-
-  // Get create button text based on user type
+  
   const getCreateButtonText = () => {
-    if (!user) return "✨ Créer une annonce";
+    if (!user) return "Se connecter";
     
     switch (user.userType) {
       case 'provider':
         return "✨ Créer une annonce";
       case 'business':
-        return "🏢 Publier une offre";
+        return "🏢 Ajouter un service";
       case 'client':
-        return "🔍 Rechercher des services";
+        return "🔍 Rechercher";
       default:
         return "✨ Créer une annonce";
     }
   };
-
-  // Get create button subtitle based on user type
-  const getCreateButtonSubtitle = () => {
-    if (!user) return "Partagez votre talent avec la communauté !";
-    
-    switch (user.userType) {
-      case 'provider':
-        return "Partagez votre talent avec la communauté !";
-      case 'business':
-        return "Proposez vos services et espaces !";
-      case 'client':
-        return "Trouvez les meilleurs prestataires !";
-      default:
-        return "Rejoignez notre communauté !";
-    }
-  };
-
-  // Handle create button press based on user type
+  
   const handleCreatePress = () => {
-    if (!isAuthenticated) {
+    if (!user) {
       router.push('/(auth)/login');
-      return;
-    }
-
-    if (user?.userType === 'client') {
+    } else if (user.userType === 'client') {
       router.push('/(tabs)/search');
     } else {
-      router.push('/create-listing');
+      router.push('/(tabs)/create');
     }
   };
-
-  // Handle search
-  const handleSearch = () => {
-    if (searchQuery.trim()) {
-      router.push({
-        pathname: '/(tabs)/search',
-        params: { query: searchQuery }
-      });
-    } else {
-      router.push('/(tabs)/search');
-    }
-  };
-
-  // Clear search
-  const handleClearSearch = () => {
-    setSearchQuery('');
-  };
-
-  if (!hasPermission) {
-    return <LocationPermissionRequest onRequestPermission={requestPermission} />;
-  }
-
+  
   return (
-    <ScrollView 
-      style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
-      {/* Header */}
-      <LinearGradient
-        colors={[Colors.primary, Colors.secondary] as const}
-        style={styles.header}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
+    <View style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
+      
+      <ScrollView 
+        style={styles.content}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
+        showsVerticalScrollIndicator={false}
       >
-        <View style={styles.headerContent}>
-          <View style={styles.greetingSection}>
-            <Text style={styles.greeting}>{getGreeting()}</Text>
-            <Text style={styles.subtitle}>{getSubtitle()}</Text>
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.headerContent}>
+            <Text style={styles.welcomeText}>{getWelcomeMessage()}</Text>
+            <Text style={styles.subtitleText}>{getSubtitle()}</Text>
+            
+            {user && user.userType !== 'client' && (
+              <TouchableOpacity 
+                style={styles.createButton}
+                onPress={handleCreatePress}
+                activeOpacity={0.8}
+              >
+                <Plus size={20} color="#fff" />
+                <Text style={styles.createButtonText}>{getCreateButtonText()}</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+        
+        {/* Search Bar */}
+        <SearchBar
+          value={searchQuery}
+          onChangeText={handleSearch}
+          onClear={handleClearSearch}
+          onLocationPress={handleLocationPress}
+          onSearch={handleSearch}
+          placeholder="Rechercher un prestataire..."
+        />
+        
+        {/* Location Permission Request */}
+        {!hasPermission && (
+          <LocationPermissionRequest onRequestPermission={requestPermission} />
+        )}
+        
+        {/* Category Filter */}
+        <CategoryFilter
+          selectedCategory={selectedCategory}
+          onSelectCategory={filterByCategory}
+        />
+        
+        {/* Listings */}
+        <View style={styles.listingsContainer}>
+          <View style={styles.listingsHeader}>
+            <Text style={styles.listingsTitle}>
+              {selectedCategory ? 'Résultats filtrés' : 'Annonces récentes'}
+            </Text>
+            <Text style={styles.listingsCount}>
+              {filteredListings.length} résultat{filteredListings.length > 1 ? 's' : ''}
+            </Text>
           </View>
           
-          {city && (
-            <View style={styles.locationContainer}>
-              <MapPin size={16} color="rgba(255, 255, 255, 0.8)" />
-              <Text style={styles.locationText}>{city}</Text>
+          {filteredListings.map((listing) => (
+            <ListingCard
+              key={listing.id}
+              listing={listing}
+              onPress={() => router.push(`/listing/${listing.id}`)}
+            />
+          ))}
+          
+          {filteredListings.length === 0 && !isLoading && (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyTitle}>Aucun résultat</Text>
+              <Text style={styles.emptyText}>
+                Essayez de modifier vos critères de recherche
+              </Text>
             </View>
           )}
         </View>
-      </LinearGradient>
-
-      {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <SearchBar 
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          onClear={handleClearSearch}
-          onLocationPress={handleSearch}
-          placeholder="Rechercher des prestataires..."
-        />
-      </View>
-
-      {/* Quick Action Card */}
-      <View style={styles.quickActionContainer}>
+      </ScrollView>
+      
+      {/* Floating Action Button for Clients */}
+      {user && user.userType === 'client' && (
         <TouchableOpacity 
-          style={styles.quickActionCard}
+          style={styles.fab}
           onPress={handleCreatePress}
           activeOpacity={0.8}
         >
-          <LinearGradient
-            colors={[Colors.accent, '#FF7F50'] as const}
-            style={styles.quickActionGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
-            <View style={styles.quickActionContent}>
-              <View style={styles.quickActionIcon}>
-                <Plus size={24} color="#fff" />
-              </View>
-              <View style={styles.quickActionText}>
-                <Text style={styles.quickActionTitle}>{getCreateButtonText()}</Text>
-                <Text style={styles.quickActionSubtitle}>{getCreateButtonSubtitle()}</Text>
-              </View>
-            </View>
-          </LinearGradient>
+          <Plus size={24} color="#fff" />
         </TouchableOpacity>
-      </View>
-
-      {/* Categories */}
-      <CategoryFilter 
-        selectedCategory={selectedCategory}
-        onSelectCategory={setSelectedCategory}
-      />
-
-      {/* Featured Section */}
-      {featuredListings.length > 0 && (
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <View style={styles.sectionTitleContainer}>
-              <Star size={20} color={Colors.primary} />
-              <Text style={styles.sectionTitle}>⭐ Prestataires recommandés</Text>
-            </View>
-            <TouchableOpacity 
-              onPress={() => router.push('/(tabs)/search')}
-              style={styles.seeAllButton}
-            >
-              <Text style={styles.seeAllText}>Voir tout</Text>
-            </TouchableOpacity>
-          </View>
-          
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.horizontalScroll}
-          >
-            {featuredListings.map((listing) => (
-              <View key={listing.id} style={styles.featuredCard}>
-                <ListingCard listing={listing} />
-              </View>
-            ))}
-          </ScrollView>
-        </View>
       )}
-
-      {/* Recent Listings */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <View style={styles.sectionTitleContainer}>
-            <TrendingUp size={20} color={Colors.primary} />
-            <Text style={styles.sectionTitle}>🔥 Dernières annonces</Text>
-          </View>
-          <TouchableOpacity 
-            onPress={() => router.push('/(tabs)/search')}
-            style={styles.seeAllButton}
-          >
-            <Text style={styles.seeAllText}>Voir tout</Text>
-          </TouchableOpacity>
-        </View>
-
-        {isLoading ? (
-          <View style={styles.loadingContainer}>
-            <Text style={styles.loadingText}>Chargement...</Text>
-          </View>
-        ) : filteredListings.length > 0 ? (
-          filteredListings.slice(0, 6).map((listing) => (
-            <ListingCard key={listing.id} listing={listing} />
-          ))
-        ) : (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyTitle}>Aucune annonce trouvée</Text>
-            <Text style={styles.emptyText}>
-              {selectedCategory 
-                ? 'Aucune annonce dans cette catégorie pour le moment.'
-                : 'Soyez le premier à publier une annonce !'}
-            </Text>
-          </View>
-        )}
-      </View>
-
-      {/* Stats Section */}
-      <View style={styles.statsSection}>
-        <Text style={styles.statsTitle}>📊 Notre communauté</Text>
-        <View style={styles.statsGrid}>
-          <View style={styles.statCard}>
-            <Users size={24} color={Colors.primary} />
-            <Text style={styles.statNumber}>500+</Text>
-            <Text style={styles.statLabel}>Prestataires</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Star size={24} color={Colors.accent} />
-            <Text style={styles.statNumber}>1000+</Text>
-            <Text style={styles.statLabel}>Événements</Text>
-          </View>
-          <View style={styles.statCard}>
-            <TrendingUp size={24} color={Colors.secondary} />
-            <Text style={styles.statNumber}>4.8/5</Text>
-            <Text style={styles.statLabel}>Satisfaction</Text>
-          </View>
-        </View>
-      </View>
-    </ScrollView>
+    </View>
   );
 }
 
@@ -306,139 +221,65 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.backgroundAlt,
   },
+  content: {
+    flex: 1,
+  },
   header: {
+    backgroundColor: Colors.primary,
     paddingTop: 60,
     paddingBottom: 24,
     paddingHorizontal: 20,
   },
   headerContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'flex-start',
   },
-  greetingSection: {
-    flex: 1,
-  },
-  greeting: {
-    fontSize: 24,
+  welcomeText: {
+    fontSize: 28,
     fontWeight: '800',
     color: '#fff',
-    marginBottom: 4,
+    marginBottom: 8,
   },
-  subtitle: {
+  subtitleText: {
     fontSize: 16,
     color: 'rgba(255, 255, 255, 0.9)',
+    marginBottom: 20,
     lineHeight: 22,
   },
-  locationContainer: {
+  createButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    gap: 4,
-  },
-  locationText: {
-    color: 'rgba(255, 255, 255, 0.9)',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  searchContainer: {
+    paddingVertical: 12,
     paddingHorizontal: 20,
-    marginTop: -12,
-    marginBottom: 20,
+    borderRadius: 25,
+    gap: 8,
   },
-  quickActionContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 20,
-  },
-  quickActionCard: {
-    borderRadius: 16,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  quickActionGradient: {
-    padding: 20,
-  },
-  quickActionContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  quickActionIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  quickActionText: {
-    flex: 1,
-  },
-  quickActionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
+  createButtonText: {
     color: '#fff',
-    marginBottom: 4,
+    fontSize: 16,
+    fontWeight: '600',
   },
-  quickActionSubtitle: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.9)',
+  listingsContainer: {
+    padding: 16,
   },
-  section: {
-    marginBottom: 32,
-  },
-  sectionHeader: {
+  listingsHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
     marginBottom: 16,
   },
-  sectionTitleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  sectionTitle: {
+  listingsTitle: {
     fontSize: 20,
     fontWeight: '700',
     color: Colors.text,
   },
-  seeAllButton: {
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-  },
-  seeAllText: {
+  listingsCount: {
     fontSize: 14,
-    color: Colors.primary,
-    fontWeight: '600',
-  },
-  horizontalScroll: {
-    paddingLeft: 20,
-    paddingRight: 20,
-    gap: 16,
-  },
-  featuredCard: {
-    width: 280,
-  },
-  loadingContainer: {
-    padding: 40,
-    alignItems: 'center',
-  },
-  loadingText: {
-    fontSize: 16,
     color: Colors.textLight,
   },
-  emptyContainer: {
-    padding: 40,
+  emptyState: {
     alignItems: 'center',
+    padding: 40,
   },
   emptyTitle: {
     fontSize: 18,
@@ -450,45 +291,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.textLight,
     textAlign: 'center',
-    lineHeight: 20,
   },
-  statsSection: {
-    backgroundColor: '#fff',
-    marginHorizontal: 20,
-    borderRadius: 16,
-    padding: 24,
-    marginBottom: 40,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  statsTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: Colors.text,
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  statCard: {
+  fab: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: Colors.primary,
+    justifyContent: 'center',
     alignItems: 'center',
-    flex: 1,
-  },
-  statNumber: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: Colors.text,
-    marginTop: 8,
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 14,
-    color: Colors.textLight,
-    textAlign: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
 });

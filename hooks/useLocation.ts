@@ -102,10 +102,14 @@ export function useLocation() {
     })();
   }, []);
 
+  // Computed properties for backward compatibility
+  const hasPermission = permissionStatus === 'granted';
+
   return {
     ...location,
     isLoading,
     permissionStatus,
+    hasPermission,
     requestPermission,
     getCurrentLocation,
   };

@@ -65,6 +65,7 @@ export interface Listing {
   images?: string[];
   location: Location;
   createdBy: string;
+  creatorName: string;
   createdAt: number;
   updatedAt: number;
   status: 'active' | 'inactive' | 'draft';
@@ -138,12 +139,21 @@ export interface Language {
   flag: string;
 }
 
-export interface SettingItem {
+export interface SettingItemSwitch {
   icon: any;
   title: string;
   subtitle: string;
-  type: 'switch' | 'navigation';
-  value?: boolean;
-  onToggle?: (value: boolean) => void;
-  onPress?: () => void;
+  type: 'switch';
+  value: boolean;
+  onToggle: (value: boolean) => void;
 }
+
+export interface SettingItemNavigation {
+  icon: any;
+  title: string;
+  subtitle: string;
+  type: 'navigation';
+  onPress: () => void;
+}
+
+export type SettingItem = SettingItemSwitch | SettingItemNavigation;

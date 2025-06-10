@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useSettings } from '@/hooks/useSettings';
 import { useLanguage } from '@/hooks/useLanguage';
 import { LANGUAGES } from '@/constants/languages';
+import { SettingItem } from '@/types';
 import Colors from '@/constants/colors';
 import { 
   Moon, 
@@ -108,7 +109,7 @@ export default function SettingsScreen() {
           type: 'navigation' as const,
           onPress: handleLanguageSelect,
         },
-      ],
+      ] as SettingItem[],
     },
     {
       title: 'Notifications',
@@ -137,7 +138,7 @@ export default function SettingsScreen() {
           value: pushNotifications,
           onToggle: setPushNotifications,
         },
-      ],
+      ] as SettingItem[],
     },
     {
       title: 'Compte',
@@ -163,7 +164,7 @@ export default function SettingsScreen() {
           type: 'navigation' as const,
           onPress: handlePayments,
         },
-      ],
+      ] as SettingItem[],
     },
     {
       title: 'Support',
@@ -182,7 +183,7 @@ export default function SettingsScreen() {
           type: 'navigation' as const,
           onPress: handleAbout,
         },
-      ],
+      ] as SettingItem[],
     },
   ];
   

@@ -67,11 +67,12 @@ export const useListings = create<ListingsState>((set, get) => ({
     if (category && category !== 'all') {
       // Map category IDs to actual category names
       const categoryMap: { [key: string]: string } = {
-        'dj_services': 'DJ Services',
-        'catering': 'Catering',
-        'venue_rental': 'Venue Rental',
-        'staff_services': 'Staff Services',
-        'wedding_venue': 'Wedding Venue',
+        'dj_services': 'Services DJ',
+        'catering': 'Traiteur',
+        'venue_rental': 'Location de Lieu',
+        'staff_services': 'Services de Personnel',
+        'decoration': 'Décoration',
+        'entertainment': 'Animation',
       };
       
       const categoryName = categoryMap[category] || category;
@@ -113,11 +114,12 @@ export const useListings = create<ListingsState>((set, get) => ({
     // Keep existing category filter
     if (selectedCategory && selectedCategory !== 'all') {
       const categoryMap: { [key: string]: string } = {
-        'dj_services': 'DJ Services',
-        'catering': 'Catering',
-        'venue_rental': 'Venue Rental',
-        'staff_services': 'Staff Services',
-        'wedding_venue': 'Wedding Venue',
+        'dj_services': 'Services DJ',
+        'catering': 'Traiteur',
+        'venue_rental': 'Location de Lieu',
+        'staff_services': 'Services de Personnel',
+        'decoration': 'Décoration',
+        'entertainment': 'Animation',
       };
       
       const categoryName = categoryMap[selectedCategory] || selectedCategory;
@@ -158,11 +160,12 @@ export const useListings = create<ListingsState>((set, get) => ({
     // Keep existing category filter
     if (selectedCategory && selectedCategory !== 'all') {
       const categoryMap: { [key: string]: string } = {
-        'dj_services': 'DJ Services',
-        'catering': 'Catering',
-        'venue_rental': 'Venue Rental',
-        'staff_services': 'Staff Services',
-        'wedding_venue': 'Wedding Venue',
+        'dj_services': 'Services DJ',
+        'catering': 'Traiteur',
+        'venue_rental': 'Location de Lieu',
+        'staff_services': 'Services de Personnel',
+        'decoration': 'Décoration',
+        'entertainment': 'Animation',
       };
       
       const categoryName = categoryMap[selectedCategory] || selectedCategory;
@@ -206,6 +209,7 @@ export const useListings = create<ListingsState>((set, get) => ({
       id: `listing-${Date.now()}`,
       createdAt: Date.now(),
       status: 'active',
+      creatorName: user.name,
       ...listingData,
     };
     
@@ -301,11 +305,12 @@ function applyCurrentFilters(listings: Listing[], state: ListingsState): Listing
   // Apply category filter
   if (state.selectedCategory && state.selectedCategory !== 'all') {
     const categoryMap: { [key: string]: string } = {
-      'dj_services': 'DJ Services',
-      'catering': 'Catering',
-      'venue_rental': 'Venue Rental',
-      'staff_services': 'Staff Services',
-      'wedding_venue': 'Wedding Venue',
+      'dj_services': 'Services DJ',
+      'catering': 'Traiteur',
+      'venue_rental': 'Location de Lieu',
+      'staff_services': 'Services de Personnel',
+      'decoration': 'Décoration',
+      'entertainment': 'Animation',
     };
     
     const categoryName = categoryMap[state.selectedCategory] || state.selectedCategory;
