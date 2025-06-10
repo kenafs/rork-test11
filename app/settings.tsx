@@ -40,18 +40,18 @@ export default function SettingsScreen() {
   
   const handleLogout = async () => {
     Alert.alert(
-      'Déconnexion',
-      'Êtes-vous sûr de vouloir vous déconnecter ?',
+      "Déconnexion",
+      "Êtes-vous sûr de vouloir vous déconnecter ?",
       [
-        { text: 'Annuler', style: 'cancel' },
+        { text: "Annuler", style: "cancel" },
         { 
-          text: 'Déconnexion', 
-          style: 'destructive',
+          text: "Déconnexion", 
+          style: "destructive",
           onPress: async () => {
-            console.log('Bouton déconnexion pressé');
+            console.log("Bouton déconnexion pressé");
             await logout();
-            console.log('Logout appelé, redirection...');
-            router.replace('/');
+            console.log("Logout appelé, redirection...");
+            router.replace("/");
           }
         }
       ]
@@ -60,203 +60,176 @@ export default function SettingsScreen() {
 
   const handleLanguageSelect = () => {
     Alert.alert(
-      'Choisir la langue',
-      'Sélectionnez votre langue préférée',
+      "Choisir la langue",
+      "Sélectionnez votre langue préférée",
       [
         ...LANGUAGES.map(lang => ({
           text: `${lang.flag} ${lang.name}`,
           onPress: () => {
             setLanguage(lang.code as any);
-            Alert.alert('Langue modifiée', `Langue changée vers ${lang.name}`);
+            Alert.alert("Langue modifiée", `Langue changée vers ${lang.name}`);
           },
         })),
-        { text: 'Annuler', style: 'cancel' },
+        { text: "Annuler", style: "cancel" },
       ]
     );
   };
 
   const handleEditProfile = () => {
-    router.push('/edit-profile');
+    router.push("/edit-profile");
   };
 
   const handlePrivacy = () => {
     Alert.alert(
-      'Confidentialité et sécurité', 
-      'Paramètres de confidentialité:
-
-• Vos données sont protégées
-• Contrôlez qui peut vous voir
-• Gérez vos préférences de contact
-
-Cette section sera bientôt disponible avec plus d\'options.'
+      "Confidentialité et sécurité", 
+      "Paramètres de confidentialité:\n\n• Vos données sont protégées\n• Contrôlez qui peut vous voir\n• Gérez vos préférences de contact\n\nCette section sera bientôt disponible avec plus d'options."
     );
   };
 
   const handlePayments = () => {
     Alert.alert(
-      'Moyens de paiement', 
-      'Gestion des paiements:
-
-• Ajouter une carte bancaire
-• Configurer les virements
-• Historique des transactions
-• Intégration Stripe sécurisée
-
-Cette fonctionnalité sera disponible prochainement.'
+      "Moyens de paiement", 
+      "Gestion des paiements:\n\n• Ajouter une carte bancaire\n• Configurer les virements\n• Historique des transactions\n• Intégration Stripe sécurisée\n\nCette fonctionnalité sera disponible prochainement."
     );
   };
 
   const handleHelp = () => {
     Alert.alert(
-      'Centre d\'aide', 
-      'Besoin d\'aide ?
-
-📧 Email: support@eventapp.com
-📞 Téléphone: +33 1 23 45 67 89
-💬 Chat en direct disponible
-
-Nous sommes là pour vous aider !'
+      "Centre d'aide", 
+      "Besoin d'aide ?\n\n📧 Email: support@eventapp.com\n📞 Téléphone: +33 1 23 45 67 89\n💬 Chat en direct disponible\n\nNous sommes là pour vous aider !"
     );
   };
 
   const handleAbout = () => {
     Alert.alert(
-      'À propos de l\'application', 
-      'Event App v1.0.0
-
-🎉 Plateforme de mise en relation pour événements
-👥 Connecte clients, prestataires et établissements
-🇫🇷 Développé en France
-
-© 2024 Event App. Tous droits réservés.
-
-Développé avec ❤️ par l\'équipe Event App'
+      "À propos de l'application", 
+      "Event App v1.0.0\n\n🎉 Plateforme de mise en relation pour événements\n👥 Connecte clients, prestataires et établissements\n🇫🇷 Développé en France\n\n© 2024 Event App. Tous droits réservés.\n\nDéveloppé avec ❤️ par l'équipe Event App"
     );
   };
 
   const handleDarkModeToggle = () => {
     toggleDarkMode();
     Alert.alert(
-      'Mode d\'affichage', 
-      darkMode ? 'Mode clair activé' : 'Mode sombre activé'
+      "Mode d'affichage", 
+      darkMode ? "Mode clair activé" : "Mode sombre activé"
     );
   };
 
   const handleNotificationsToggle = () => {
     toggleNotifications();
     Alert.alert(
-      'Notifications', 
-      notifications ? 'Notifications désactivées' : 'Notifications activées'
+      "Notifications", 
+      notifications ? "Notifications désactivées" : "Notifications activées"
     );
   };
 
   const handleEmailNotificationsToggle = () => {
     toggleEmailNotifications();
     Alert.alert(
-      'Notifications email', 
-      emailNotifications ? 'Emails désactivés' : 'Emails activés'
+      "Notifications email", 
+      emailNotifications ? "Emails désactivés" : "Emails activés"
     );
   };
 
   const handlePushNotificationsToggle = () => {
     togglePushNotifications();
     Alert.alert(
-      'Notifications push', 
-      pushNotifications ? 'Notifications push désactivées' : 'Notifications push activées'
+      "Notifications push", 
+      pushNotifications ? "Notifications push désactivées" : "Notifications push activées"
     );
   };
   
   const settingsGroups = [
     {
-      title: 'Apparence',
+      title: "Apparence",
       items: [
         {
           icon: darkMode ? Moon : Sun,
-          title: 'Mode sombre',
-          subtitle: darkMode ? 'Thème sombre activé' : 'Thème clair activé',
-          type: 'switch' as const,
+          title: "Mode sombre",
+          subtitle: darkMode ? "Thème sombre activé" : "Thème clair activé",
+          type: "switch" as const,
           value: darkMode,
           onToggle: handleDarkModeToggle,
         },
         {
           icon: Globe,
-          title: 'Langue',
+          title: "Langue",
           subtitle: `${LANGUAGES.find(l => l.code === currentLanguage)?.flag} ${LANGUAGES.find(l => l.code === currentLanguage)?.name}`,
-          type: 'navigation' as const,
+          type: "navigation" as const,
           onPress: handleLanguageSelect,
         },
       ] as SettingItem[],
     },
     {
-      title: 'Notifications',
+      title: "Notifications",
       items: [
         {
           icon: Bell,
-          title: 'Notifications générales',
-          subtitle: notifications ? 'Activées' : 'Désactivées',
-          type: 'switch' as const,
+          title: "Notifications générales",
+          subtitle: notifications ? "Activées" : "Désactivées",
+          type: "switch" as const,
           value: notifications,
           onToggle: handleNotificationsToggle,
         },
         {
           icon: Mail,
-          title: 'Notifications email',
-          subtitle: emailNotifications ? 'Activées' : 'Désactivées',
-          type: 'switch' as const,
+          title: "Notifications email",
+          subtitle: emailNotifications ? "Activées" : "Désactivées",
+          type: "switch" as const,
           value: emailNotifications,
           onToggle: handleEmailNotificationsToggle,
         },
         {
           icon: Phone,
-          title: 'Notifications push',
-          subtitle: pushNotifications ? 'Activées' : 'Désactivées',
-          type: 'switch' as const,
+          title: "Notifications push",
+          subtitle: pushNotifications ? "Activées" : "Désactivées",
+          type: "switch" as const,
           value: pushNotifications,
           onToggle: handlePushNotificationsToggle,
         },
       ] as SettingItem[],
     },
     {
-      title: 'Compte',
+      title: "Compte",
       items: [
         {
           icon: User,
-          title: 'Modifier le profil',
-          subtitle: 'Informations personnelles',
-          type: 'navigation' as const,
+          title: "Modifier le profil",
+          subtitle: "Informations personnelles",
+          type: "navigation" as const,
           onPress: handleEditProfile,
         },
         {
           icon: Shield,
-          title: 'Confidentialité',
-          subtitle: 'Sécurité et vie privée',
-          type: 'navigation' as const,
+          title: "Confidentialité",
+          subtitle: "Sécurité et vie privée",
+          type: "navigation" as const,
           onPress: handlePrivacy,
         },
-        ...(user?.userType !== 'client' ? [{
+        ...(user?.userType !== "client" ? [{
           icon: CreditCard,
-          title: 'Paiements',
-          subtitle: 'Cartes et virements',
-          type: 'navigation' as const,
+          title: "Paiements",
+          subtitle: "Cartes et virements",
+          type: "navigation" as const,
           onPress: handlePayments,
         }] : []),
       ] as SettingItem[],
     },
     {
-      title: 'Support',
+      title: "Support",
       items: [
         {
           icon: HelpCircle,
-          title: 'Centre d\'aide',
-          subtitle: 'FAQ et assistance',
-          type: 'navigation' as const,
+          title: "Centre d'aide",
+          subtitle: "FAQ et assistance",
+          type: "navigation" as const,
           onPress: handleHelp,
         },
         {
           icon: MapPin,
-          title: 'À propos',
-          subtitle: 'Version et informations',
-          type: 'navigation' as const,
+          title: "À propos",
+          subtitle: "Version et informations",
+          type: "navigation" as const,
           onPress: handleAbout,
         },
       ] as SettingItem[],
@@ -266,12 +239,12 @@ Développé avec ❤️ par l\'équipe Event App'
   if (!user) {
     return (
       <View style={styles.container}>
-        <Stack.Screen options={{ title: 'Paramètres' }} />
+        <Stack.Screen options={{ title: "Paramètres" }} />
         <View style={styles.loginPrompt}>
           <Text style={styles.loginTitle}>Connectez-vous pour accéder aux paramètres</Text>
           <TouchableOpacity 
             style={styles.loginButton}
-            onPress={() => router.push('/(auth)/login')}
+            onPress={() => router.push("/(auth)/login")}
           >
             <Text style={styles.loginButtonText}>Se connecter</Text>
           </TouchableOpacity>
@@ -283,10 +256,10 @@ Développé avec ❤️ par l\'équipe Event App'
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ 
-        title: 'Paramètres',
+        title: "Paramètres",
         headerStyle: { backgroundColor: Colors.primary },
-        headerTintColor: '#fff',
-        headerTitleStyle: { fontWeight: '700' }
+        headerTintColor: "#fff",
+        headerTitleStyle: { fontWeight: "700" }
       }} />
       
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -299,8 +272,8 @@ Développé avec ❤️ par l\'équipe Event App'
               <Text style={styles.userName}>{user.name}</Text>
               <Text style={styles.userEmail}>{user.email}</Text>
               <Text style={styles.userType}>
-                {user.userType === 'provider' ? 'Prestataire' : 
-                 user.userType === 'business' ? 'Établissement' : 'Client'}
+                {user.userType === "provider" ? "Prestataire" : 
+                 user.userType === "business" ? "Établissement" : "Client"}
               </Text>
             </View>
           </View>
@@ -317,9 +290,9 @@ Développé avec ❤️ par l\'équipe Event App'
                     styles.settingItem,
                     itemIndex === group.items.length - 1 && styles.lastItem
                   ]}
-                  onPress={item.type === 'navigation' ? item.onPress : undefined}
-                  disabled={item.type === 'switch'}
-                  activeOpacity={item.type === 'switch' ? 1 : 0.7}
+                  onPress={item.type === "navigation" ? item.onPress : undefined}
+                  disabled={item.type === "switch"}
+                  activeOpacity={item.type === "switch" ? 1 : 0.7}
                 >
                   <View style={styles.settingLeft}>
                     <View style={styles.settingIcon}>
@@ -332,7 +305,7 @@ Développé avec ❤️ par l\'équipe Event App'
                   </View>
                   
                   <View style={styles.settingRight}>
-                    {item.type === 'switch' ? (
+                    {item.type === "switch" ? (
                       <Switch
                         value={item.value}
                         onValueChange={item.onToggle}
@@ -369,21 +342,21 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   userSection: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     padding: 20,
     marginBottom: 20,
   },
   userInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   avatar: {
     width: 64,
     height: 64,
     borderRadius: 32,
     backgroundColor: Colors.backgroundAlt,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: 16,
   },
   userDetails: {
@@ -391,7 +364,7 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: "700",
     color: Colors.text,
     marginBottom: 4,
   },
@@ -403,29 +376,29 @@ const styles = StyleSheet.create({
   userType: {
     fontSize: 12,
     color: Colors.primary,
-    fontWeight: '600',
-    textTransform: 'uppercase',
+    fontWeight: "600",
+    textTransform: "uppercase",
   },
   settingsGroup: {
     marginBottom: 24,
   },
   groupTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     color: Colors.text,
     marginBottom: 12,
     marginLeft: 20,
   },
   groupItems: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 12,
     marginHorizontal: 20,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   settingItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
@@ -434,8 +407,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0,
   },
   settingLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     flex: 1,
   },
   settingIcon: {
@@ -443,8 +416,8 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     backgroundColor: Colors.backgroundAlt,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: 12,
   },
   settingText: {
@@ -452,7 +425,7 @@ const styles = StyleSheet.create({
   },
   settingTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     color: Colors.text,
     marginBottom: 2,
   },
@@ -468,10 +441,10 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#fff',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#fff",
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
@@ -480,20 +453,20 @@ const styles = StyleSheet.create({
   },
   logoutText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     color: Colors.error,
   },
   loginPrompt: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 40,
   },
   loginTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     color: Colors.text,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 24,
   },
   loginButton: {
@@ -503,8 +476,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   loginButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

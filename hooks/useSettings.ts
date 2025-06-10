@@ -18,6 +18,7 @@ interface SettingsState {
   toggleNotifications: () => void;
   toggleEmailNotifications: () => void;
   togglePushNotifications: () => void;
+  resetSettings: () => void;
 }
 
 export const useSettings = create<SettingsState>()(
@@ -84,6 +85,16 @@ export const useSettings = create<SettingsState>()(
       togglePushNotifications: () => {
         const newValue = !get().pushNotifications;
         get().setPushNotifications(newValue);
+      },
+      
+      resetSettings: () => {
+        set({
+          darkMode: false,
+          notifications: true,
+          emailNotifications: true,
+          pushNotifications: true,
+          language: 'fr',
+        });
       },
     }),
     {

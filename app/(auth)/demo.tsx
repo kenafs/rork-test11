@@ -11,7 +11,7 @@ interface DemoAccount {
   email: string;
   userType: 'provider' | 'business' | 'client';
   profileImage: string;
-  description?: string;
+  description: string;
   specialties?: string;
   address?: string;
   website?: string;
@@ -170,25 +170,19 @@ export default function DemoScreen() {
               </View>
             </View>
             
-            {selectedAccount.description && (
-              <Text style={styles.previewDescription}>
-                {selectedAccount.description}
-              </Text>
-            )}
+            <Text style={styles.previewDescription}>
+              {selectedAccount.description}
+            </Text>
             
             <View style={styles.previewStats}>
-              {selectedAccount.rating && (
-                <View style={styles.statItem}>
-                  <Text style={styles.statValue}>⭐ {selectedAccount.rating}</Text>
-                  <Text style={styles.statLabel}>Note</Text>
-                </View>
-              )}
-              {selectedAccount.reviewCount && (
-                <View style={styles.statItem}>
-                  <Text style={styles.statValue}>{selectedAccount.reviewCount}</Text>
-                  <Text style={styles.statLabel}>Avis</Text>
-                </View>
-              )}
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>⭐ {selectedAccount.rating}</Text>
+                <Text style={styles.statLabel}>Note</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>{selectedAccount.reviewCount}</Text>
+                <Text style={styles.statLabel}>Avis</Text>
+              </View>
               <View style={styles.statItem}>
                 <Text style={styles.statValue}>📍 {selectedAccount.city}</Text>
                 <Text style={styles.statLabel}>Ville</Text>

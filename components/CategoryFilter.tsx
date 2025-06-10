@@ -23,15 +23,17 @@ export default function CategoryFilter({ selectedCategory, onSelectCategory }: C
     });
   };
   
-  // Safety check for listingCategories
-  if (!listingCategories || !Array.isArray(listingCategories) || listingCategories.length === 0) {
-    console.warn('listingCategories is not properly defined');
-    return (
-      <View style={styles.container}>
-        <Text style={styles.errorText}>Catégories non disponibles</Text>
-      </View>
-    );
-  }
+  // Safety check for listingCategories with fallback
+  const categories = listingCategories && Array.isArray(listingCategories) && listingCategories.length > 0 
+    ? listingCategories 
+    : [
+        { id: 'all', name: 'Tous' },
+        { id: 'dj', name: 'DJ' },
+        { id: 'catering', name: 'Traiteur' },
+        { id: 'venue', name: 'Lieu' },
+        { id: 'photography', name: 'Photo' },
+        { id: 'decoration', name: 'Décoration' },
+      ];
   
   return (
     <ScrollView
@@ -39,7 +41,7 @@ export default function CategoryFilter({ selectedCategory, onSelectCategory }: C
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.container}
     >
-      {listingCategories.map((category) => (
+      {categories.map((category) => (
         <TouchableOpacity
           key={category.id}
           style={[
@@ -86,11 +88,5 @@ const styles = StyleSheet.create({
   },
   selectedCategoryText: {
     color: '#fff',
-  },
-  errorText: {
-    fontSize: 14,
-    color: Colors.error,
-    textAlign: 'center',
-    padding: 16,
   },
 });

@@ -1,67 +1,55 @@
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
-import { useRouter, Stack } from 'expo-router';
 import { Image } from 'expo-image';
-import { useAuth } from '@/hooks/useAuth';
+import { useRouter, Stack } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 import Colors from '@/constants/colors';
 import Button from '@/components/Button';
-import { ArrowRight, Star, Users, Calendar, Shield } from 'lucide-react-native';
+import { ArrowRight, Star, Users, Calendar, MapPin } from 'lucide-react-native';
 
 const { width, height } = Dimensions.get('window');
 
 export default function LandingScreen() {
   const router = useRouter();
-  const { user } = useAuth();
-  
-  // If user is logged in, redirect to tabs
-  React.useEffect(() => {
-    if (user) {
-      router.replace('/(tabs)');
-    }
-  }, [user]);
   
   const features = [
     {
       icon: Users,
-      title: 'Réseau de confiance',
-      description: 'Prestataires vérifiés et notés par la communauté',
-    },
-    {
-      icon: Calendar,
-      title: 'Réservation simple',
-      description: 'Organisez vos événements en quelques clics',
-    },
-    {
-      icon: Shield,
-      title: 'Paiement sécurisé',
-      description: 'Transactions protégées et garanties',
+      title: "Réseau de qualité",
+      description: "Prestataires vérifiés et établissements de confiance"
     },
     {
       icon: Star,
-      title: 'Qualité garantie',
-      description: 'Les meilleurs prestataires de votre région',
+      title: "Avis authentiques",
+      description: "Évaluations réelles de clients satisfaits"
     },
+    {
+      icon: Calendar,
+      title: "Réservation simple",
+      description: "Organisez vos événements en quelques clics"
+    },
+    {
+      icon: MapPin,
+      title: "Partout en France",
+      description: "Trouvez des prestataires près de chez vous"
+    }
   ];
   
   const testimonials = [
     {
-      name: 'Marie L.',
-      role: 'Organisatrice d\'événements',
-      text: 'Grâce à cette app, j\'ai trouvé les meilleurs prestataires pour mon mariage. Tout était parfait !',
+      name: "Marie L.",
+      role: "Organisatrice d'événements",
+      text: "Une plateforme exceptionnelle ! J'ai trouvé tous mes prestataires en un seul endroit.",
       rating: 5,
+      image: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&auto=format&fit=crop"
     },
     {
-      name: 'Pierre M.',
-      role: 'DJ Professionnel',
-      text: 'Une plateforme formidable pour développer mon activité. Je recommande à tous les prestataires !',
+      name: "Pierre M.",
+      role: "DJ Professionnel",
+      text: "Grâce à cette app, j'ai développé ma clientèle et mes revenus ont doublé !",
       rating: 5,
-    },
-    {
-      name: 'Sophie R.',
-      role: 'Propriétaire de restaurant',
-      text: 'Nous recevons maintenant beaucoup plus de demandes pour nos événements privés.',
-      rating: 5,
-    },
+      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&auto=format&fit=crop"
+    }
   ];
   
   return (
@@ -70,71 +58,48 @@ export default function LandingScreen() {
       
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Hero Section */}
-        <View style={styles.hero}>
+        <LinearGradient
+          colors={[Colors.primary, Colors.secondary]}
+          style={styles.heroSection}
+        >
           <View style={styles.heroContent}>
             <Text style={styles.heroTitle}>
-              Organisez vos événements{'\n'}
-              <Text style={styles.heroTitleAccent}>parfaits</Text>
+              L'événementiel{'\n'}
+              <Text style={styles.heroTitleAccent}>simplifié</Text>
             </Text>
             <Text style={styles.heroSubtitle}>
-              Trouvez les meilleurs prestataires pour tous vos événements : mariages, anniversaires, événements d'entreprise et plus encore.
+              Connectez-vous avec les meilleurs prestataires et établissements pour vos événements
             </Text>
             
-            <View style={styles.heroActions}>
+            <View style={styles.heroButtons}>
               <Button
-                title="Commencer maintenant"
-                onPress={() => router.push('/(auth)/register')}
+                title="Commencer"
+                onPress={() => router.push('/(auth)/demo')}
                 style={styles.primaryButton}
                 icon={<ArrowRight size={20} color="#fff" />}
               />
-              
               <TouchableOpacity 
                 style={styles.secondaryButton}
-                onPress={() => router.push('/(auth)/demo')}
+                onPress={() => router.push('/(auth)/login')}
               >
-                <Text style={styles.secondaryButtonText}>Voir la démo</Text>
+                <Text style={styles.secondaryButtonText}>Se connecter</Text>
               </TouchableOpacity>
             </View>
-            
-            <TouchableOpacity 
-              style={styles.loginLink}
-              onPress={() => router.push('/(auth)/login')}
-            >
-              <Text style={styles.loginLinkText}>
-                Déjà inscrit ? <Text style={styles.loginLinkAccent}>Se connecter</Text>
-              </Text>
-            </TouchableOpacity>
           </View>
           
-          <View style={styles.heroImage}>
+          <View style={styles.heroImageContainer}>
             <Image
               source={{ uri: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&auto=format&fit=crop' }}
-              style={styles.heroImageContent}
+              style={styles.heroImage}
               contentFit="cover"
             />
           </View>
-        </View>
-        
-        {/* Stats Section */}
-        <View style={styles.stats}>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>10K+</Text>
-            <Text style={styles.statLabel}>Prestataires</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>50K+</Text>
-            <Text style={styles.statLabel}>Événements</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>4.9</Text>
-            <Text style={styles.statLabel}>Note moyenne</Text>
-          </View>
-        </View>
+        </LinearGradient>
         
         {/* Features Section */}
-        <View style={styles.features}>
+        <View style={styles.featuresSection}>
           <Text style={styles.sectionTitle}>Pourquoi nous choisir ?</Text>
-          <View style={styles.featureGrid}>
+          <View style={styles.featuresGrid}>
             {features.map((feature, index) => (
               <View key={index} style={styles.featureCard}>
                 <View style={styles.featureIcon}>
@@ -147,82 +112,80 @@ export default function LandingScreen() {
           </View>
         </View>
         
-        {/* How it works */}
-        <View style={styles.howItWorks}>
-          <Text style={styles.sectionTitle}>Comment ça marche ?</Text>
-          <View style={styles.steps}>
-            <View style={styles.step}>
-              <View style={styles.stepNumber}>
-                <Text style={styles.stepNumberText}>1</Text>
+        {/* Stats Section */}
+        <View style={styles.statsSection}>
+          <LinearGradient
+            colors={['#f8fafc', '#e2e8f0']}
+            style={styles.statsContainer}
+          >
+            <View style={styles.statsGrid}>
+              <View style={styles.statItem}>
+                <Text style={styles.statNumber}>500+</Text>
+                <Text style={styles.statLabel}>Prestataires</Text>
               </View>
-              <View style={styles.stepContent}>
-                <Text style={styles.stepTitle}>Recherchez</Text>
-                <Text style={styles.stepDescription}>
-                  Trouvez le prestataire parfait selon vos critères
-                </Text>
+              <View style={styles.statItem}>
+                <Text style={styles.statNumber}>1000+</Text>
+                <Text style={styles.statLabel}>Événements</Text>
               </View>
-            </View>
-            
-            <View style={styles.step}>
-              <View style={styles.stepNumber}>
-                <Text style={styles.stepNumberText}>2</Text>
-              </View>
-              <View style={styles.stepContent}>
-                <Text style={styles.stepTitle}>Contactez</Text>
-                <Text style={styles.stepDescription}>
-                  Échangez directement avec les prestataires
-                </Text>
+              <View style={styles.statItem}>
+                <Text style={styles.statNumber}>4.8★</Text>
+                <Text style={styles.statLabel}>Note moyenne</Text>
               </View>
             </View>
-            
-            <View style={styles.step}>
-              <View style={styles.stepNumber}>
-                <Text style={styles.stepNumberText}>3</Text>
-              </View>
-              <View style={styles.stepContent}>
-                <Text style={styles.stepTitle}>Réservez</Text>
-                <Text style={styles.stepDescription}>
-                  Confirmez votre réservation en toute sécurité
-                </Text>
-              </View>
-            </View>
-          </View>
+          </LinearGradient>
         </View>
         
-        {/* Testimonials */}
-        <View style={styles.testimonials}>
-          <Text style={styles.sectionTitle}>Ce que disent nos utilisateurs</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View style={styles.testimonialList}>
-              {testimonials.map((testimonial, index) => (
-                <View key={index} style={styles.testimonialCard}>
-                  <View style={styles.testimonialRating}>
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} size={16} color="#FFD700" fill="#FFD700" />
-                    ))}
-                  </View>
-                  <Text style={styles.testimonialText}>"{testimonial.text}"</Text>
-                  <View style={styles.testimonialAuthor}>
+        {/* Testimonials Section */}
+        <View style={styles.testimonialsSection}>
+          <Text style={styles.sectionTitle}>Ce qu'ils en pensent</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.testimonialsScroll}>
+            {testimonials.map((testimonial, index) => (
+              <View key={index} style={styles.testimonialCard}>
+                <View style={styles.testimonialHeader}>
+                  <Image
+                    source={{ uri: testimonial.image }}
+                    style={styles.testimonialAvatar}
+                  />
+                  <View style={styles.testimonialInfo}>
                     <Text style={styles.testimonialName}>{testimonial.name}</Text>
                     <Text style={styles.testimonialRole}>{testimonial.role}</Text>
+                    <View style={styles.testimonialRating}>
+                      {[...Array(testimonial.rating)].map((_, i) => (
+                        <Star key={i} size={12} color="#fbbf24" fill="#fbbf24" />
+                      ))}
+                    </View>
                   </View>
                 </View>
-              ))}
-            </View>
+                <Text style={styles.testimonialText}>"{testimonial.text}"</Text>
+              </View>
+            ))}
           </ScrollView>
         </View>
         
         {/* CTA Section */}
-        <View style={styles.cta}>
-          <Text style={styles.ctaTitle}>Prêt à commencer ?</Text>
-          <Text style={styles.ctaSubtitle}>
-            Rejoignez des milliers d'utilisateurs qui font confiance à notre plateforme
-          </Text>
-          <Button
-            title="Créer mon compte"
-            onPress={() => router.push('/(auth)/register')}
-            style={styles.ctaButton}
-          />
+        <View style={styles.ctaSection}>
+          <LinearGradient
+            colors={[Colors.primary, Colors.secondary]}
+            style={styles.ctaContainer}
+          >
+            <Text style={styles.ctaTitle}>Prêt à commencer ?</Text>
+            <Text style={styles.ctaSubtitle}>
+              Rejoignez des milliers d'utilisateurs qui font confiance à notre plateforme
+            </Text>
+            <View style={styles.ctaButtons}>
+              <Button
+                title="Essayer gratuitement"
+                onPress={() => router.push('/(auth)/demo')}
+                style={styles.ctaButton}
+              />
+              <TouchableOpacity 
+                style={styles.ctaSecondaryButton}
+                onPress={() => router.push('/(auth)/register')}
+              >
+                <Text style={styles.ctaSecondaryButtonText}>Créer un compte</Text>
+              </TouchableOpacity>
+            </View>
+          </LinearGradient>
         </View>
       </ScrollView>
     </View>
@@ -237,133 +200,99 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  hero: {
+  heroSection: {
     paddingTop: 60,
-    paddingHorizontal: 20,
     paddingBottom: 40,
+    paddingHorizontal: 20,
   },
   heroContent: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 30,
   },
   heroTitle: {
-    fontSize: 32,
+    fontSize: 36,
     fontWeight: '800',
-    color: Colors.text,
+    color: '#fff',
     textAlign: 'center',
     marginBottom: 16,
-    lineHeight: 40,
+    lineHeight: 42,
   },
   heroTitleAccent: {
-    color: Colors.primary,
+    color: 'rgba(255, 255, 255, 0.9)',
   },
   heroSubtitle: {
-    fontSize: 16,
-    color: Colors.textLight,
+    fontSize: 18,
+    color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: 26,
     marginBottom: 32,
   },
-  heroActions: {
+  heroButtons: {
     width: '100%',
     gap: 12,
-    marginBottom: 24,
   },
   primaryButton: {
-    backgroundColor: Colors.primary,
+    backgroundColor: '#fff',
     borderRadius: 12,
   },
   secondaryButton: {
-    borderWidth: 1,
-    borderColor: Colors.primary,
-    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
     paddingVertical: 16,
+    borderRadius: 12,
     alignItems: 'center',
   },
   secondaryButtonText: {
-    color: Colors.primary,
+    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },
-  loginLink: {
-    alignItems: 'center',
-  },
-  loginLinkText: {
-    fontSize: 14,
-    color: Colors.textLight,
-  },
-  loginLinkAccent: {
-    color: Colors.primary,
-    fontWeight: '600',
+  heroImageContainer: {
+    height: 200,
+    borderRadius: 20,
+    overflow: 'hidden',
+    marginTop: 20,
   },
   heroImage: {
-    height: 200,
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  heroImageContent: {
     width: '100%',
     height: '100%',
   },
-  stats: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: 40,
-    paddingHorizontal: 20,
-    backgroundColor: Colors.backgroundAlt,
-  },
-  statItem: {
-    alignItems: 'center',
-  },
-  statNumber: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: Colors.primary,
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 14,
-    color: Colors.textLight,
-  },
-  features: {
-    padding: 20,
+  featuresSection: {
+    padding: 40,
   },
   sectionTitle: {
-    fontSize: 24,
-    fontWeight: '700',
+    fontSize: 28,
+    fontWeight: '800',
     color: Colors.text,
     textAlign: 'center',
     marginBottom: 32,
   },
-  featureGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
+  featuresGrid: {
+    gap: 24,
   },
   featureCard: {
-    width: (width - 60) / 2,
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 16,
     alignItems: 'center',
+    padding: 24,
+    backgroundColor: '#f8fafc',
+    borderRadius: 16,
+  },
+  featureIcon: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4,
   },
-  featureIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: Colors.backgroundAlt,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
   featureTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
     color: Colors.text,
     marginBottom: 8,
     textAlign: 'center',
@@ -374,113 +303,126 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
   },
-  howItWorks: {
-    padding: 20,
-    backgroundColor: Colors.backgroundAlt,
+  statsSection: {
+    paddingHorizontal: 20,
+    marginBottom: 40,
   },
-  steps: {
-    gap: 24,
-  },
-  step: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  stepNumber: {
-    width: 40,
-    height: 40,
+  statsContainer: {
     borderRadius: 20,
-    backgroundColor: Colors.primary,
-    justifyContent: 'center',
+    padding: 32,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  statItem: {
     alignItems: 'center',
-    marginRight: 16,
   },
-  stepNumberText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  stepContent: {
-    flex: 1,
-  },
-  stepTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: Colors.text,
+  statNumber: {
+    fontSize: 32,
+    fontWeight: '800',
+    color: Colors.primary,
     marginBottom: 4,
   },
-  stepDescription: {
+  statLabel: {
     fontSize: 14,
     color: Colors.textLight,
-    lineHeight: 20,
+    fontWeight: '500',
   },
-  testimonials: {
-    padding: 20,
+  testimonialsSection: {
+    paddingVertical: 40,
   },
-  testimonialList: {
-    flexDirection: 'row',
-    gap: 16,
-    paddingRight: 20,
+  testimonialsScroll: {
+    paddingLeft: 20,
   },
   testimonialCard: {
-    width: 280,
+    width: width * 0.8,
     backgroundColor: '#fff',
-    padding: 20,
     borderRadius: 16,
+    padding: 20,
+    marginRight: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowRadius: 12,
+    elevation: 8,
   },
-  testimonialRating: {
+  testimonialHeader: {
     flexDirection: 'row',
-    marginBottom: 12,
-  },
-  testimonialText: {
-    fontSize: 14,
-    color: Colors.text,
-    lineHeight: 20,
+    alignItems: 'center',
     marginBottom: 16,
-    fontStyle: 'italic',
   },
-  testimonialAuthor: {
-    borderTopWidth: 1,
-    borderTopColor: Colors.border,
-    paddingTop: 12,
+  testimonialAvatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 12,
+  },
+  testimonialInfo: {
+    flex: 1,
   },
   testimonialName: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
     color: Colors.text,
     marginBottom: 2,
   },
   testimonialRole: {
     fontSize: 12,
     color: Colors.textLight,
+    marginBottom: 4,
   },
-  cta: {
+  testimonialRating: {
+    flexDirection: 'row',
+    gap: 2,
+  },
+  testimonialText: {
+    fontSize: 14,
+    color: Colors.text,
+    lineHeight: 20,
+    fontStyle: 'italic',
+  },
+  ctaSection: {
     padding: 20,
+    marginBottom: 40,
+  },
+  ctaContainer: {
+    borderRadius: 20,
+    padding: 40,
     alignItems: 'center',
-    backgroundColor: Colors.primary,
-    marginTop: 40,
   },
   ctaTitle: {
-    fontSize: 24,
-    fontWeight: '700',
+    fontSize: 28,
+    fontWeight: '800',
     color: '#fff',
-    marginBottom: 8,
     textAlign: 'center',
+    marginBottom: 12,
   },
   ctaSubtitle: {
     fontSize: 16,
     color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
-    marginBottom: 24,
     lineHeight: 22,
+    marginBottom: 32,
+  },
+  ctaButtons: {
+    width: '100%',
+    gap: 12,
   },
   ctaButton: {
     backgroundColor: '#fff',
     borderRadius: 12,
-    width: '100%',
+  },
+  ctaSecondaryButton: {
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  ctaSecondaryButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

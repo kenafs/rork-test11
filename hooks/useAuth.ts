@@ -173,7 +173,7 @@ export const useAuth = create<AuthState>()(
       },
       
       logout: async () => {
-        console.log('Déconnexion en cours...');
+        console.log('Starting logout process...');
         
         // Clear all auth data immediately
         set({ 
@@ -185,12 +185,14 @@ export const useAuth = create<AuthState>()(
         // Clear persisted storage
         try {
           await AsyncStorage.removeItem('auth-storage');
-          console.log('Storage cleared successfully');
+          await AsyncStorage.removeItem('messages-storage');
+          await AsyncStorage.removeItem('favorites-storage');
+          console.log('All storage cleared successfully');
         } catch (error) {
           console.error('Error clearing storage:', error);
         }
         
-        console.log('Utilisateur déconnecté avec succès');
+        console.log('User logged out successfully');
       },
       
       updateProfile: async (updates: Partial<User>) => {
