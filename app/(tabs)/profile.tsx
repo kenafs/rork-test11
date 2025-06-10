@@ -184,6 +184,18 @@ export default function ProfileScreen() {
       </View>
     );
   };
+
+  // Get appropriate action button text based on user type
+  const getCreateButtonText = () => {
+    switch (user.userType) {
+      case 'provider':
+        return 'Créer une annonce';
+      case 'business':
+        return 'Publier une offre';
+      default:
+        return 'Créer une annonce';
+    }
+  };
   
   return (
     <ScrollView style={styles.container}>
@@ -206,7 +218,7 @@ export default function ProfileScreen() {
           <View style={styles.typeContainer}>
             <Text style={styles.typeText}>
               {user.userType === 'provider' ? 'Prestataire' : 
-               user.userType === 'business' ? 'Business' : 'Client'}
+               user.userType === 'business' ? 'Établissement' : 'Client'}
             </Text>
           </View>
           
@@ -230,7 +242,7 @@ export default function ProfileScreen() {
           style={styles.actionButton}
         />
         <Button 
-          title="Créer une annonce" 
+          title={getCreateButtonText()}
           onPress={() => router.push('/create-listing')}
           style={styles.actionButton}
         />
@@ -284,38 +296,47 @@ export default function ProfileScreen() {
         ? renderProviderInfo(user as Provider) 
         : user.userType === 'business' && renderVenueInfo(user as Venue)}
       
-      {/* User's listings */}
-      <View style={styles.listingsSection}>
-        <View style={styles.listingsHeader}>
-          <Text style={styles.sectionTitle}>Mes annonces</Text>
-          <TouchableOpacity 
-            style={styles.viewAllButton}
-            onPress={() => router.push('/my-listings')}
-          >
-            <Text style={styles.viewAllText}>Voir tout</Text>
-          </TouchableOpacity>
-        </View>
-        
-        {userListings.length > 0 ? (
-          userListings.map(listing => (
-            <ListingCard key={listing.id} listing={listing} />
-          ))
-        ) : (
-          <View style={styles.emptyListings}>
-            <Text style={styles.emptyTitle}>Aucune annonce</Text>
-            <Text style={styles.emptyText}>
-              Vous n'avez pas encore publié d'annonces.
+      {/* User's listings - only show for providers and businesses */}
+      {(user.userType === 'provider' || user.userType === 'business') && (
+        <View style={styles.listingsSection}>
+          <View style={styles.listingsHeader}>
+            <Text style={styles.sectionTitle}>
+              {user.userType === 'provider' ? 'Mes annonces' : 'Mes offres'}
             </Text>
             <TouchableOpacity 
-              style={styles.createListingButton}
-              onPress={() => router.push('/create-listing')}
+              style={styles.viewAllButton}
+              onPress={() => router.push('/my-listings')}
             >
-              <Plus size={20} color="#fff" style={{ marginRight: 8 }} />
-              <Text style={styles.createListingText}>Créer une annonce</Text>
+              <Text style={styles.viewAllText}>Voir tout</Text>
             </TouchableOpacity>
           </View>
-        )}
-      </View>
+          
+          {userListings.length > 0 ? (
+            userListings.map(listing => (
+              <ListingCard key={listing.id} listing={listing} />
+            ))
+          ) : (
+            <View style={styles.emptyListings}>
+              <Text style={styles.emptyTitle}>
+                {user.userType === 'provider' ? 'Aucune annonce' : 'Aucune offre'}
+              </Text>
+              <Text style={styles.emptyText}>
+                {user.userType === 'provider' 
+                  ? 'Vous n\'avez pas encore publié d\'annonces.'
+                  : 'Vous n\'avez pas encore publié d\'offres.'
+                }
+              </Text>
+              <TouchableOpacity 
+                style={styles.createListingButton}
+                onPress={() => router.push('/create-listing')}
+              >
+                <Plus size={20} color="#fff" style={{ marginRight: 8 }} />
+                <Text style={styles.createListingText}>{getCreateButtonText()}</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      )}
       
       {/* Settings and logout */}
       <View style={styles.settingsContainer}>

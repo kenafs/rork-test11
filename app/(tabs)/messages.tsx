@@ -1,48 +1,51 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, View, Text, FlatList, TouchableOpacity, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
+import { useMessages } from '@/hooks/useMessages';
 import Colors from '@/constants/colors';
 import { mockProviders, mockVenues } from '@/mocks/users';
 import { MessageCircle, Clock, User } from 'lucide-react-native';
 
-// Mock conversation data
-const mockConversations = [
-  {
-    id: '1',
-    participantId: mockProviders[0].id,
-    participantName: mockProviders[0].name,
-    participantImage: mockProviders[0].profileImage,
-    participantType: 'provider',
-    lastMessage: "Bonjour, je suis intéressé par vos services de DJ pour un événement d'entreprise le mois prochain.",
-    timestamp: Date.now() - 3600000, // 1 hour ago
-    unread: 2,
-  },
-  {
-    id: '2',
-    participantId: mockVenues[0].id,
-    participantName: mockVenues[0].name,
-    participantImage: mockVenues[0].profileImage,
-    participantType: 'venue',
-    lastMessage: "Merci pour votre message. Nous serions ravis de discuter de votre événement. Quand seriez-vous disponible pour un appel?",
-    timestamp: Date.now() - 86400000, // 1 day ago
-    unread: 0,
-  },
-  {
-    id: '3',
-    participantId: mockProviders[1].id,
-    participantName: mockProviders[1].name,
-    participantImage: mockProviders[1].profileImage,
-    participantType: 'provider',
-    lastMessage: "Voici le devis pour le service de traiteur comme demandé. N'hésitez pas si vous avez des questions.",
-    timestamp: Date.now() - 172800000, // 2 days ago
-    unread: 0,
-  },
-];
-
 export default function MessagesScreen() {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
+  const { conversations } = useMessages();
+  
+  // Mock conversation data - in real app this would come from API
+  const mockConversations = [
+    {
+      id: '1',
+      participantId: mockProviders[0].id,
+      participantName: mockProviders[0].name,
+      participantImage: mockProviders[0].profileImage,
+      participantType: 'provider' as const,
+      lastMessage: "Bonjour, je suis intéressé par vos services de DJ pour un événement d'entreprise le mois prochain.",
+      timestamp: Date.now() - 3600000, // 1 hour ago
+      unread: 2,
+    },
+    {
+      id: '2',
+      participantId: mockVenues[0].id,
+      participantName: mockVenues[0].name,
+      participantImage: mockVenues[0].profileImage,
+      participantType: 'business' as const,
+      lastMessage: "Merci pour votre message. Nous serions ravis de discuter de votre événement. Quand seriez-vous disponible pour un appel?",
+      timestamp: Date.now() - 86400000, // 1 day ago
+      unread: 0,
+    },
+    {
+      id: '3',
+      participantId: mockProviders[1].id,
+      participantName: mockProviders[1].name,
+      participantImage: mockProviders[1].profileImage,
+      participantType: 'provider' as const,
+      lastMessage: "Voici le devis pour le service de traiteur comme demandé. N'hésitez pas si vous avez des questions.",
+      timestamp: Date.now() - 172800000, // 2 days ago
+      unread: 0,
+    },
+    ...conversations, // Add any new conversations from the store
+  ];
   
   // Format timestamp to relative time
   const formatRelativeTime = (timestamp: number) => {
@@ -145,7 +148,7 @@ export default function MessagesScreen() {
                 backgroundColor: item.participantType === 'provider' ? Colors.primary : Colors.accent 
               }]}>
                 <Text style={styles.typeText}>
-                  {item.participantType === 'provider' ? 'P' : 'V'}
+                  {item.participantType === 'provider' ? 'P' : item.participantType === 'business' ? 'B' : 'C'}
                 </Text>
               </View>
             </View>

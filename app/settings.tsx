@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Switch, Alert } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
+import { useSettings } from '@/hooks/useSettings';
 import { useLanguage } from '@/hooks/useLanguage';
 import { LANGUAGES } from '@/constants/languages';
 import Colors from '@/constants/colors';
@@ -24,20 +25,26 @@ import {
 export default function SettingsScreen() {
   const router = useRouter();
   const { user, logout } = useAuth();
+  const { 
+    darkMode, 
+    notifications, 
+    emailNotifications, 
+    pushNotifications,
+    setDarkMode,
+    setNotifications,
+    setEmailNotifications,
+    setPushNotifications
+  } = useSettings();
   const { currentLanguage, setLanguage, t } = useLanguage();
-  const [darkMode, setDarkMode] = useState(false);
-  const [notifications, setNotifications] = useState(true);
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [pushNotifications, setPushNotifications] = useState(true);
   
   const handleLogout = () => {
     Alert.alert(
-      t('logout'),
+      'Déconnexion',
       'Êtes-vous sûr de vouloir vous déconnecter ?',
       [
-        { text: t('cancel'), style: 'cancel' },
+        { text: 'Annuler', style: 'cancel' },
         { 
-          text: t('logout'), 
+          text: 'Déconnexion', 
           style: 'destructive',
           onPress: () => {
             logout();
@@ -50,15 +57,14 @@ export default function SettingsScreen() {
 
   const handleLanguageSelect = () => {
     Alert.alert(
-      t('language'),
+      'Langue',
       'Choisissez votre langue',
       [
         ...LANGUAGES.map(lang => ({
           text: `${lang.flag} ${lang.name}`,
           onPress: () => setLanguage(lang.code as any),
-          style: currentLanguage === lang.code ? 'default' : 'default' as any,
         })),
-        { text: t('cancel'), style: 'cancel' },
+        { text: 'Annuler', style: 'cancel' },
       ]
     );
   };
@@ -85,11 +91,11 @@ export default function SettingsScreen() {
   
   const settingsGroups = [
     {
-      title: t('appearance'),
+      title: 'Apparence',
       items: [
         {
           icon: darkMode ? Moon : Sun,
-          title: t('darkMode'),
+          title: 'Mode sombre',
           subtitle: 'Activer le thème sombre',
           type: 'switch' as const,
           value: darkMode,
@@ -97,7 +103,7 @@ export default function SettingsScreen() {
         },
         {
           icon: Globe,
-          title: t('language'),
+          title: 'Langue',
           subtitle: `${LANGUAGES.find(l => l.code === currentLanguage)?.flag} ${LANGUAGES.find(l => l.code === currentLanguage)?.name}`,
           type: 'navigation' as const,
           onPress: handleLanguageSelect,
@@ -105,11 +111,11 @@ export default function SettingsScreen() {
       ],
     },
     {
-      title: t('notifications'),
+      title: 'Notifications',
       items: [
         {
           icon: Bell,
-          title: t('notifications'),
+          title: 'Notifications',
           subtitle: 'Recevoir des notifications',
           type: 'switch' as const,
           value: notifications,
@@ -134,25 +140,25 @@ export default function SettingsScreen() {
       ],
     },
     {
-      title: t('account'),
+      title: 'Compte',
       items: [
         {
           icon: User,
-          title: t('editProfile'),
+          title: 'Modifier le profil',
           subtitle: 'Informations personnelles',
           type: 'navigation' as const,
           onPress: handleEditProfile,
         },
         {
           icon: Shield,
-          title: t('privacy'),
+          title: 'Confidentialité',
           subtitle: 'Paramètres de confidentialité',
           type: 'navigation' as const,
           onPress: handlePrivacy,
         },
         {
           icon: CreditCard,
-          title: t('payments'),
+          title: 'Paiements',
           subtitle: 'Gérer vos moyens de paiement',
           type: 'navigation' as const,
           onPress: handlePayments,
@@ -160,18 +166,18 @@ export default function SettingsScreen() {
       ],
     },
     {
-      title: t('support'),
+      title: 'Support',
       items: [
         {
           icon: HelpCircle,
-          title: t('help'),
+          title: 'Aide',
           subtitle: 'FAQ et contact',
           type: 'navigation' as const,
           onPress: handleHelp,
         },
         {
           icon: MapPin,
-          title: t('about'),
+          title: 'À propos',
           subtitle: 'Version et informations',
           type: 'navigation' as const,
           onPress: handleAbout,
@@ -183,7 +189,7 @@ export default function SettingsScreen() {
   if (!user) {
     return (
       <View style={styles.container}>
-        <Stack.Screen options={{ title: t('settings') }} />
+        <Stack.Screen options={{ title: 'Paramètres' }} />
         <View style={styles.loginPrompt}>
           <Text style={styles.loginTitle}>Connectez-vous pour accéder aux paramètres</Text>
           <TouchableOpacity 
@@ -200,7 +206,7 @@ export default function SettingsScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ 
-        title: t('settings'),
+        title: 'Paramètres',
         headerStyle: { backgroundColor: Colors.primary },
         headerTintColor: '#fff',
         headerTitleStyle: { fontWeight: '700' }
@@ -269,7 +275,7 @@ export default function SettingsScreen() {
         <View style={styles.logoutSection}>
           <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <LogOut size={20} color={Colors.error} />
-            <Text style={styles.logoutText}>{t('logout')}</Text>
+            <Text style={styles.logoutText}>Déconnexion</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

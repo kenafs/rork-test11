@@ -73,6 +73,11 @@ export const CATEGORIES = [
   }
 ];
 
+export const listingCategories = [
+  { id: 'all', name: 'Toutes' },
+  ...CATEGORIES.map(cat => ({ id: cat.id, name: cat.name }))
+];
+
 export const getCategoryById = (id: string) => {
   return CATEGORIES.find(cat => cat.id === id);
 };

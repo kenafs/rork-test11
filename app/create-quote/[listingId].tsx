@@ -3,7 +3,9 @@ import { StyleSheet, View, Text, ScrollView, TextInput, TouchableOpacity, Alert 
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuotes } from '@/hooks/useQuotes';
+import { useMessages } from '@/hooks/useMessages';
 import { mockListings } from '@/mocks/listings';
+import { mockProviders, mockVenues } from '@/mocks/users';
 import { QuoteItem } from '@/types';
 import Colors from '@/constants/colors';
 import Button from '@/components/Button';
@@ -14,6 +16,7 @@ export default function CreateQuoteScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const { createQuote, isLoading } = useQuotes();
+  const { addMessage } = useMessages();
   
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -33,6 +36,13 @@ export default function CreateQuoteScreen() {
   const listing = listingId?.startsWith('conversation-') 
     ? null 
     : mockListings.find(l => l.id === listingId);
+  
+  // Get conversation participant if it's a conversation quote
+  const conversationId = listingId?.startsWith('conversation-') 
+    ? listingId.replace('conversation-', '') 
+    : null;
+  const allUsers = [...mockProviders, ...mockVenues];
+  const conversationParticipant = conversationId ? allUsers.find(u => u.id === conversationId) : null;
   
   if (!user || user.userType !== 'provider') {
     return (
@@ -115,7 +125,7 @@ export default function CreateQuoteScreen() {
       await createQuote({
         listingId: listing?.id,
         providerId: user.id,
-        clientId: listing?.createdBy || 'unknown',
+        clientId: listing?.createdBy || conversationParticipant?.id || 'unknown',
         title,
         description,
         items,
@@ -123,6 +133,19 @@ export default function CreateQuoteScreen() {
         status: 'draft',
         validUntil,
       });
+      
+      // Add quote message to conversation if it's a conversation quote
+      if (conversationParticipant) {
+        addMessage({
+          participantId: conversationParticipant.id,
+          participantName: conversationParticipant.name,
+          participantImage: conversationParticipant.profileImage,
+          participantType: conversationParticipant.userType === 'provider' ? 'provider' : 
+                          conversationParticipant.userType === 'business' ? 'business' : 'client',
+          lastMessage: `📋 Devis envoyé: ${title} - ${totalAmount.toFixed(2)}€`,
+          unread: 0,
+        });
+      }
       
       Alert.alert('Succès', 'Devis créé avec succès', [
         { text: 'OK', onPress: () => router.back() }
@@ -149,6 +172,9 @@ export default function CreateQuoteScreen() {
           <Text style={styles.title}>💰 Créer un devis</Text>
           {listing && (
             <Text style={styles.subtitle}>Pour: {listing.title}</Text>
+          )}
+          {conversationParticipant && (
+            <Text style={styles.subtitle}>Pour: {conversationParticipant.name}</Text>
           )}
         </View>
         

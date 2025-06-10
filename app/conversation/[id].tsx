@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { StyleSheet, View, Text, FlatList, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
+import { useMessages } from '@/hooks/useMessages';
 import { mockProviders, mockVenues } from '@/mocks/users';
 import Colors from '@/constants/colors';
 import { Send, Paperclip, Image as ImageIcon } from 'lucide-react-native';
@@ -51,6 +52,7 @@ export default function ConversationScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user: currentUser, isAuthenticated } = useAuth();
+  const { addMessage } = useMessages();
   const [messages, setMessages] = useState<Message[]>(mockMessages);
   const [newMessage, setNewMessage] = useState('');
   const flatListRef = useRef<FlatList>(null);
@@ -70,7 +72,7 @@ export default function ConversationScreen() {
   
   // Send message
   const sendMessage = () => {
-    if (!newMessage.trim() || !currentUser) return;
+    if (!newMessage.trim() || !currentUser || !otherUser) return;
     
     const message: Message = {
       id: Date.now().toString(),
@@ -82,6 +84,17 @@ export default function ConversationScreen() {
     
     setMessages(prev => [...prev, message]);
     setNewMessage('');
+    
+    // Add to global messages store
+    addMessage({
+      participantId: otherUser.id,
+      participantName: otherUser.name,
+      participantImage: otherUser.profileImage,
+      participantType: otherUser.userType === 'provider' ? 'provider' : 
+                      otherUser.userType === 'business' ? 'business' : 'client',
+      lastMessage: newMessage.trim(),
+      unread: 0,
+    });
     
     // Scroll to bottom
     setTimeout(() => {

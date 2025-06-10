@@ -1,37 +1,43 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, FlatList, TouchableOpacity, Image } from 'react-native';
-import { useRouter, Stack } from 'expo-router';
+import { StyleSheet, View, Text, FlatList, TouchableOpacity, Image, TextInput } from 'react-native';
+import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
+import { mockReviews } from '@/mocks/reviews';
+import { Review } from '@/types';
 import Colors from '@/constants/colors';
 import RatingStars from '@/components/RatingStars';
-import { mockReviews } from '@/mocks/reviews';
-import { Star, User, Calendar, ThumbsUp } from 'lucide-react-native';
+import Button from '@/components/Button';
+import { ThumbsUp, MessageCircle, User, Send } from 'lucide-react-native';
 
 export default function ReviewsScreen() {
+  const { id, type } = useLocalSearchParams<{ id: string; type: string }>();
   const router = useRouter();
-  const [selectedFilter, setSelectedFilter] = useState('all');
+  const [newReview, setNewReview] = useState('');
+  const [newRating, setNewRating] = useState(5);
   
-  const filters = [
-    { id: 'all', label: 'Tous', count: mockReviews.length },
-    { id: '5', label: '5 étoiles', count: mockReviews.filter(r => r.rating === 5).length },
-    { id: '4', label: '4 étoiles', count: mockReviews.filter(r => r.rating === 4).length },
-    { id: '3', label: '3 étoiles', count: mockReviews.filter(r => r.rating === 3).length },
-  ];
+  // Filter reviews based on type and id
+  const reviews = mockReviews.filter(review => {
+    if (type === 'listing') return review.listingId === id;
+    if (type === 'provider') return review.providerId === id;
+    if (type === 'venue') return review.venueId === id;
+    return false;
+  });
   
-  const filteredReviews = selectedFilter === 'all' 
-    ? mockReviews 
-    : mockReviews.filter(review => review.rating === parseInt(selectedFilter));
+  // Calculate average rating
+  const averageRating = reviews.length > 0 
+    ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length 
+    : 0;
   
-  const averageRating = mockReviews.reduce((acc, review) => acc + review.rating, 0) / mockReviews.length;
-  
+  // Format date
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleDateString('fr-FR', {
       day: 'numeric',
       month: 'long',
-      year: 'numeric'
+      year: 'numeric',
     });
   };
   
-  const renderReview = ({ item }: { item: typeof mockReviews[0] }) => (
+  // Render review item
+  const renderReview = ({ item }: { item: Review }) => (
     <View style={styles.reviewCard}>
       <View style={styles.reviewHeader}>
         <View style={styles.reviewerInfo}>
@@ -44,31 +50,53 @@ export default function ReviewsScreen() {
           )}
           <View style={styles.reviewerDetails}>
             <Text style={styles.reviewerName}>{item.reviewerName}</Text>
-            <View style={styles.reviewMeta}>
-              <Calendar size={12} color={Colors.textLight} />
-              <Text style={styles.reviewDate}>{formatDate(item.createdAt)}</Text>
-            </View>
+            <Text style={styles.reviewDate}>{formatDate(item.createdAt)}</Text>
           </View>
         </View>
-        <View style={styles.ratingContainer}>
-          <RatingStars rating={item.rating} size="small" showCount={false} />
-        </View>
+        <RatingStars rating={item.rating} size="small" />
       </View>
       
-      <Text style={styles.reviewText}>{item.comment}</Text>
+      <Text style={styles.reviewComment}>{item.comment}</Text>
       
       {item.response && (
         <View style={styles.responseContainer}>
-          <Text style={styles.responseLabel}>Réponse du prestataire :</Text>
+          <Text style={styles.responseLabel}>Réponse du prestataire:</Text>
           <Text style={styles.responseText}>{item.response}</Text>
         </View>
       )}
       
-      <View style={styles.reviewFooter}>
-        <TouchableOpacity style={styles.helpfulButton}>
-          <ThumbsUp size={14} color={Colors.textLight} />
-          <Text style={styles.helpfulText}>Utile</Text>
+      <View style={styles.reviewActions}>
+        <TouchableOpacity style={styles.actionButton}>
+          <ThumbsUp size={16} color={Colors.textLight} />
+          <Text style={styles.actionText}>Utile ({item.helpful || 0})</Text>
         </TouchableOpacity>
+        <TouchableOpacity style={styles.actionButton}>
+          <MessageCircle size={16} color={Colors.textLight} />
+          <Text style={styles.actionText}>Répondre</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+  
+  // Render rating selector
+  const renderRatingSelector = () => (
+    <View style={styles.ratingSelector}>
+      <Text style={styles.ratingLabel}>Note:</Text>
+      <View style={styles.ratingStars}>
+        {[1, 2, 3, 4, 5].map((star) => (
+          <TouchableOpacity
+            key={star}
+            onPress={() => setNewRating(star)}
+            style={styles.starButton}
+          >
+            <Text style={[
+              styles.starText,
+              star <= newRating && styles.selectedStar
+            ]}>
+              ⭐
+            </Text>
+          </TouchableOpacity>
+        ))}
       </View>
     </View>
   );
@@ -76,7 +104,7 @@ export default function ReviewsScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ 
-        title: 'Avis et notes',
+        title: 'Avis et commentaires',
         headerStyle: { backgroundColor: Colors.primary },
         headerTintColor: '#fff',
         headerTitleStyle: { fontWeight: '700' }
@@ -84,76 +112,59 @@ export default function ReviewsScreen() {
       
       <View style={styles.header}>
         <View style={styles.statsContainer}>
-          <View style={styles.averageRating}>
-            <Text style={styles.averageNumber}>{averageRating.toFixed(1)}</Text>
-            <RatingStars rating={averageRating} size="medium" showCount={false} />
-            <Text style={styles.totalReviews}>{mockReviews.length} avis</Text>
+          <View style={styles.statItem}>
+            <Text style={styles.statNumber}>{averageRating.toFixed(1)}</Text>
+            <RatingStars rating={averageRating} size="medium" />
           </View>
-          
-          <View style={styles.ratingDistribution}>
-            {[5, 4, 3, 2, 1].map(rating => {
-              const count = mockReviews.filter(r => r.rating === rating).length;
-              const percentage = (count / mockReviews.length) * 100;
-              
-              return (
-                <View key={rating} style={styles.distributionRow}>
-                  <Text style={styles.distributionLabel}>{rating}</Text>
-                  <Star size={12} color={Colors.accent} fill={Colors.accent} />
-                  <View style={styles.distributionBar}>
-                    <View 
-                      style={[
-                        styles.distributionFill, 
-                        { width: `${percentage}%` }
-                      ]} 
-                    />
-                  </View>
-                  <Text style={styles.distributionCount}>{count}</Text>
-                </View>
-              );
-            })}
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text style={styles.statNumber}>{reviews.length}</Text>
+            <Text style={styles.statLabel}>avis</Text>
           </View>
         </View>
       </View>
       
-      <View style={styles.filtersContainer}>
-        <FlatList
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          data={filters}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={[
-                styles.filterButton,
-                selectedFilter === item.id && styles.activeFilter
-              ]}
-              onPress={() => setSelectedFilter(item.id)}
-            >
-              <Text style={[
-                styles.filterText,
-                selectedFilter === item.id && styles.activeFilterText
-              ]}>
-                {item.label} ({item.count})
-              </Text>
-            </TouchableOpacity>
-          )}
-          contentContainerStyle={styles.filtersContent}
-        />
-      </View>
-      
       <FlatList
-        data={filteredReviews}
+        data={reviews}
         keyExtractor={(item) => item.id}
         renderItem={renderReview}
         contentContainerStyle={styles.reviewsList}
-        showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Star size={64} color={Colors.textLight} />
-            <Text style={styles.emptyTitle}>Aucun avis trouvé</Text>
+            <MessageCircle size={64} color={Colors.textLight} />
+            <Text style={styles.emptyTitle}>Aucun avis</Text>
             <Text style={styles.emptyText}>
-              Aucun avis ne correspond à vos critères de filtrage.
+              Soyez le premier à laisser un avis !
             </Text>
+          </View>
+        }
+        ListFooterComponent={
+          <View style={styles.addReviewContainer}>
+            <Text style={styles.addReviewTitle}>Laisser un avis</Text>
+            
+            {renderRatingSelector()}
+            
+            <TextInput
+              style={styles.reviewInput}
+              value={newReview}
+              onChangeText={setNewReview}
+              placeholder="Partagez votre expérience..."
+              multiline
+              numberOfLines={4}
+              textAlignVertical="top"
+              placeholderTextColor={Colors.textLight}
+            />
+            
+            <Button
+              title="Publier l'avis"
+              onPress={() => {
+                // Handle review submission
+                setNewReview('');
+                setNewRating(5);
+              }}
+              disabled={!newReview.trim()}
+              style={styles.submitButton}
+            />
           </View>
         }
       />
@@ -174,103 +185,48 @@ const styles = StyleSheet.create({
   },
   statsContainer: {
     flexDirection: 'row',
-    gap: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  averageRating: {
+  statItem: {
     alignItems: 'center',
     flex: 1,
   },
-  averageNumber: {
-    fontSize: 48,
+  statNumber: {
+    fontSize: 32,
     fontWeight: '800',
-    color: Colors.text,
-    marginBottom: 8,
+    color: Colors.primary,
+    marginBottom: 4,
   },
-  totalReviews: {
+  statLabel: {
     fontSize: 14,
     color: Colors.textLight,
-    marginTop: 8,
+    marginTop: 4,
   },
-  ratingDistribution: {
-    flex: 2,
-    gap: 8,
-  },
-  distributionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  distributionLabel: {
-    fontSize: 14,
-    color: Colors.text,
-    width: 12,
-  },
-  distributionBar: {
-    flex: 1,
-    height: 8,
+  statDivider: {
+    width: 1,
+    height: 40,
     backgroundColor: Colors.border,
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  distributionFill: {
-    height: '100%',
-    backgroundColor: Colors.accent,
-  },
-  distributionCount: {
-    fontSize: 12,
-    color: Colors.textLight,
-    width: 20,
-    textAlign: 'right',
-  },
-  filtersContainer: {
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-  },
-  filtersContent: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    gap: 12,
-  },
-  filterButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: Colors.backgroundAlt,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  activeFilter: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-  },
-  filterText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: Colors.text,
-  },
-  activeFilterText: {
-    color: '#fff',
+    marginHorizontal: 20,
   },
   reviewsList: {
-    padding: 20,
-    paddingBottom: 40,
+    padding: 16,
   },
   reviewCard: {
     backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: 12,
+    padding: 16,
     marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowRadius: 4,
+    elevation: 2,
   },
   reviewHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     marginBottom: 12,
   },
   reviewerInfo: {
@@ -298,64 +254,48 @@ const styles = StyleSheet.create({
     color: Colors.text,
     marginBottom: 2,
   },
-  reviewMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
   reviewDate: {
     fontSize: 12,
     color: Colors.textLight,
   },
-  ratingContainer: {
-    marginLeft: 12,
-  },
-  reviewText: {
-    fontSize: 15,
+  reviewComment: {
+    fontSize: 14,
     color: Colors.text,
-    lineHeight: 22,
+    lineHeight: 20,
     marginBottom: 12,
   },
   responseContainer: {
     backgroundColor: Colors.backgroundAlt,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 8,
+    padding: 12,
     marginBottom: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: Colors.primary,
   },
   responseLabel: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
     color: Colors.primary,
-    marginBottom: 8,
+    marginBottom: 4,
   },
   responseText: {
     fontSize: 14,
     color: Colors.text,
-    lineHeight: 20,
+    lineHeight: 18,
   },
-  reviewFooter: {
+  reviewActions: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    gap: 16,
   },
-  helpfulButton: {
+  actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    backgroundColor: Colors.backgroundAlt,
   },
-  helpfulText: {
+  actionText: {
     fontSize: 12,
     color: Colors.textLight,
-    fontWeight: '500',
   },
   emptyContainer: {
     alignItems: 'center',
-    justifyContent: 'center',
     padding: 40,
   },
   emptyTitle: {
@@ -369,6 +309,61 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.textLight,
     textAlign: 'center',
-    lineHeight: 24,
+  },
+  addReviewContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 20,
+    marginTop: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  addReviewTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.text,
+    marginBottom: 16,
+  },
+  ratingSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  ratingLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.text,
+    marginRight: 12,
+  },
+  ratingStars: {
+    flexDirection: 'row',
+    gap: 4,
+  },
+  starButton: {
+    padding: 4,
+  },
+  starText: {
+    fontSize: 24,
+    opacity: 0.3,
+  },
+  selectedStar: {
+    opacity: 1,
+  },
+  reviewInput: {
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    color: Colors.text,
+    minHeight: 100,
+    textAlignVertical: 'top',
+    marginBottom: 16,
+  },
+  submitButton: {
+    backgroundColor: Colors.primary,
   },
 });

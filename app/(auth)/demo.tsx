@@ -16,7 +16,7 @@ const demoAccounts = [
     description: 'Découvrez l\'expérience d\'un prestataire DJ',
     icon: Briefcase,
     color: Colors.primary,
-    gradient: gradients.primary,
+    gradient: [Colors.primary, Colors.secondary] as [string, string],
     userData: {
       name: 'Alex Martin - DJ Pro',
       email: 'demo.dj@example.com',
@@ -35,7 +35,7 @@ const demoAccounts = [
     description: 'Explorez l\'interface d\'un établissement',
     icon: Building,
     color: Colors.accent,
-    gradient: gradients.catering,
+    gradient: [Colors.accent, '#FF7F50'] as [string, string],
     userData: {
       name: 'Restaurant Le Gourmet',
       email: 'demo.restaurant@example.com',
@@ -56,7 +56,7 @@ const demoAccounts = [
     description: 'Testez l\'expérience d\'un client',
     icon: User,
     color: Colors.secondary,
-    gradient: gradients.staff,
+    gradient: [Colors.secondary, '#32CD32'] as [string, string],
     userData: {
       name: 'Marie Dubois',
       email: 'demo.client@example.com',
@@ -98,7 +98,7 @@ export default function DemoScreen() {
       <StatusBar style="light" />
       
       <LinearGradient
-        colors={gradients.primary}
+        colors={[Colors.primary, Colors.secondary]}
         style={styles.headerGradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}

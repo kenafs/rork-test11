@@ -173,9 +173,11 @@ export const useAuth = create<AuthState>()(
       },
       
       logout: () => {
+        console.log('Logging out user...');
         set({ 
           user: null, 
-          isAuthenticated: false 
+          isAuthenticated: false,
+          isLoading: false
         });
       },
       
