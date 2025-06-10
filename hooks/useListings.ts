@@ -16,6 +16,7 @@ interface ListingsState {
   };
   
   fetchListings: () => Promise<void>;
+  refreshListings: () => Promise<void>;
   filterByCategory: (category: string | null) => void;
   filterBySearch: (query: string) => void;
   filterByLocation: (latitude: number, longitude: number, radius?: number) => void;
@@ -49,6 +50,11 @@ export const useListings = create<ListingsState>((set, get) => ({
       filteredListings: mockListings,
       isLoading: false 
     });
+  },
+
+  refreshListings: async () => {
+    const { fetchListings } = get();
+    await fetchListings();
   },
   
   filterByCategory: (category: string | null) => {

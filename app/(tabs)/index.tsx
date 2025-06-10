@@ -15,10 +15,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 export default function HomeScreen() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
-  const { listings, isLoading, refreshListings } = useListings();
-  const { location, hasPermission, requestPermission } = useLocation();
+  const { listings, isLoading, fetchListings } = useListings();
+  const { latitude, longitude, city, permissionStatus, requestPermission } = useLocation();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Check if we have location permission
+  const hasPermission = permissionStatus === 'granted';
 
   // Filter listings based on selected category
   const filteredListings = selectedCategory 
@@ -32,7 +36,7 @@ export default function HomeScreen() {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await refreshListings();
+    await fetchListings();
     setRefreshing(false);
   };
 
@@ -114,6 +118,23 @@ export default function HomeScreen() {
     }
   };
 
+  // Handle search
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      router.push({
+        pathname: '/(tabs)/search',
+        params: { query: searchQuery }
+      });
+    } else {
+      router.push('/(tabs)/search');
+    }
+  };
+
+  // Clear search
+  const handleClearSearch = () => {
+    setSearchQuery('');
+  };
+
   if (!hasPermission) {
     return <LocationPermissionRequest onRequestPermission={requestPermission} />;
   }
@@ -127,7 +148,7 @@ export default function HomeScreen() {
     >
       {/* Header */}
       <LinearGradient
-        colors={[Colors.primary, Colors.secondary]}
+        colors={[Colors.primary, Colors.secondary] as const}
         style={styles.header}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -138,10 +159,10 @@ export default function HomeScreen() {
             <Text style={styles.subtitle}>{getSubtitle()}</Text>
           </View>
           
-          {location && (
+          {city && (
             <View style={styles.locationContainer}>
               <MapPin size={16} color="rgba(255, 255, 255, 0.8)" />
-              <Text style={styles.locationText}>{location.city}</Text>
+              <Text style={styles.locationText}>{city}</Text>
             </View>
           )}
         </View>
@@ -150,12 +171,11 @@ export default function HomeScreen() {
       {/* Search Bar */}
       <View style={styles.searchContainer}>
         <SearchBar 
-          onSearch={(query) => {
-            router.push({
-              pathname: '/(tabs)/search',
-              params: { query }
-            });
-          }}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          onClear={handleClearSearch}
+          onLocationPress={handleSearch}
+          placeholder="Rechercher des prestataires..."
         />
       </View>
 
@@ -167,7 +187,7 @@ export default function HomeScreen() {
           activeOpacity={0.8}
         >
           <LinearGradient
-            colors={[Colors.accent, '#FF7F50']}
+            colors={[Colors.accent, '#FF7F50'] as const}
             style={styles.quickActionGradient}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
