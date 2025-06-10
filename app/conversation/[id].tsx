@@ -20,7 +20,7 @@ export default function ConversationScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user: currentUser, isAuthenticated } = useAuth();
-  const { messages, sendMessage, getConversationByParticipant, addContact } = useMessages();
+  const { messages, sendMessage, getConversationByParticipant, addContact, fetchMessages } = useMessages();
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const flatListRef = useRef<FlatList>(null);
@@ -41,6 +41,13 @@ export default function ConversationScreen() {
     timestamp: msg.timestamp,
     type: 'text',
   }));
+  
+  // Load messages when conversation is found
+  useEffect(() => {
+    if (conversation) {
+      fetchMessages(conversation.id);
+    }
+  }, [conversation?.id]);
   
   // Format timestamp
   const formatTime = (timestamp: number) => {

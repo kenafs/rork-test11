@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Message, Conversation } from '@/types';
 import { useAuth } from './useAuth';
+import { mockProviders, mockVenues } from '@/mocks/users';
 
 interface MessageContact {
   participantId: string;
@@ -143,6 +144,23 @@ export const useMessages = create<MessagesState>()(
             };
           });
           
+          // Update contact info
+          const allUsers = [...mockProviders, ...mockVenues];
+          const receiverUser = allUsers.find(u => u.id === receiverId);
+          
+          if (receiverUser) {
+            get().addContact({
+              participantId: receiverId,
+              participantName: receiverUser.name,
+              participantImage: receiverUser.profileImage,
+              participantType: receiverUser.userType === 'provider' ? 'provider' : 
+                             receiverUser.userType === 'business' ? 'business' : 'client',
+              lastMessage: content,
+              unread: 0,
+              timestamp: Date.now(),
+            });
+          }
+          
           console.log('Message envoyé:', newMessage);
         } catch (error) {
           console.error('Error sending message:', error);
@@ -187,6 +205,23 @@ export const useMessages = create<MessagesState>()(
           // Send initial message if provided
           if (initialMessage) {
             await get().sendMessage(conversationId, initialMessage, participantId);
+          }
+          
+          // Add contact info
+          const allUsers = [...mockProviders, ...mockVenues];
+          const participantUser = allUsers.find(u => u.id === participantId);
+          
+          if (participantUser) {
+            get().addContact({
+              participantId,
+              participantName: participantUser.name,
+              participantImage: participantUser.profileImage,
+              participantType: participantUser.userType === 'provider' ? 'provider' : 
+                             participantUser.userType === 'business' ? 'business' : 'client',
+              lastMessage: initialMessage || 'Nouvelle conversation',
+              unread: 0,
+              timestamp: Date.now(),
+            });
           }
           
           console.log('Nouvelle conversation créée:', conversationId);
@@ -275,8 +310,26 @@ export const useMessages = create<MessagesState>()(
           const conversationMessages = messages[conv.id] || [];
           const lastMessage = conversationMessages[conversationMessages.length - 1];
           
-          // Find participant info from contacts or use default
-          const existingContact = contacts.find(c => c.participantId === otherParticipantId);
+          // Find participant info from contacts or users
+          let existingContact = contacts.find(c => c.participantId === otherParticipantId);
+          
+          if (!existingContact) {
+            // Try to find user info from mock data
+            const allUsers = [...mockProviders, ...mockVenues];
+            const participantUser = allUsers.find(u => u.id === otherParticipantId);
+            
+            if (participantUser) {
+              existingContact = {
+                participantId: otherParticipantId,
+                participantName: participantUser.name,
+                participantImage: participantUser.profileImage,
+                participantType: participantUser.userType === 'provider' ? 'provider' : 
+                               participantUser.userType === 'business' ? 'business' : 'client',
+                lastMessage: '',
+                unread: 0,
+              };
+            }
+          }
           
           return {
             participantId: otherParticipantId,

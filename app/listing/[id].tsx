@@ -4,7 +4,9 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { useAuth } from '@/hooks/useAuth';
 import { useFavorites } from '@/hooks/useFavorites';
+import { useMessages } from '@/hooks/useMessages';
 import { mockListings } from '@/mocks/listings';
+import { mockProviders, mockVenues } from '@/mocks/users';
 import Colors from '@/constants/colors';
 import RatingStars from '@/components/RatingStars';
 import Button from '@/components/Button';
@@ -16,6 +18,7 @@ export default function ListingDetailScreen() {
   const router = useRouter();
   const { isAuthenticated, user } = useAuth();
   const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
+  const { createConversation } = useMessages();
   
   // Find the listing by ID
   const listing = mockListings.find(item => item.id === id);
@@ -32,6 +35,10 @@ export default function ListingDetailScreen() {
       </View>
     );
   }
+  
+  // Find the creator user
+  const allUsers = [...mockProviders, ...mockVenues];
+  const creatorUser = allUsers.find(u => u.id === listing.createdBy);
   
   // Format date if available
   const formattedDate = listing.date 
@@ -74,7 +81,7 @@ export default function ListingDetailScreen() {
   };
   
   // Handle contact
-  const handleContact = () => {
+  const handleContact = async () => {
     if (!isAuthenticated) {
       Alert.alert(
         'Connexion requise',
@@ -86,13 +93,30 @@ export default function ListingDetailScreen() {
       );
       return;
     }
-    
-    // Navigate to conversation or create a new one
-    router.push(`/conversation/new?recipientId=${listing.createdBy}`);
+
+    if (!user || !creatorUser) {
+      Alert.alert('Erreur', 'Impossible de créer la conversation');
+      return;
+    }
+
+    try {
+      // Create conversation with the listing creator
+      const conversationId = await createConversation(
+        listing.createdBy,
+        `Bonjour, je suis intéressé(e) par votre annonce "${listing.title}".`,
+        listing.id
+      );
+      
+      // Navigate to the conversation
+      router.push(`/conversation/${conversationId}`);
+    } catch (error) {
+      console.error('Error creating conversation:', error);
+      Alert.alert('Erreur', 'Impossible de créer la conversation');
+    }
   };
   
   // Handle quote request
-  const handleQuoteRequest = () => {
+  const handleQuoteRequest = async () => {
     if (!isAuthenticated) {
       Alert.alert(
         'Connexion requise',
@@ -105,12 +129,30 @@ export default function ListingDetailScreen() {
       return;
     }
     
-    if (user?.userType === 'provider') {
+    if (!user || !creatorUser) {
+      Alert.alert('Erreur', 'Impossible de créer la demande de devis');
+      return;
+    }
+
+    // Only providers can send quotes, clients and businesses can request quotes
+    if (user.userType === 'provider') {
       // Provider can create a quote
       router.push(`/create-quote/${listing.id}`);
     } else {
-      // Client can request a quote via message
-      router.push(`/conversation/new?recipientId=${listing.createdBy}&requestQuote=true`);
+      // Client or business can request a quote via message
+      try {
+        const conversationId = await createConversation(
+          listing.createdBy,
+          `Bonjour, je souhaiterais recevoir un devis pour votre annonce "${listing.title}". Pourriez-vous me faire une proposition ?`,
+          listing.id
+        );
+        
+        // Navigate to the conversation
+        router.push(`/conversation/${conversationId}`);
+      } catch (error) {
+        console.error('Error creating quote request conversation:', error);
+        Alert.alert('Erreur', 'Impossible de créer la demande de devis');
+      }
     }
   };
   
@@ -203,7 +245,8 @@ export default function ListingDetailScreen() {
             
             <View style={styles.typeBadge}>
               <Text style={styles.typeText}>
-                {listing.creatorType === 'provider' ? 'Prestataire' : 'Établissement'}
+                {listing.creatorType === 'provider' ? 'Prestataire' : 
+                 listing.creatorType === 'business' ? 'Établissement' : 'Client'}
               </Text>
             </View>
           </TouchableOpacity>
@@ -257,12 +300,15 @@ export default function ListingDetailScreen() {
             style={styles.contactButton}
           />
           
-          <Button
-            title="📋 Devis"
-            variant="outline"
-            onPress={handleQuoteRequest}
-            style={styles.quoteButton}
-          />
+          {/* Only show quote button for providers or when requesting quotes from providers */}
+          {(user?.userType === 'provider' || listing.creatorType === 'provider') && (
+            <Button
+              title={user?.userType === 'provider' ? "📋 Créer devis" : "📋 Demander devis"}
+              variant="outline"
+              onPress={handleQuoteRequest}
+              style={styles.quoteButton}
+            />
+          )}
         </View>
       )}
       

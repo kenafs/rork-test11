@@ -4,32 +4,8 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import Colors from '@/constants/colors';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Users, Star, Calendar, MapPin } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
-
-const features = [
-  {
-    icon: Users,
-    title: 'Réseau de confiance',
-    description: 'Connectez-vous avec des prestataires et établissements vérifiés',
-  },
-  {
-    icon: Star,
-    title: 'Avis authentiques',
-    description: 'Consultez les avis clients pour faire le bon choix',
-  },
-  {
-    icon: Calendar,
-    title: 'Réservation simple',
-    description: 'Organisez vos événements en quelques clics',
-  },
-  {
-    icon: MapPin,
-    title: 'Recherche locale',
-    description: 'Trouvez des services près de chez vous',
-  },
-];
 
 export default function LandingScreen() {
   const router = useRouter();
@@ -89,22 +65,6 @@ export default function LandingScreen() {
           </TouchableOpacity>
         </View>
       </LinearGradient>
-      
-      {/* Features Section */}
-      <View style={styles.featuresSection}>
-        <Text style={styles.sectionTitle}>Pourquoi nous choisir ?</Text>
-        <View style={styles.featuresGrid}>
-          {features.map((feature, index) => (
-            <View key={index} style={styles.featureCard}>
-              <View style={styles.featureIcon}>
-                <feature.icon size={24} color={Colors.primary} />
-              </View>
-              <Text style={styles.featureTitle}>{feature.title}</Text>
-              <Text style={styles.featureDescription}>{feature.description}</Text>
-            </View>
-          ))}
-        </View>
-      </View>
     </View>
   );
 }
@@ -189,58 +149,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     textAlign: 'center',
-  },
-  featuresSection: {
-    padding: 20,
-    paddingTop: 40,
-    backgroundColor: '#fff',
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: Colors.text,
-    textAlign: 'center',
-    marginBottom: 32,
-  },
-  featuresGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
-  },
-  featureCard: {
-    width: (width - 60) / 2,
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  featureIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(10, 36, 99, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  featureTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: Colors.text,
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  featureDescription: {
-    fontSize: 14,
-    color: Colors.textLight,
-    textAlign: 'center',
-    lineHeight: 20,
   },
 });
