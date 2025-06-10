@@ -4,25 +4,34 @@ import { Search, X, MapPin } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 
 interface SearchBarProps {
-  value: string;
-  onChangeText: (text: string) => void;
-  onClear: () => void;
-  onLocationPress?: () => void;
   onSearch?: (query: string) => void;
   placeholder?: string;
   showLocationButton?: boolean;
+  onLocationPress?: () => void;
 }
 
 export default function SearchBar({
-  value,
-  onChangeText,
-  onClear,
-  onLocationPress,
   onSearch,
   placeholder = "Rechercher...",
-  showLocationButton = true,
+  showLocationButton = false,
+  onLocationPress,
 }: SearchBarProps) {
+  const [value, setValue] = useState('');
   const [isFocused, setIsFocused] = useState(false);
+  
+  const handleChangeText = (text: string) => {
+    setValue(text);
+    if (onSearch) {
+      onSearch(text);
+    }
+  };
+  
+  const handleClear = () => {
+    setValue('');
+    if (onSearch) {
+      onSearch('');
+    }
+  };
   
   const handleSubmit = () => {
     if (onSearch) {
@@ -40,7 +49,7 @@ export default function SearchBar({
           placeholder={placeholder}
           placeholderTextColor={Colors.textLight}
           value={value}
-          onChangeText={onChangeText}
+          onChangeText={handleChangeText}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           onSubmitEditing={handleSubmit}
@@ -49,7 +58,7 @@ export default function SearchBar({
         />
         
         {value.length > 0 && (
-          <TouchableOpacity onPress={onClear} style={styles.clearButton}>
+          <TouchableOpacity onPress={handleClear} style={styles.clearButton}>
             <X size={18} color={Colors.textLight} />
           </TouchableOpacity>
         )}
@@ -72,23 +81,20 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
   },
   searchContainer: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.backgroundAlt,
+    backgroundColor: '#fff',
     borderRadius: 12,
     paddingHorizontal: 12,
     height: 48,
     borderWidth: 1,
-    borderColor: 'transparent',
+    borderColor: Colors.border,
   },
   searchContainerFocused: {
     borderColor: Colors.secondary,
-    backgroundColor: '#fff',
     ...Platform.select({
       ios: {
         shadowColor: Colors.primary,

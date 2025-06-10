@@ -1,26 +1,20 @@
 import React from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
 import { listingCategories } from '@/constants/categories';
 import Colors from '@/constants/colors';
 
 interface CategoryFilterProps {
-  selectedCategory: string | null;
-  onSelectCategory: (category: string | null) => void;
+  onCategorySelect?: (category: string | null) => void;
+  selectedCategory?: string | null;
 }
 
-export default function CategoryFilter({ selectedCategory, onSelectCategory }: CategoryFilterProps) {
-  const router = useRouter();
+export default function CategoryFilter({ onCategorySelect, selectedCategory }: CategoryFilterProps) {
   
   const handleCategoryPress = (category: any) => {
     const categoryId = category.id === 'all' ? null : category.id;
-    onSelectCategory(categoryId);
-    
-    // Navigate to search with category filter
-    router.push({
-      pathname: '/(tabs)/search',
-      params: { category: category.id }
-    });
+    if (onCategorySelect) {
+      onCategorySelect(categoryId);
+    }
   };
   
   // Safety check for listingCategories with fallback
@@ -67,7 +61,6 @@ export default function CategoryFilter({ selectedCategory, onSelectCategory }: C
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 16,
     paddingVertical: 12,
     gap: 8,
   },
@@ -75,18 +68,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: Colors.backgroundAlt,
+    backgroundColor: '#fff',
     marginRight: 8,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   selectedCategory: {
     backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
   },
   categoryText: {
     fontSize: 14,
     fontWeight: '500',
-    color: Colors.textLight,
+    color: Colors.text,
   },
   selectedCategoryText: {
     color: '#fff',
+    fontWeight: '600',
   },
 });

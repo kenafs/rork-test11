@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Message, Conversation } from '@/types';
+import { Message, Conversation, Quote } from '@/types';
 import { useAuth } from './useAuth';
 import { mockProviders, mockVenues } from '@/mocks/users';
 
@@ -24,6 +24,7 @@ interface MessagesState {
   fetchConversations: () => Promise<void>;
   fetchMessages: (conversationId: string) => Promise<void>;
   sendMessage: (conversationId: string, content: string, receiverId: string) => Promise<void>;
+  sendQuoteMessage: (conversationId: string, quote: Quote, receiverId: string) => Promise<void>;
   createConversation: (participantId: string, initialMessage?: string, listingId?: string) => Promise<string>;
   markAsRead: (conversationId: string) => Promise<void>;
   refreshConversations: () => Promise<void>;
@@ -166,6 +167,81 @@ export const useMessages = create<MessagesState>()(
           console.log('Message sent successfully:', newMessage);
         } catch (error) {
           console.error('Error sending message:', error);
+          throw error;
+        }
+      },
+      
+      sendQuoteMessage: async (conversationId: string, quote: Quote, receiverId: string) => {
+        try {
+          const user = useAuth.getState().user;
+          if (!user) return;
+          
+          console.log('Sending quote message:', { conversationId, quote, receiverId });
+          
+          const quoteMessage: Message = {
+            id: `msg-${Date.now()}-${Math.random()}`,
+            conversationId,
+            senderId: user.id,
+            receiverId,
+            content: `Nouveau devis: ${quote.title} - ${quote.totalAmount}€`,
+            timestamp: Date.now(),
+            read: false,
+            type: 'quote',
+            quoteId: quote.id,
+          };
+          
+          // Add quote message to conversation
+          set(state => ({
+            messages: {
+              ...state.messages,
+              [conversationId]: [
+                ...(state.messages[conversationId] || []),
+                quoteMessage,
+              ],
+            },
+          }));
+          
+          // Update conversation's last message
+          set(state => {
+            const updatedConversations = state.conversations.map(conv => {
+              if (conv.id === conversationId) {
+                return {
+                  ...conv,
+                  lastMessage: quoteMessage,
+                  updatedAt: Date.now(),
+                };
+              }
+              return conv;
+            });
+            
+            // Sort conversations by updatedAt (most recent first)
+            updatedConversations.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+            
+            return {
+              conversations: updatedConversations,
+            };
+          });
+          
+          // Update contact info
+          const allUsers = [...mockProviders, ...mockVenues];
+          const receiverUser = allUsers.find(u => u.id === receiverId);
+          
+          if (receiverUser) {
+            get().addContact({
+              participantId: receiverId,
+              participantName: receiverUser.name,
+              participantImage: receiverUser.profileImage,
+              participantType: receiverUser.userType === 'provider' ? 'provider' : 
+                             receiverUser.userType === 'business' ? 'business' : 'client',
+              lastMessage: `Nouveau devis: ${quote.title}`,
+              unread: 0,
+              timestamp: Date.now(),
+            });
+          }
+          
+          console.log('Quote message sent successfully:', quoteMessage);
+        } catch (error) {
+          console.error('Error sending quote message:', error);
           throw error;
         }
       },
