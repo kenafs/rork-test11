@@ -10,7 +10,7 @@ import SearchBar from '@/components/SearchBar';
 import CategoryFilter from '@/components/CategoryFilter';
 import ListingCard from '@/components/ListingCard';
 import LocationPermissionRequest from '@/components/LocationPermissionRequest';
-import { Plus, MapPin, Filter } from 'lucide-react-native';
+import { Plus, MapPin } from 'lucide-react-native';
 
 export default function HomeScreen() {
   const router = useRouter();

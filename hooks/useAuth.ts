@@ -11,7 +11,7 @@ interface AuthState {
   login: (email: string, password: string) => Promise<boolean>;
   loginWithDemo: (userData: Partial<User>) => Promise<boolean>;
   register: (userData: Partial<User>, password: string, userType: UserType) => Promise<boolean>;
-  logout: () => void;
+  logout: () => Promise<void>;
   updateProfile: (updates: Partial<User>) => Promise<boolean>;
 }
 
@@ -172,8 +172,9 @@ export const useAuth = create<AuthState>()(
         return true;
       },
       
-      logout: () => {
+      logout: async () => {
         console.log('Déconnexion en cours...');
+        
         // Clear all auth data immediately
         set({ 
           user: null, 
@@ -182,7 +183,12 @@ export const useAuth = create<AuthState>()(
         });
         
         // Clear persisted storage
-        AsyncStorage.removeItem('auth-storage').catch(console.error);
+        try {
+          await AsyncStorage.removeItem('auth-storage');
+          console.log('Storage cleared successfully');
+        } catch (error) {
+          console.error('Error clearing storage:', error);
+        }
         
         console.log('Utilisateur déconnecté avec succès');
       },

@@ -36,7 +36,7 @@ export const useMessages = create<MessagesState>()(
           return;
         }
         
-        // Mock conversations - get existing ones from state
+        // Get existing conversations from state
         const existingConversations = get().conversations;
         
         set({ 
@@ -96,18 +96,25 @@ export const useMessages = create<MessagesState>()(
         }));
         
         // Update conversation's last message and move to top
-        set(state => ({
-          conversations: [
-            // Updated conversation at the top
-            ...state.conversations.filter(conv => conv.id === conversationId).map(conv => ({
-              ...conv,
-              lastMessage: newMessage,
-              updatedAt: Date.now(),
-            })),
-            // Other conversations
-            ...state.conversations.filter(conv => conv.id !== conversationId),
-          ],
-        }));
+        set(state => {
+          const updatedConversations = state.conversations.map(conv => {
+            if (conv.id === conversationId) {
+              return {
+                ...conv,
+                lastMessage: newMessage,
+                updatedAt: Date.now(),
+              };
+            }
+            return conv;
+          });
+          
+          // Sort conversations by updatedAt (most recent first)
+          updatedConversations.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+          
+          return {
+            conversations: updatedConversations,
+          };
+        });
         
         console.log('Message envoyé:', newMessage);
       },

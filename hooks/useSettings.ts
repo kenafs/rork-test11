@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Appearance } from 'react-native';
 
 interface SettingsState {
   darkMode: boolean;
@@ -32,12 +31,7 @@ export const useSettings = create<SettingsState>()(
       
       setDarkMode: (value: boolean) => {
         set({ darkMode: value });
-        // Apply dark mode to system
-        if (value) {
-          Appearance.setColorScheme('dark');
-        } else {
-          Appearance.setColorScheme('light');
-        }
+        console.log('Dark mode set to:', value);
       },
       
       setNotifications: (value: boolean) => {
@@ -46,6 +40,7 @@ export const useSettings = create<SettingsState>()(
         if (!value) {
           set({ emailNotifications: false, pushNotifications: false });
         }
+        console.log('Notifications set to:', value);
       },
       
       setEmailNotifications: (value: boolean) => {
@@ -54,6 +49,7 @@ export const useSettings = create<SettingsState>()(
         if (value) {
           set({ notifications: true });
         }
+        console.log('Email notifications set to:', value);
       },
       
       setPushNotifications: (value: boolean) => {
@@ -62,10 +58,12 @@ export const useSettings = create<SettingsState>()(
         if (value) {
           set({ notifications: true });
         }
+        console.log('Push notifications set to:', value);
       },
       
       setLanguage: (language: string) => {
         set({ language });
+        console.log('Language set to:', language);
       },
       
       toggleDarkMode: () => {

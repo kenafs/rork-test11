@@ -6,11 +6,26 @@ import Colors from '@/constants/colors';
 import Button from '@/components/Button';
 import { User, Building2, Users, ArrowRight } from 'lucide-react-native';
 
-const demoAccounts = {
+interface DemoAccount {
+  name: string;
+  email: string;
+  userType: 'provider' | 'business' | 'client';
+  profileImage: string;
+  description?: string;
+  specialties?: string;
+  address?: string;
+  website?: string;
+  instagram?: string;
+  rating: number;
+  reviewCount: number;
+  city: string;
+}
+
+const demoAccounts: Record<'provider' | 'business' | 'client', DemoAccount> = {
   provider: {
     name: 'Marie Martin - DJ Pro',
     email: 'marie@djpro.com',
-    userType: 'provider' as const,
+    userType: 'provider',
     profileImage: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&auto=format&fit=crop',
     description: 'DJ professionnelle spécialisée dans les événements d\'entreprise et mariages. Plus de 10 ans d\'expérience.',
     specialties: 'DJ, Animation, Sonorisation',
@@ -23,7 +38,7 @@ const demoAccounts = {
   business: {
     name: 'Restaurant Le Gourmet',
     email: 'contact@legourmet.com',
-    userType: 'business' as const,
+    userType: 'business',
     profileImage: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&auto=format&fit=crop',
     description: 'Restaurant gastronomique avec terrasse, spécialisé dans l\'organisation d\'événements privés et réceptions.',
     address: '15 Rue de la Paix, 75001 Paris',
@@ -36,7 +51,7 @@ const demoAccounts = {
   client: {
     name: 'Jean Dupont',
     email: 'jean@example.com',
-    userType: 'client' as const,
+    userType: 'client',
     profileImage: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&auto=format&fit=crop',
     description: 'Organisateur d\'événements passionné, toujours à la recherche des meilleurs prestataires.',
     rating: 4.5,
