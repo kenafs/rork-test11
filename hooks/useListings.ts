@@ -348,16 +348,17 @@ function applyLocationFilter(
 function applyCurrentFilters(listings: Listing[], state: ListingsState): Listing[] {
   let filtered = [...listings];
   
-  // Apply category filter
+  // Apply category filter - fix null check
   if (state.selectedCategory && state.selectedCategory !== 'Tous' && state.selectedCategory !== 'all') {
-    const englishCategory = categoryMapping[state.selectedCategory] || state.selectedCategory;
-    const frenchCategory = categoryMapping[state.selectedCategory] || state.selectedCategory;
+    const selectedCategory = state.selectedCategory; // Non-null assertion
+    const englishCategory = categoryMapping[selectedCategory] || selectedCategory;
+    const frenchCategory = categoryMapping[selectedCategory] || selectedCategory;
     
     filtered = filtered.filter(listing => {
-      return listing.category === state.selectedCategory ||
+      return listing.category === selectedCategory ||
              listing.category === englishCategory ||
              listing.category === frenchCategory ||
-             listing.category.toLowerCase() === state.selectedCategory!.toLowerCase() ||
+             listing.category.toLowerCase() === selectedCategory.toLowerCase() ||
              listing.category.toLowerCase() === englishCategory.toLowerCase() ||
              listing.category.toLowerCase() === frenchCategory.toLowerCase();
     });

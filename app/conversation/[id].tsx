@@ -20,7 +20,7 @@ export default function ConversationScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user: currentUser, isAuthenticated } = useAuth();
-  const { messages, sendMessage, getConversationByParticipant, addContact, fetchMessages } = useMessages();
+  const { messages, sendMessage, getConversationByParticipant, addContact, fetchMessages, createConversation } = useMessages();
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const flatListRef = useRef<FlatList>(null);
@@ -29,9 +29,27 @@ export default function ConversationScreen() {
   const allUsers = [...mockProviders, ...mockVenues];
   const otherUser = allUsers.find(u => u.id === id);
   
-  // Get conversation
-  const conversation = getConversationByParticipant(id || '');
+  // Get or create conversation
+  const [conversation, setConversation] = useState(getConversationByParticipant(id || ''));
   const conversationMessages = conversation ? messages[conversation.id] || [] : [];
+  
+  // Create conversation if it doesn't exist
+  useEffect(() => {
+    const initializeConversation = async () => {
+      if (!conversation && id && currentUser && otherUser) {
+        try {
+          console.log('Creating new conversation for participant:', id);
+          const conversationId = await createConversation(id);
+          const newConversation = getConversationByParticipant(id);
+          setConversation(newConversation);
+        } catch (error) {
+          console.error('Error creating conversation:', error);
+        }
+      }
+    };
+    
+    initializeConversation();
+  }, [id, currentUser, otherUser, conversation]);
   
   // Convert to display format
   const displayMessages: Message[] = conversationMessages.map(msg => ({

@@ -102,12 +102,8 @@ export default function ListingDetailScreen() {
     try {
       console.log('Creating conversation with:', listing.createdBy);
       
-      // Create conversation with the listing creator
-      const conversationId = await createConversation(
-        listing.createdBy,
-        `Bonjour, je suis intéressé(e) par votre annonce "${listing.title}".`,
-        listing.id
-      );
+      // Create conversation without initial message
+      const conversationId = await createConversation(listing.createdBy);
       
       console.log('Conversation created:', conversationId);
       

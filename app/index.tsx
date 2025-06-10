@@ -23,45 +23,41 @@ export default function LandingScreen() {
   
   return (
     <View style={styles.container}>
-      {/* Hero Section */}
       <LinearGradient
         colors={[Colors.primary, Colors.secondary]}
-        style={styles.heroSection}
+        style={styles.content}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
-        <View style={styles.heroContent}>
-          <Text style={styles.heroTitle}>
-            Organisez vos événements
-            {'\n'}
-            <Text style={styles.heroTitleAccent}>parfaits</Text>
+        <View style={styles.logoSection}>
+          <Text style={styles.logo}>🎉</Text>
+          <Text style={styles.appName}>EventApp</Text>
+          <Text style={styles.tagline}>
+            Connectez-vous pour organiser vos événements
           </Text>
-          <Text style={styles.heroSubtitle}>
-            La plateforme qui connecte organisateurs, prestataires et établissements pour créer des événements inoubliables.
-          </Text>
+        </View>
+        
+        <View style={styles.buttonSection}>
+          <TouchableOpacity
+            style={styles.loginButton}
+            onPress={() => router.push('/(auth)/login')}
+          >
+            <Text style={styles.loginButtonText}>Se connecter</Text>
+          </TouchableOpacity>
           
-          <View style={styles.heroButtons}>
-            <TouchableOpacity
-              style={styles.primaryButton}
-              onPress={() => router.push('/(auth)/register')}
-            >
-              <Text style={styles.primaryButtonText}>Commencer</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={styles.secondaryButton}
-              onPress={() => router.push('/(auth)/login')}
-            >
-              <Text style={styles.secondaryButtonText}>Se connecter</Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            style={styles.registerButton}
+            onPress={() => router.push('/(auth)/register')}
+          >
+            <Text style={styles.registerButtonText}>Créer un compte</Text>
+          </TouchableOpacity>
           
           <TouchableOpacity 
             style={styles.demoButton}
             onPress={() => router.push('/(auth)/demo')}
           >
             <Text style={styles.demoButtonText}>
-              ✨ Essayer avec un compte de démonstration
+              ✨ Essayer avec un compte démo
             </Text>
           </TouchableOpacity>
         </View>
@@ -73,43 +69,38 @@ export default function LandingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
-  heroSection: {
+  content: {
     flex: 1,
-    paddingTop: 80,
-    paddingBottom: 40,
-    paddingHorizontal: 20,
     justifyContent: 'center',
-  },
-  heroContent: {
     alignItems: 'center',
+    paddingHorizontal: 40,
   },
-  heroTitle: {
-    fontSize: 36,
+  logoSection: {
+    alignItems: 'center',
+    marginBottom: 80,
+  },
+  logo: {
+    fontSize: 80,
+    marginBottom: 20,
+  },
+  appName: {
+    fontSize: 32,
     fontWeight: '900',
     color: '#fff',
-    textAlign: 'center',
-    marginBottom: 20,
-    lineHeight: 44,
+    marginBottom: 16,
   },
-  heroTitleAccent: {
-    color: '#FFE066',
-  },
-  heroSubtitle: {
+  tagline: {
     fontSize: 18,
     color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
-    marginBottom: 40,
-    lineHeight: 26,
-    paddingHorizontal: 10,
+    lineHeight: 24,
   },
-  heroButtons: {
+  buttonSection: {
     width: '100%',
     gap: 16,
-    marginBottom: 24,
   },
-  primaryButton: {
+  loginButton: {
     backgroundColor: '#fff',
     paddingVertical: 18,
     borderRadius: 16,
@@ -120,19 +111,19 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 6,
   },
-  primaryButtonText: {
+  loginButtonText: {
     color: Colors.primary,
     fontSize: 18,
     fontWeight: '700',
   },
-  secondaryButton: {
+  registerButton: {
     borderWidth: 2,
     borderColor: '#fff',
     paddingVertical: 16,
     borderRadius: 16,
     alignItems: 'center',
   },
-  secondaryButtonText: {
+  registerButtonText: {
     color: '#fff',
     fontSize: 18,
     fontWeight: '600',
@@ -144,6 +135,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.3)',
+    alignItems: 'center',
   },
   demoButtonText: {
     color: '#fff',

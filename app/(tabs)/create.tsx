@@ -127,6 +127,9 @@ export default function CreateListingScreen() {
     }
     
     try {
+      console.log('Creating listing with user:', user);
+      console.log('User type:', user.userType);
+      
       const newListing = await createListing({
         title: title.trim(),
         description: description.trim(),
