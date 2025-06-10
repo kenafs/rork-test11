@@ -16,7 +16,7 @@ const demoAccounts = [
     description: 'Découvrez l\'expérience d\'un prestataire DJ',
     icon: Briefcase,
     color: Colors.primary,
-    gradient: Colors.gradients.primary,
+    gradient: ['#667eea', '#764ba2'] as const,
     userData: {
       name: 'Alex Martin - DJ Pro',
       email: 'demo.dj@example.com',
@@ -26,6 +26,7 @@ const demoAccounts = [
       city: 'Paris',
       rating: 4.8,
       reviewCount: 127,
+      profileImage: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&auto=format&fit=crop',
     }
   },
   {
@@ -34,7 +35,7 @@ const demoAccounts = [
     description: 'Explorez l\'interface d\'un établissement',
     icon: Building,
     color: Colors.accent,
-    gradient: Colors.gradients.catering,
+    gradient: ['#FF6B35', '#FF7F50'] as const,
     userData: {
       name: 'Restaurant Le Gourmet',
       email: 'demo.restaurant@example.com',
@@ -46,6 +47,25 @@ const demoAccounts = [
       instagram: '@legourmet_paris',
       rating: 4.6,
       reviewCount: 89,
+      profileImage: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&auto=format&fit=crop',
+    }
+  },
+  {
+    type: 'client' as UserType,
+    title: 'Client Particulier',
+    description: 'Testez l\'expérience d\'un client',
+    icon: User,
+    color: Colors.secondary,
+    gradient: ['#10B981', '#32CD32'] as const,
+    userData: {
+      name: 'Marie Dubois',
+      email: 'demo.client@example.com',
+      userType: 'client' as UserType,
+      description: 'Particulier organisant des événements familiaux et professionnels.',
+      city: 'Paris',
+      rating: 4.2,
+      reviewCount: 15,
+      profileImage: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&auto=format&fit=crop',
     }
   },
 ];
@@ -131,11 +151,17 @@ export default function DemoScreen() {
                         <Text style={styles.featureText}>• Envoyer des devis</Text>
                         <Text style={styles.featureText}>• Gérer les messages</Text>
                       </>
-                    ) : (
+                    ) : account.type === 'business' ? (
                       <>
                         <Text style={styles.featureText}>• Publier des offres</Text>
                         <Text style={styles.featureText}>• Recevoir des demandes</Text>
                         <Text style={styles.featureText}>• Gérer l'établissement</Text>
+                      </>
+                    ) : (
+                      <>
+                        <Text style={styles.featureText}>• Rechercher des services</Text>
+                        <Text style={styles.featureText}>• Contacter des prestataires</Text>
+                        <Text style={styles.featureText}>• Laisser des avis</Text>
                       </>
                     )}
                   </View>

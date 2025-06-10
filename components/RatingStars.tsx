@@ -8,6 +8,7 @@ interface RatingStarsProps {
   reviewCount?: number;
   size?: 'small' | 'medium' | 'large';
   showCount?: boolean;
+  showNumber?: boolean;
 }
 
 export default function RatingStars({ 
@@ -15,6 +16,7 @@ export default function RatingStars({
   reviewCount, 
   size = 'medium',
   showCount = true,
+  showNumber = false,
 }: RatingStarsProps) {
   // Determine star size based on the size prop
   const getStarSize = () => {
@@ -61,6 +63,12 @@ export default function RatingStars({
         })}
       </View>
       
+      {showNumber && (
+        <Text style={[styles.ratingNumber, { fontSize: textSize }]}>
+          {rating.toFixed(1)}
+        </Text>
+      )}
+      
       {showCount && reviewCount !== undefined && (
         <Text style={[styles.reviewCount, { fontSize: textSize }]}>
           ({reviewCount})
@@ -80,6 +88,11 @@ const styles = StyleSheet.create({
   },
   star: {
     marginRight: 2,
+  },
+  ratingNumber: {
+    color: Colors.text,
+    marginLeft: 4,
+    fontWeight: '600',
   },
   reviewCount: {
     color: Colors.textLight,

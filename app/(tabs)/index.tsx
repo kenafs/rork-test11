@@ -6,6 +6,7 @@ import { useListings } from '@/hooks/useListings';
 import { useLocation } from '@/hooks/useLocation';
 import { useAuth } from '@/hooks/useAuth';
 import { useFavorites } from '@/hooks/useFavorites';
+import { useLanguage } from '@/hooks/useLanguage';
 import ListingCard from '@/components/ListingCard';
 import CategoryFilter from '@/components/CategoryFilter';
 import Button from '@/components/Button';
@@ -16,7 +17,8 @@ const { width } = Dimensions.get('window');
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const { t } = useLanguage();
   const { 
     listings, 
     filteredListings, 
@@ -79,7 +81,7 @@ export default function HomeScreen() {
       id: 'dj_services', 
       name: 'DJ & Musique', 
       icon: Music, 
-      gradient: Colors.gradients.music,
+      gradient: ['#FF1493', '#FF69B4'] as const,
       emoji: '🎵',
       description: 'Ambiance garantie',
       illustration: '🎧'
@@ -88,7 +90,7 @@ export default function HomeScreen() {
       id: 'catering', 
       name: 'Traiteur', 
       icon: Utensils, 
-      gradient: Colors.gradients.catering,
+      gradient: ['#FF6B35', '#FF7F50'] as const,
       emoji: '🍽️',
       description: 'Saveurs d\'exception',
       illustration: '👨‍🍳'
@@ -97,7 +99,7 @@ export default function HomeScreen() {
       id: 'venue_rental', 
       name: 'Lieux', 
       icon: Calendar, 
-      gradient: Colors.gradients.venue,
+      gradient: ['#00BFFF', '#40E0D0'] as const,
       emoji: '🏛️',
       description: 'Espaces magiques',
       illustration: '🏰'
@@ -106,7 +108,7 @@ export default function HomeScreen() {
       id: 'staff_services', 
       name: 'Staff', 
       icon: Users, 
-      gradient: Colors.gradients.staff,
+      gradient: ['#10B981', '#32CD32'] as const,
       emoji: '👥',
       description: 'Service premium',
       illustration: '💼'
@@ -115,7 +117,13 @@ export default function HomeScreen() {
 
   // Quick actions for authenticated users
   const quickActions = [
-    { title: 'Créer', icon: Plus, color: Colors.primary, action: () => router.push('/(tabs)/create'), bg: '#EEF2FF' },
+    { 
+      title: user?.userType === 'business' ? 'Publier' : 'Créer', 
+      icon: Plus, 
+      color: Colors.primary, 
+      action: () => router.push('/(tabs)/create'), 
+      bg: '#EEF2FF' 
+    },
     { title: 'Favoris', icon: Heart, color: Colors.neonPink, action: () => router.push('/favorites'), bg: '#FDF2F8' },
     { title: 'Messages', icon: Mic, color: Colors.electricBlue, action: () => router.push('/(tabs)/messages'), bg: '#EFF6FF' },
   ];
@@ -124,7 +132,7 @@ export default function HomeScreen() {
   const renderHeader = () => (
     <View style={styles.headerContainer}>
       <LinearGradient
-        colors={Colors.gradients.primary}
+        colors={['#667eea', '#764ba2'] as const}
         style={styles.headerGradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -132,7 +140,7 @@ export default function HomeScreen() {
         <View style={styles.headerContent}>
           <View style={styles.welcomeSection}>
             <View style={styles.titleRow}>
-              <Text style={styles.greeting}>Salut ! 👋</Text>
+              <Text style={styles.greeting}>{t('greeting')}</Text>
               {city && (
                 <TouchableOpacity style={styles.locationChip} onPress={requestPermission}>
                   <MapPin size={12} color="#fff" />
@@ -141,7 +149,7 @@ export default function HomeScreen() {
               )}
             </View>
             <Text style={styles.tagline}>
-              Trouve ton prestataire <Text style={styles.highlight}>parfait</Text> !
+              {user?.userType === 'business' ? t('taglineBusiness') : t('taglineProvider')}
             </Text>
           </View>
         </View>
@@ -368,10 +376,12 @@ export default function HomeScreen() {
               <Text style={styles.emptyEmoji}>🎭</Text>
               <Text style={styles.emptyTitle}>Aucune annonce trouvée</Text>
               <Text style={styles.emptyText}>
-                Essaie de modifier tes filtres ou crée la première annonce !
+                {user?.userType === 'business' 
+                  ? 'Publiez votre première offre pour attirer des clients !'
+                  : 'Essaie de modifier tes filtres ou crée la première annonce !'}
               </Text>
               <Button 
-                title="🎯 Créer une annonce"
+                title={user?.userType === 'business' ? '🏢 Publier une offre' : '🎯 Créer une annonce'}
                 onPress={() => router.push('/(tabs)/create')}
                 style={styles.createButton}
               />

@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Switch, Alert } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/hooks/useLanguage';
+import { LANGUAGES } from '@/constants/languages';
+import { SettingItem } from '@/types';
 import Colors from '@/constants/colors';
 import { 
   Moon, 
@@ -15,12 +18,14 @@ import {
   User,
   Mail,
   Phone,
-  MapPin
+  MapPin,
+  Globe
 } from 'lucide-react-native';
 
 export default function SettingsScreen() {
   const router = useRouter();
   const { user, logout } = useAuth();
+  const { currentLanguage, setLanguage, t } = useLanguage();
   const [darkMode, setDarkMode] = useState(false);
   const [notifications, setNotifications] = useState(true);
   const [emailNotifications, setEmailNotifications] = useState(true);
@@ -28,12 +33,12 @@ export default function SettingsScreen() {
   
   const handleLogout = () => {
     Alert.alert(
-      'Déconnexion',
+      t('logout'),
       'Êtes-vous sûr de vouloir vous déconnecter ?',
       [
-        { text: 'Annuler', style: 'cancel' },
+        { text: t('cancel'), style: 'cancel' },
         { 
-          text: 'Déconnexion', 
+          text: t('logout'), 
           style: 'destructive',
           onPress: () => {
             logout();
@@ -43,32 +48,54 @@ export default function SettingsScreen() {
       ]
     );
   };
+
+  const handleLanguageSelect = () => {
+    Alert.alert(
+      t('language'),
+      'Choisissez votre langue',
+      [
+        ...LANGUAGES.map(lang => ({
+          text: `${lang.flag} ${lang.name}`,
+          onPress: () => setLanguage(lang.code as any),
+          style: currentLanguage === lang.code ? 'default' : 'default' as any,
+        })),
+        { text: t('cancel'), style: 'cancel' },
+      ]
+    );
+  };
   
   const settingsGroups = [
     {
-      title: 'Apparence',
+      title: t('appearance'),
       items: [
         {
           icon: darkMode ? Moon : Sun,
-          title: 'Mode sombre',
+          title: t('darkMode'),
           subtitle: 'Activer le thème sombre',
           type: 'switch',
           value: darkMode,
           onToggle: setDarkMode,
-        },
+        } as SettingItem,
+        {
+          icon: Globe,
+          title: t('language'),
+          subtitle: `${LANGUAGES.find(l => l.code === currentLanguage)?.flag} ${LANGUAGES.find(l => l.code === currentLanguage)?.name}`,
+          type: 'navigation',
+          onPress: handleLanguageSelect,
+        } as SettingItem,
       ],
     },
     {
-      title: 'Notifications',
+      title: t('notifications'),
       items: [
         {
           icon: Bell,
-          title: 'Notifications',
+          title: t('notifications'),
           subtitle: 'Recevoir des notifications',
           type: 'switch',
           value: notifications,
           onToggle: setNotifications,
-        },
+        } as SettingItem,
         {
           icon: Mail,
           title: 'Notifications email',
@@ -76,7 +103,7 @@ export default function SettingsScreen() {
           type: 'switch',
           value: emailNotifications,
           onToggle: setEmailNotifications,
-        },
+        } as SettingItem,
         {
           icon: Phone,
           title: 'Notifications push',
@@ -84,7 +111,7 @@ export default function SettingsScreen() {
           type: 'switch',
           value: pushNotifications,
           onToggle: setPushNotifications,
-        },
+        } as SettingItem,
       ],
     },
     {
@@ -92,25 +119,25 @@ export default function SettingsScreen() {
       items: [
         {
           icon: User,
-          title: 'Modifier le profil',
+          title: t('editProfile'),
           subtitle: 'Informations personnelles',
           type: 'navigation',
-          onPress: () => router.push('/profile/edit'),
-        },
+          onPress: () => router.push('/edit-profile'),
+        } as SettingItem,
         {
           icon: Shield,
-          title: 'Confidentialité',
+          title: t('privacy'),
           subtitle: 'Paramètres de confidentialité',
           type: 'navigation',
           onPress: () => Alert.alert('Bientôt disponible', 'Cette fonctionnalité sera disponible prochainement.'),
-        },
+        } as SettingItem,
         {
           icon: CreditCard,
-          title: 'Paiements',
+          title: t('payments'),
           subtitle: 'Gérer vos moyens de paiement',
           type: 'navigation',
           onPress: () => Alert.alert('Stripe Integration', 'L\'intégration Stripe sera disponible prochainement pour gérer vos paiements.'),
-        },
+        } as SettingItem,
       ],
     },
     {
@@ -118,18 +145,18 @@ export default function SettingsScreen() {
       items: [
         {
           icon: HelpCircle,
-          title: 'Aide & Support',
+          title: t('help'),
           subtitle: 'FAQ et contact',
           type: 'navigation',
           onPress: () => Alert.alert('Support', 'Contactez-nous à support@eventapp.com'),
-        },
+        } as SettingItem,
         {
           icon: MapPin,
-          title: 'À propos',
+          title: t('about'),
           subtitle: 'Version et informations',
           type: 'navigation',
           onPress: () => Alert.alert('À propos', 'Event App v1.0.0\nDéveloppé avec ❤️'),
-        },
+        } as SettingItem,
       ],
     },
   ];
@@ -137,7 +164,7 @@ export default function SettingsScreen() {
   if (!user) {
     return (
       <View style={styles.container}>
-        <Stack.Screen options={{ title: 'Paramètres' }} />
+        <Stack.Screen options={{ title: t('settings') }} />
         <View style={styles.loginPrompt}>
           <Text style={styles.loginTitle}>Connectez-vous pour accéder aux paramètres</Text>
           <TouchableOpacity 
@@ -154,7 +181,7 @@ export default function SettingsScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ 
-        title: 'Paramètres',
+        title: t('settings'),
         headerStyle: { backgroundColor: Colors.primary },
         headerTintColor: '#fff',
         headerTitleStyle: { fontWeight: '700' }
@@ -188,7 +215,7 @@ export default function SettingsScreen() {
                     styles.settingItem,
                     itemIndex === group.items.length - 1 && styles.lastItem
                   ]}
-                  onPress={item.onPress}
+                  onPress={item.type === 'navigation' ? item.onPress : undefined}
                   disabled={item.type === 'switch'}
                   activeOpacity={item.type === 'switch' ? 1 : 0.7}
                 >
@@ -223,7 +250,7 @@ export default function SettingsScreen() {
         <View style={styles.logoutSection}>
           <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <LogOut size={20} color={Colors.error} />
-            <Text style={styles.logoutText}>Déconnexion</Text>
+            <Text style={styles.logoutText}>{t('logout')}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

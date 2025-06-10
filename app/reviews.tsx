@@ -51,7 +51,7 @@ export default function ReviewsScreen() {
           </View>
         </View>
         <View style={styles.ratingContainer}>
-          <RatingStars rating={item.rating} size="small" showNumber={false} />
+          <RatingStars rating={item.rating} size="small" showCount={false} />
         </View>
       </View>
       
@@ -86,7 +86,7 @@ export default function ReviewsScreen() {
         <View style={styles.statsContainer}>
           <View style={styles.averageRating}>
             <Text style={styles.averageNumber}>{averageRating.toFixed(1)}</Text>
-            <RatingStars rating={averageRating} size="medium" showNumber={false} />
+            <RatingStars rating={averageRating} size="medium" showCount={false} />
             <Text style={styles.totalReviews}>{mockReviews.length} avis</Text>
           </View>
           

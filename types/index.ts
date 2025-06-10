@@ -21,6 +21,9 @@ export interface User {
   description?: string;
   website?: string;
   instagram?: string;
+  specialties?: string;
+  address?: string;
+  city?: string;
 }
 
 export interface Provider extends User {
@@ -82,6 +85,7 @@ export interface Review {
   comment: string;
   createdAt: number;
   helpful?: number;
+  response?: string;
 }
 
 export interface Message {
@@ -126,4 +130,20 @@ export interface Quote {
   createdAt: number;
   updatedAt: number;
   notes?: string;
+}
+
+export interface Language {
+  code: string;
+  name: string;
+  flag: string;
+}
+
+export interface SettingItem {
+  icon: any;
+  title: string;
+  subtitle: string;
+  type: 'switch' | 'navigation';
+  value?: boolean;
+  onToggle?: (value: boolean) => void;
+  onPress?: () => void;
 }
