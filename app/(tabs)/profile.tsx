@@ -34,7 +34,14 @@ export default function ProfileScreen() {
       'Êtes-vous sûr de vouloir vous déconnecter ?',
       [
         { text: 'Annuler', style: 'cancel' },
-        { text: 'Déconnexion', style: 'destructive', onPress: () => logout() },
+        { 
+          text: 'Déconnexion', 
+          style: 'destructive', 
+          onPress: () => {
+            logout();
+            router.replace('/');
+          }
+        },
       ]
     );
   };

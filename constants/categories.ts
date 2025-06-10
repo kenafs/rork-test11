@@ -1,32 +1,32 @@
 export const serviceCategories = [
   {
     id: 'dj',
-    name: 'DJ Services',
+    name: 'Services DJ',
     icon: 'music',
   },
   {
     id: 'catering',
-    name: 'Catering',
+    name: 'Traiteur',
     icon: 'utensils',
   },
   {
     id: 'staff',
-    name: 'Staff Services',
+    name: 'Services de Personnel',
     icon: 'users',
   },
   {
     id: 'photography',
-    name: 'Photography',
+    name: 'Photographie',
     icon: 'camera',
   },
   {
     id: 'decoration',
-    name: 'Decoration',
+    name: 'Décoration',
     icon: 'palette',
   },
   {
     id: 'entertainment',
-    name: 'Entertainment',
+    name: 'Animation',
     icon: 'microphone',
   },
 ];
@@ -44,7 +44,7 @@ export const venueCategories = [
   },
   {
     id: 'hotel',
-    name: 'Hotels',
+    name: 'Hôtels',
     icon: 'hotel',
   },
   {
@@ -54,12 +54,12 @@ export const venueCategories = [
   },
   {
     id: 'garden',
-    name: 'Gardens & Outdoor',
+    name: 'Jardins & Extérieur',
     icon: 'tree',
   },
   {
     id: 'unusual',
-    name: 'Unusual Venues',
+    name: 'Lieux Insolites',
     icon: 'star',
   },
 ];
@@ -67,37 +67,37 @@ export const venueCategories = [
 export const listingCategories = [
   {
     id: 'all',
-    name: 'All Listings',
+    name: 'Toutes les Annonces',
     icon: 'list',
   },
   {
     id: 'venue_rental',
-    name: 'Venue Rental',
+    name: 'Location de Lieu',
     icon: 'building',
   },
   {
     id: 'dj_services',
-    name: 'DJ Services',
+    name: 'Services DJ',
     icon: 'music',
   },
   {
     id: 'catering',
-    name: 'Catering',
+    name: 'Traiteur',
     icon: 'utensils',
   },
   {
     id: 'staff_needed',
-    name: 'Staff Needed',
+    name: 'Personnel Recherché',
     icon: 'user-plus',
   },
   {
     id: 'staff_services',
-    name: 'Staff Services',
+    name: 'Services de Personnel',
     icon: 'users',
   },
   {
     id: 'wedding_venue',
-    name: 'Wedding Venues',
+    name: 'Lieux de Mariage',
     icon: 'heart',
   },
 ];

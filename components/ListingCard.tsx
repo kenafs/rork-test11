@@ -70,13 +70,13 @@ export default function ListingCard({ listing }: ListingCardProps) {
     }
     // Fallback image based on category
     const fallbackImages = {
-      'DJ Services': 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800&auto=format&fit=crop',
-      'Catering': 'https://images.unsplash.com/photo-1555244162-803834f70033?w=800&auto=format&fit=crop',
-      'Staff Services': 'https://images.unsplash.com/photo-1566554273541-37a9ca77b91f?w=800&auto=format&fit=crop',
-      'Venue Rental': 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=800&auto=format&fit=crop',
-      'Wedding Venue': 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=800&auto=format&fit=crop',
+      'Services DJ': 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800&auto=format&fit=crop',
+      'Traiteur': 'https://images.unsplash.com/photo-1555244162-803834f70033?w=800&auto=format&fit=crop',
+      'Services de Personnel': 'https://images.unsplash.com/photo-1566554273541-37a9ca77b91f?w=800&auto=format&fit=crop',
+      'Location de Lieu': 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=800&auto=format&fit=crop',
+      'Lieu de Mariage': 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=800&auto=format&fit=crop',
     };
-    return { uri: fallbackImages[listing.category as keyof typeof fallbackImages] || fallbackImages['Venue Rental'] };
+    return { uri: fallbackImages[listing.category as keyof typeof fallbackImages] || fallbackImages['Location de Lieu'] };
   };
   
   return (
@@ -163,6 +163,7 @@ const styles = StyleSheet.create({
   cardContainer: {
     alignItems: 'center',
     marginBottom: 20,
+    width: '100%',
   },
   container: {
     width: CARD_WIDTH,

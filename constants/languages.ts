@@ -62,6 +62,8 @@ export const TRANSLATIONS = {
     payments: 'Paiements',
     help: 'Aide & Support',
     about: 'À propos',
+    account: 'Compte',
+    support: 'Support',
   },
   en: {
     // Navigation
@@ -106,6 +108,8 @@ export const TRANSLATIONS = {
     payments: 'Payments',
     help: 'Help & Support',
     about: 'About',
+    account: 'Account',
+    support: 'Support',
   },
   es: {
     // Navigation
@@ -150,5 +154,7 @@ export const TRANSLATIONS = {
     payments: 'Pagos',
     help: 'Ayuda y Soporte',
     about: 'Acerca de',
+    account: 'Cuenta',
+    support: 'Soporte',
   },
 };

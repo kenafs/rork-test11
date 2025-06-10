@@ -63,6 +63,26 @@ export default function SettingsScreen() {
       ]
     );
   };
+
+  const handleEditProfile = () => {
+    router.push('/edit-profile');
+  };
+
+  const handlePrivacy = () => {
+    Alert.alert('Confidentialité', 'Cette fonctionnalité sera disponible prochainement.');
+  };
+
+  const handlePayments = () => {
+    Alert.alert('Stripe Integration', 'L\'intégration Stripe sera disponible prochainement pour gérer vos paiements.');
+  };
+
+  const handleHelp = () => {
+    Alert.alert('Support', 'Contactez-nous à support@eventapp.com');
+  };
+
+  const handleAbout = () => {
+    Alert.alert('À propos', 'Event App v1.0.0\nDéveloppé avec ❤️');
+  };
   
   const settingsGroups = [
     {
@@ -115,47 +135,47 @@ export default function SettingsScreen() {
       ],
     },
     {
-      title: 'Compte',
+      title: t('account'),
       items: [
         {
           icon: User,
           title: t('editProfile'),
           subtitle: 'Informations personnelles',
           type: 'navigation',
-          onPress: () => router.push('/edit-profile'),
+          onPress: handleEditProfile,
         } as SettingItem,
         {
           icon: Shield,
           title: t('privacy'),
           subtitle: 'Paramètres de confidentialité',
           type: 'navigation',
-          onPress: () => Alert.alert('Bientôt disponible', 'Cette fonctionnalité sera disponible prochainement.'),
+          onPress: handlePrivacy,
         } as SettingItem,
         {
           icon: CreditCard,
           title: t('payments'),
           subtitle: 'Gérer vos moyens de paiement',
           type: 'navigation',
-          onPress: () => Alert.alert('Stripe Integration', 'L\'intégration Stripe sera disponible prochainement pour gérer vos paiements.'),
+          onPress: handlePayments,
         } as SettingItem,
       ],
     },
     {
-      title: 'Support',
+      title: t('support'),
       items: [
         {
           icon: HelpCircle,
           title: t('help'),
           subtitle: 'FAQ et contact',
           type: 'navigation',
-          onPress: () => Alert.alert('Support', 'Contactez-nous à support@eventapp.com'),
+          onPress: handleHelp,
         } as SettingItem,
         {
           icon: MapPin,
           title: t('about'),
           subtitle: 'Version et informations',
           type: 'navigation',
-          onPress: () => Alert.alert('À propos', 'Event App v1.0.0\nDéveloppé avec ❤️'),
+          onPress: handleAbout,
         } as SettingItem,
       ],
     },

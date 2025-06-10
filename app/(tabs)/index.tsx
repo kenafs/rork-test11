@@ -81,7 +81,7 @@ export default function HomeScreen() {
       id: 'dj_services', 
       name: 'DJ & Musique', 
       icon: Music, 
-      gradient: ['#FF1493', '#FF69B4'] as const,
+      gradient: ['#FF1493', '#FF69B4'],
       emoji: '🎵',
       description: 'Ambiance garantie',
       illustration: '🎧'
@@ -90,7 +90,7 @@ export default function HomeScreen() {
       id: 'catering', 
       name: 'Traiteur', 
       icon: Utensils, 
-      gradient: ['#FF6B35', '#FF7F50'] as const,
+      gradient: ['#FF6B35', '#FF7F50'],
       emoji: '🍽️',
       description: 'Saveurs d\'exception',
       illustration: '👨‍🍳'
@@ -99,16 +99,16 @@ export default function HomeScreen() {
       id: 'venue_rental', 
       name: 'Lieux', 
       icon: Calendar, 
-      gradient: ['#00BFFF', '#40E0D0'] as const,
+      gradient: ['#00BFFF', '#40E0D0'],
       emoji: '🏛️',
       description: 'Espaces magiques',
       illustration: '🏰'
     },
     { 
       id: 'staff_services', 
-      name: 'Staff', 
+      name: 'Personnel', 
       icon: Users, 
-      gradient: ['#10B981', '#32CD32'] as const,
+      gradient: ['#10B981', '#32CD32'],
       emoji: '👥',
       description: 'Service premium',
       illustration: '💼'
@@ -132,7 +132,7 @@ export default function HomeScreen() {
   const renderHeader = () => (
     <View style={styles.headerContainer}>
       <LinearGradient
-        colors={['#667eea', '#764ba2'] as const}
+        colors={['#667eea', '#764ba2']}
         style={styles.headerGradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -273,7 +273,7 @@ export default function HomeScreen() {
           
           <View style={styles.loginPromptModern}>
             <LinearGradient
-              colors={['#667eea', '#764ba2'] as const}
+              colors={['#667eea', '#764ba2']}
               style={styles.loginGradient}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
