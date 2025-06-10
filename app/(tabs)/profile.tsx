@@ -93,11 +93,13 @@ export default function ProfileScreen() {
     <View style={styles.infoSection}>
       <Text style={styles.sectionTitle}>Services proposés</Text>
       <View style={styles.servicesList}>
-        {provider.services && provider.services.map((service, index) => (
+        {provider.services && provider.services.length > 0 ? provider.services.map((service, index) => (
           <View key={index} style={styles.serviceTag}>
             <Text style={styles.serviceText}>{service}</Text>
           </View>
-        ))}
+        )) : (
+          <Text style={styles.emptyText}>Aucun service défini</Text>
+        )}
       </View>
       
       {provider.priceRange && (
@@ -244,7 +246,7 @@ export default function ProfileScreen() {
         {user.userType !== 'client' && (
           <Button 
             title={getCreateButtonText()}
-            onPress={() => router.push('/create-listing')}
+            onPress={() => router.push('/(tabs)/create')}
             style={styles.actionButton}
           />
         )}
@@ -326,7 +328,7 @@ export default function ProfileScreen() {
               </Text>
               <TouchableOpacity 
                 style={styles.createListingButton}
-                onPress={() => router.push('/create-listing')}
+                onPress={() => router.push('/(tabs)/create')}
               >
                 <Plus size={20} color="#fff" style={{ marginRight: 8 }} />
                 <Text style={styles.createListingText}>{getCreateButtonText()}</Text>
@@ -529,6 +531,11 @@ const styles = StyleSheet.create({
     color: Colors.secondary,
     fontWeight: '500',
   },
+  emptyText: {
+    fontSize: 14,
+    color: Colors.textLight,
+    fontStyle: 'italic',
+  },
   listingsSection: {
     padding: 16,
     paddingTop: 0,
@@ -565,12 +572,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: Colors.text,
     marginBottom: 8,
-  },
-  emptyText: {
-    fontSize: 14,
-    color: Colors.textLight,
-    textAlign: 'center',
-    marginBottom: 16,
   },
   createListingButton: {
     flexDirection: 'row',

@@ -44,6 +44,7 @@ export default function CreateQuoteScreen() {
   const allUsers = [...mockProviders, ...mockVenues];
   const conversationParticipant = conversationId ? allUsers.find(u => u.id === conversationId) : null;
   
+  // Only providers can create quotes
   if (!user || user.userType !== 'provider') {
     return (
       <View style={styles.container}>

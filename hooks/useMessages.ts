@@ -4,9 +4,20 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Message, Conversation } from '@/types';
 import { useAuth } from './useAuth';
 
+interface MessageContact {
+  participantId: string;
+  participantName: string;
+  participantImage?: string;
+  participantType: 'provider' | 'business' | 'client';
+  lastMessage: string;
+  unread: number;
+  timestamp?: number;
+}
+
 interface MessagesState {
   conversations: Conversation[];
   messages: { [conversationId: string]: Message[] };
+  contacts: MessageContact[];
   isLoading: boolean;
   
   fetchConversations: () => Promise<void>;
@@ -15,6 +26,7 @@ interface MessagesState {
   createConversation: (participantId: string, initialMessage?: string, listingId?: string) => Promise<string>;
   markAsRead: (conversationId: string) => Promise<void>;
   refreshConversations: () => Promise<void>;
+  addContact: (contact: MessageContact) => void;
 }
 
 export const useMessages = create<MessagesState>()(
@@ -22,6 +34,7 @@ export const useMessages = create<MessagesState>()(
     (set, get) => ({
       conversations: [],
       messages: {},
+      contacts: [],
       isLoading: false,
       
       fetchConversations: async () => {
@@ -179,6 +192,37 @@ export const useMessages = create<MessagesState>()(
       refreshConversations: async () => {
         await get().fetchConversations();
       },
+      
+      addContact: (contact: MessageContact) => {
+        set(state => {
+          // Check if contact already exists
+          const existingContactIndex = state.contacts.findIndex(c => c.participantId === contact.participantId);
+          
+          let updatedContacts;
+          if (existingContactIndex >= 0) {
+            // Update existing contact
+            updatedContacts = [...state.contacts];
+            updatedContacts[existingContactIndex] = {
+              ...updatedContacts[existingContactIndex],
+              lastMessage: contact.lastMessage,
+              timestamp: Date.now(),
+            };
+          } else {
+            // Add new contact
+            updatedContacts = [
+              { ...contact, timestamp: Date.now() },
+              ...state.contacts
+            ];
+          }
+          
+          // Sort by timestamp (most recent first)
+          updatedContacts.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+          
+          return {
+            contacts: updatedContacts,
+          };
+        });
+      },
     }),
     {
       name: 'messages-storage',
@@ -186,6 +230,7 @@ export const useMessages = create<MessagesState>()(
       partialize: (state) => ({
         conversations: state.conversations,
         messages: state.messages,
+        contacts: state.contacts,
       }),
     }
   )

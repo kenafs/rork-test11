@@ -116,7 +116,7 @@ export default function CreateListingScreen() {
       });
       
       Alert.alert('Succès', 'Votre annonce a été publiée avec succès.', [
-        { text: 'OK', onPress: () => router.replace('/') }
+        { text: 'OK', onPress: () => router.replace('/(tabs)') }
       ]);
     } catch (error) {
       Alert.alert('Erreur', "Une erreur s'est produite lors de la publication de votre annonce.");

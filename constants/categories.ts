@@ -17,10 +17,10 @@ export const listingCategories = [
 
 export const categoryMap: { [key: string]: string } = {
   'all': 'Tous',
-  'dj': 'Services DJ',
+  'dj': 'DJ',
   'catering': 'Traiteur',
   'photography': 'Photographe',
-  'venue': 'Location de Lieu',
+  'venue': 'Lieu',
   'decoration': 'Décoration',
   'music': 'Musique',
   'entertainment': 'Animation',
@@ -29,7 +29,7 @@ export const categoryMap: { [key: string]: string } = {
   'security': 'Sécurité',
   'cleaning': 'Nettoyage',
   'equipment': 'Matériel',
-  'staff': 'Services de Personnel',
+  'staff': 'Personnel',
 };
 
 export const businessCategories = [

@@ -1,15 +1,10 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Dimensions } from 'react-native';
-import { Image } from 'expo-image';
+import { StyleSheet, View, Text, TouchableOpacity, Image } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useFavorites } from '@/hooks/useFavorites';
 import { Listing } from '@/types';
 import Colors from '@/constants/colors';
 import RatingStars from './RatingStars';
-import { MapPin, Heart, MessageCircle, Calendar, FileText } from 'lucide-react-native';
-
-const { width } = Dimensions.get('window');
-const CARD_WIDTH = width - 40;
+import { MapPin, Clock, Euro } from 'lucide-react-native';
 
 interface ListingCardProps {
   listing: Listing;
@@ -17,163 +12,118 @@ interface ListingCardProps {
 
 export default function ListingCard({ listing }: ListingCardProps) {
   const router = useRouter();
-  const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
-  
-  const isListingFavorite = isFavorite(listing.id);
   
   const handlePress = () => {
     router.push(`/listing/${listing.id}`);
   };
   
-  const handleFavoritePress = (e: any) => {
-    e.stopPropagation();
-    if (isListingFavorite) {
-      removeFromFavorites(listing.id);
-    } else {
-      addToFavorites(listing.id);
-    }
-  };
-  
-  const handleContactPress = (e: any) => {
-    e.stopPropagation();
-    router.push(`/conversation/new?recipientId=${listing.createdBy}&listingId=${listing.id}`);
-  };
-  
-  const handleQuotePress = (e: any) => {
-    e.stopPropagation();
-    router.push(`/create-quote/${listing.id}`);
-  };
-  
-  const formatPrice = (price?: number, priceType?: string) => {
-    if (!price) return 'Prix sur demande';
-    
-    const formattedPrice = `${price}€`;
-    switch (priceType) {
-      case 'hourly': return `${formattedPrice}/h`;
-      case 'daily': return `${formattedPrice}/jour`;
-      case 'negotiable': return `À partir de ${formattedPrice}`;
-      default: return formattedPrice;
-    }
-  };
-  
   const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleDateString('fr-FR', {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString('fr-FR', {
       day: 'numeric',
       month: 'short',
     });
   };
   
-  // Get image with fallback
-  const getImageSource = () => {
-    if (listing.images && listing.images.length > 0 && listing.images[0]) {
-      return { uri: listing.images[0] };
-    }
-    // Fallback image based on category
-    const fallbackImages = {
-      'Services DJ': 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800&auto=format&fit=crop',
-      'Traiteur': 'https://images.unsplash.com/photo-1555244162-803834f70033?w=800&auto=format&fit=crop',
-      'Services de Personnel': 'https://images.unsplash.com/photo-1566554273541-37a9ca77b91f?w=800&auto=format&fit=crop',
-      'Location de Lieu': 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=800&auto=format&fit=crop',
-      'Lieu de Mariage': 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=800&auto=format&fit=crop',
-    };
-    return { uri: fallbackImages[listing.category as keyof typeof fallbackImages] || fallbackImages['Location de Lieu'] };
+  const formatPrice = (price?: number) => {
+    if (!price) return 'Prix sur demande';
+    return `${price}€`;
   };
   
   return (
-    <View style={styles.cardContainer}>
-      <TouchableOpacity style={styles.container} onPress={handlePress} activeOpacity={0.9}>
-        <View style={styles.imageContainer}>
-          <Image 
-            source={getImageSource()}
-            style={styles.image}
-            contentFit="cover"
-          />
-          <TouchableOpacity 
-            style={styles.favoriteButton}
-            onPress={handleFavoritePress}
-          >
-            <Heart 
-              size={20} 
-              color={isListingFavorite ? Colors.error : '#fff'} 
-              fill={isListingFavorite ? Colors.error : 'transparent'}
-            />
-          </TouchableOpacity>
-          
-          <View style={styles.categoryBadge}>
-            <Text style={styles.categoryText}>{listing.category}</Text>
+    <TouchableOpacity style={styles.container} onPress={handlePress} activeOpacity={0.7}>
+      <View style={styles.imageContainer}>
+        {listing.images && listing.images.length > 0 ? (
+          <Image source={{ uri: listing.images[0] }} style={styles.image} />
+        ) : (
+          <View style={styles.placeholderImage}>
+            <Text style={styles.placeholderText}>📷</Text>
+          </View>
+        )}
+        <View style={styles.categoryBadge}>
+          <Text style={styles.categoryText}>{listing.category}</Text>
+        </View>
+      </View>
+      
+      <View style={styles.content}>
+        <Text style={styles.title} numberOfLines={2}>
+          {listing.title}
+        </Text>
+        
+        <Text style={styles.description} numberOfLines={2}>
+          {listing.description}
+        </Text>
+        
+        <View style={styles.creatorInfo}>
+          <View style={styles.creatorAvatar}>
+            {listing.creatorImage ? (
+              <Image source={{ uri: listing.creatorImage }} style={styles.avatarImage} />
+            ) : (
+              <Text style={styles.avatarText}>
+                {listing.creatorName?.charAt(0) || '?'}
+              </Text>
+            )}
+          </View>
+          <View style={styles.creatorDetails}>
+            <Text style={styles.creatorName}>{listing.creatorName}</Text>
+            {listing.creatorRating && (
+              <RatingStars 
+                rating={listing.creatorRating} 
+                size="small" 
+                showCount={false}
+              />
+            )}
           </View>
         </View>
         
-        <View style={styles.content}>
-          <View style={styles.header}>
-            <Text style={styles.title} numberOfLines={2}>{listing.title}</Text>
-            <Text style={styles.price}>{formatPrice(listing.price, listing.priceType)}</Text>
+        <View style={styles.footer}>
+          <View style={styles.locationContainer}>
+            <MapPin size={14} color={Colors.textLight} />
+            <Text style={styles.locationText}>{listing.location.city}</Text>
           </View>
           
-          <Text style={styles.description} numberOfLines={2}>
-            {listing.description}
-          </Text>
-          
-          <View style={styles.details}>
-            <View style={styles.locationContainer}>
-              <MapPin size={14} color={Colors.textLight} />
-              <Text style={styles.locationText}>{listing.location.city}</Text>
-            </View>
-            
-            <View style={styles.dateContainer}>
-              <Calendar size={14} color={Colors.textLight} />
-              <Text style={styles.dateText}>{formatDate(listing.createdAt)}</Text>
-            </View>
-          </View>
-          
-          {(listing.creatorRating || listing.creatorReviewCount) && (
-            <View style={styles.ratingContainer}>
-              <RatingStars 
-                rating={listing.creatorRating || 0} 
-                reviewCount={listing.creatorReviewCount} 
-                size="small"
-              />
-            </View>
-          )}
-          
-          <View style={styles.actions}>
-            <TouchableOpacity 
-              style={styles.contactButton}
-              onPress={handleContactPress}
-            >
-              <MessageCircle size={16} color="#fff" />
-              <Text style={styles.contactButtonText}>Message</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={styles.quoteButton}
-              onPress={handleQuotePress}
-            >
-              <FileText size={16} color={Colors.primary} />
-              <Text style={styles.quoteButtonText}>Devis</Text>
-            </TouchableOpacity>
+          <View style={styles.priceContainer}>
+            <Euro size={14} color={Colors.primary} />
+            <Text style={styles.priceText}>{formatPrice(listing.price)}</Text>
           </View>
         </View>
-      </TouchableOpacity>
-    </View>
+        
+        <View style={styles.metaInfo}>
+          <View style={styles.dateContainer}>
+            <Clock size={12} color={Colors.textLight} />
+            <Text style={styles.dateText}>
+              Publié le {formatDate(listing.createdAt)}
+            </Text>
+          </View>
+          
+          {listing.tags && listing.tags.length > 0 && (
+            <View style={styles.tagsContainer}>
+              {listing.tags.slice(0, 2).map((tag, index) => (
+                <View key={index} style={styles.tag}>
+                  <Text style={styles.tagText}>{tag}</Text>
+                </View>
+              ))}
+              {listing.tags.length > 2 && (
+                <Text style={styles.moreTagsText}>+{listing.tags.length - 2}</Text>
+              )}
+            </View>
+          )}
+        </View>
+      </View>
+    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
-  cardContainer: {
-    alignItems: 'center',
-    marginBottom: 20,
-    width: '100%',
-  },
   container: {
-    width: CARD_WIDTH,
     backgroundColor: '#fff',
-    borderRadius: 20,
+    borderRadius: 16,
+    marginBottom: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
     overflow: 'hidden',
   },
   imageContainer: {
@@ -183,26 +133,27 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: '100%',
+    resizeMode: 'cover',
   },
-  favoriteButton: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    borderRadius: 20,
-    width: 40,
-    height: 40,
+  placeholderImage: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: Colors.backgroundAlt,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  placeholderText: {
+    fontSize: 48,
+    opacity: 0.5,
   },
   categoryBadge: {
     position: 'absolute',
     top: 12,
     left: 12,
-    backgroundColor: Colors.primary,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
   },
   categoryText: {
     color: '#fff',
@@ -210,25 +161,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   content: {
-    padding: 20,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 8,
+    padding: 16,
   },
   title: {
-    flex: 1,
     fontSize: 18,
     fontWeight: '700',
     color: Colors.text,
-    marginRight: 12,
-  },
-  price: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: Colors.primary,
+    marginBottom: 8,
+    lineHeight: 24,
   },
   description: {
     fontSize: 14,
@@ -236,10 +176,44 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginBottom: 12,
   },
-  details: {
+  creatorInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  creatorAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: Colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
+  },
+  avatarImage: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+  },
+  avatarText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  creatorDetails: {
+    flex: 1,
+  },
+  creatorName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.text,
+    marginBottom: 2,
+  },
+  footer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    alignItems: 'center',
+    marginBottom: 8,
   },
   locationContainer: {
     flexDirection: 'row',
@@ -250,51 +224,49 @@ const styles = StyleSheet.create({
     color: Colors.textLight,
     marginLeft: 4,
   },
+  priceContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  priceText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: Colors.primary,
+    marginLeft: 4,
+  },
+  metaInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   dateContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   dateText: {
-    fontSize: 12,
+    fontSize: 11,
     color: Colors.textLight,
     marginLeft: 4,
   },
-  ratingContainer: {
-    marginBottom: 16,
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  contactButton: {
-    flex: 1,
+  tagsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.primary,
-    paddingVertical: 12,
-    borderRadius: 12,
-    gap: 6,
+    gap: 4,
   },
-  contactButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
+  tag: {
+    backgroundColor: Colors.backgroundAlt,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
   },
-  quoteButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: Colors.primary,
-    paddingVertical: 12,
-    borderRadius: 12,
-    gap: 6,
+  tagText: {
+    fontSize: 10,
+    color: Colors.text,
+    fontWeight: '500',
   },
-  quoteButtonText: {
-    color: Colors.primary,
-    fontSize: 14,
-    fontWeight: '600',
+  moreTagsText: {
+    fontSize: 10,
+    color: Colors.textLight,
+    fontWeight: '500',
   },
 });

@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import { Listing } from '@/types';
 import { mockListings } from '@/mocks/listings';
 import { useAuth } from './useAuth';
-import { categoryMap } from '@/constants/categories';
 
 interface ListingsState {
   listings: Listing[];
@@ -23,7 +22,7 @@ interface ListingsState {
   filterByLocation: (latitude: number, longitude: number, radius?: number) => void;
   clearFilters: () => void;
   
-  createListing: (listing: Omit<Listing, 'id' | 'createdAt' | 'status' | 'createdBy' | 'creatorName' | 'updatedAt'>) => Promise<Listing>;
+  createListing: (listing: Omit<Listing, 'id' | 'createdAt' | 'status' | 'updatedAt'>) => Promise<Listing>;
   updateListing: (id: string, updates: Partial<Listing>) => Promise<boolean>;
   deleteListing: (id: string) => Promise<boolean>;
 }
@@ -65,11 +64,10 @@ export const useListings = create<ListingsState>((set, get) => ({
     let filtered = [...listings];
     
     // Apply category filter
-    if (category && category !== 'all') {
-      const categoryName = categoryMap[category] || category;
+    if (category && category !== 'Tous') {
       filtered = filtered.filter(listing => 
-        listing.category.toLowerCase().includes(categoryName.toLowerCase()) ||
-        listing.category === categoryName
+        listing.category === category ||
+        listing.category.toLowerCase() === category.toLowerCase()
       );
     }
     
@@ -103,11 +101,10 @@ export const useListings = create<ListingsState>((set, get) => ({
     }
     
     // Keep existing category filter
-    if (selectedCategory && selectedCategory !== 'all') {
-      const categoryName = categoryMap[selectedCategory] || selectedCategory;
+    if (selectedCategory && selectedCategory !== 'Tous') {
       filtered = filtered.filter(listing => 
-        listing.category.toLowerCase().includes(categoryName.toLowerCase()) ||
-        listing.category === categoryName
+        listing.category === selectedCategory ||
+        listing.category.toLowerCase() === selectedCategory.toLowerCase()
       );
     }
     
@@ -140,11 +137,10 @@ export const useListings = create<ListingsState>((set, get) => ({
     filtered = applyLocationFilter(filtered, latitude, longitude, radius);
     
     // Keep existing category filter
-    if (selectedCategory && selectedCategory !== 'all') {
-      const categoryName = categoryMap[selectedCategory] || selectedCategory;
+    if (selectedCategory && selectedCategory !== 'Tous') {
       filtered = filtered.filter(listing => 
-        listing.category.toLowerCase().includes(categoryName.toLowerCase()) ||
-        listing.category === categoryName
+        listing.category === selectedCategory ||
+        listing.category.toLowerCase() === selectedCategory.toLowerCase()
       );
     }
     
@@ -183,8 +179,6 @@ export const useListings = create<ListingsState>((set, get) => ({
       createdAt: Date.now(),
       updatedAt: Date.now(),
       status: 'active',
-      createdBy: user.id,
-      creatorName: user.name,
       ...listingData,
     };
     
@@ -278,11 +272,10 @@ function applyCurrentFilters(listings: Listing[], state: ListingsState): Listing
   let filtered = [...listings];
   
   // Apply category filter
-  if (state.selectedCategory && state.selectedCategory !== 'all') {
-    const categoryName = categoryMap[state.selectedCategory] || state.selectedCategory;
+  if (state.selectedCategory && state.selectedCategory !== 'Tous') {
     filtered = filtered.filter(listing => 
-      listing.category.toLowerCase().includes(categoryName.toLowerCase()) ||
-      listing.category === categoryName
+      listing.category === state.selectedCategory ||
+      listing.category.toLowerCase() === state.selectedCategory.toLowerCase()
     );
   }
   

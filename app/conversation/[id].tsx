@@ -52,7 +52,7 @@ export default function ConversationScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user: currentUser, isAuthenticated } = useAuth();
-  const { addMessage } = useMessages();
+  const { addContact } = useMessages();
   const [messages, setMessages] = useState<Message[]>(mockMessages);
   const [newMessage, setNewMessage] = useState('');
   const flatListRef = useRef<FlatList>(null);
@@ -86,15 +86,17 @@ export default function ConversationScreen() {
     setNewMessage('');
     
     // Add to global messages store
-    addMessage({
-      participantId: otherUser.id,
-      participantName: otherUser.name,
-      participantImage: otherUser.profileImage,
-      participantType: otherUser.userType === 'provider' ? 'provider' : 
-                      otherUser.userType === 'business' ? 'business' : 'client',
-      lastMessage: newMessage.trim(),
-      unread: 0,
-    });
+    if (addContact) {
+      addContact({
+        participantId: otherUser.id,
+        participantName: otherUser.name,
+        participantImage: otherUser.profileImage,
+        participantType: otherUser.userType === 'provider' ? 'provider' : 
+                        otherUser.userType === 'business' ? 'business' : 'client',
+        lastMessage: newMessage.trim(),
+        unread: 0,
+      });
+    }
     
     // Scroll to bottom
     setTimeout(() => {
@@ -102,7 +104,7 @@ export default function ConversationScreen() {
     }, 100);
   };
   
-  // Send quote
+  // Send quote - only for providers
   const sendQuote = () => {
     if (!currentUser || currentUser.userType !== 'provider') {
       Alert.alert('Erreur', 'Seuls les prestataires peuvent envoyer des devis');

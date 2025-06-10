@@ -184,14 +184,14 @@ export default function DemoScreen() {
             </View>
             
             {/* Additional info based on account type */}
-            {selectedType === 'provider' && selectedAccount.specialties && (
+            {selectedType === 'provider' && 'specialties' in selectedAccount && (
               <View style={styles.additionalInfo}>
                 <Text style={styles.additionalInfoLabel}>Spécialités:</Text>
                 <Text style={styles.additionalInfoValue}>{selectedAccount.specialties}</Text>
               </View>
             )}
             
-            {selectedType === 'business' && selectedAccount.address && (
+            {selectedType === 'business' && 'address' in selectedAccount && (
               <View style={styles.additionalInfo}>
                 <Text style={styles.additionalInfoLabel}>Adresse:</Text>
                 <Text style={styles.additionalInfoValue}>{selectedAccount.address}</Text>

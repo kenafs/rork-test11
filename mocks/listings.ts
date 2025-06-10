@@ -13,7 +13,7 @@ export const mockListings: Listing[] = [
     creatorRating: mockProviders[0].rating,
     creatorReviewCount: mockProviders[0].reviewCount,
     location: mockProviders[0].location!,
-    category: 'DJ Services',
+    category: 'DJ',
     price: 800,
     priceType: 'negotiable',
     date: Date.now() + 86400000 * 14, // 14 days from now
@@ -33,7 +33,7 @@ export const mockListings: Listing[] = [
     creatorRating: mockVenues[0].rating,
     creatorReviewCount: mockVenues[0].reviewCount,
     location: mockVenues[0].location!,
-    category: 'Staff Services',
+    category: 'Personnel',
     price: 250,
     priceType: 'hourly',
     date: Date.now() + 86400000 * 30, // 30 days from now
@@ -53,7 +53,7 @@ export const mockListings: Listing[] = [
     creatorRating: mockProviders[1].rating,
     creatorReviewCount: mockProviders[1].reviewCount,
     location: mockProviders[1].location!,
-    category: 'Catering',
+    category: 'Traiteur',
     price: 45, // per person
     priceType: 'daily',
     images: ['https://images.unsplash.com/photo-1555244162-803834f70033?w=800&auto=format&fit=crop'],
@@ -72,7 +72,7 @@ export const mockListings: Listing[] = [
     creatorRating: mockVenues[0].rating,
     creatorReviewCount: mockVenues[0].reviewCount,
     location: mockVenues[0].location!,
-    category: 'Venue Rental',
+    category: 'Lieu',
     price: 3000,
     priceType: 'negotiable',
     images: ['https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=800&auto=format&fit=crop'],
@@ -91,7 +91,7 @@ export const mockListings: Listing[] = [
     creatorRating: mockProviders[2].rating,
     creatorReviewCount: mockProviders[2].reviewCount,
     location: mockProviders[2].location!,
-    category: 'Staff Services',
+    category: 'Personnel',
     price: 1200,
     priceType: 'negotiable',
     date: Date.now() + 86400000 * 45, // 45 days from now
@@ -111,7 +111,7 @@ export const mockListings: Listing[] = [
     creatorRating: mockVenues[2].rating,
     creatorReviewCount: mockVenues[2].reviewCount,
     location: mockVenues[2].location!,
-    category: 'Venue Rental',
+    category: 'Lieu',
     price: 12000,
     priceType: 'negotiable',
     images: ['https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=800&auto=format&fit=crop'],
