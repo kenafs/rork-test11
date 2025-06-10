@@ -44,7 +44,7 @@ export default function CreateQuoteScreen() {
   const allUsers = [...mockProviders, ...mockVenues];
   const conversationParticipant = conversationId ? allUsers.find(u => u.id === conversationId) : null;
   
-  // Only providers can create quotes
+  // Only providers can create quotes, not business accounts
   if (!user || user.userType !== 'provider') {
     return (
       <View style={styles.container}>
@@ -136,7 +136,7 @@ export default function CreateQuoteScreen() {
       });
       
       // Add quote message to conversation if it's a conversation quote
-      if (conversationParticipant) {
+      if (conversationParticipant && addMessage) {
         addMessage({
           participantId: conversationParticipant.id,
           participantName: conversationParticipant.name,

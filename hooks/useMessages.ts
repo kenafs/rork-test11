@@ -27,6 +27,7 @@ interface MessagesState {
   markAsRead: (conversationId: string) => Promise<void>;
   refreshConversations: () => Promise<void>;
   addContact: (contact: MessageContact) => void;
+  addMessage: (contact: MessageContact) => void;
 }
 
 export const useMessages = create<MessagesState>()(
@@ -245,6 +246,11 @@ export const useMessages = create<MessagesState>()(
             contacts: updatedContacts,
           };
         });
+      },
+      
+      addMessage: (contact: MessageContact) => {
+        // Alias for addContact for backward compatibility
+        get().addContact(contact);
       },
     }),
     {

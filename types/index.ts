@@ -116,15 +116,16 @@ export interface Conversation {
 
 export interface Quote {
   id: string;
-  listingId: string;
+  listingId?: string;
   clientId: string;
   providerId: string;
   title: string;
   description: string;
-  price: number;
+  price?: number;
+  totalAmount: number;
   currency: string;
   validUntil: number;
-  status: 'pending' | 'accepted' | 'rejected' | 'expired';
+  status: 'draft' | 'pending' | 'accepted' | 'rejected' | 'expired';
   createdAt: number;
   updatedAt: number;
   items?: QuoteItem[];
@@ -136,7 +137,7 @@ export interface QuoteItem {
   description?: string;
   quantity: number;
   unitPrice: number;
-  total: number;
+  totalPrice: number;
 }
 
 export interface Review {

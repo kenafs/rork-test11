@@ -1,93 +1,158 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Quote, QuoteItem } from '@/types';
+import { useAuth } from './useAuth';
 
 interface QuotesState {
   quotes: Quote[];
   isLoading: boolean;
   
-  createQuote: (quoteData: Omit<Quote, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Quote>;
+  fetchQuotes: () => Promise<void>;
+  createQuote: (quoteData: Omit<Quote, 'id' | 'createdAt' | 'updatedAt' | 'currency'>) => Promise<Quote>;
   updateQuote: (id: string, updates: Partial<Quote>) => Promise<boolean>;
   deleteQuote: (id: string) => Promise<boolean>;
-  getQuotesByProvider: (providerId: string) => Quote[];
-  getQuotesByClient: (clientId: string) => Quote[];
+  acceptQuote: (id: string) => Promise<boolean>;
+  rejectQuote: (id: string) => Promise<boolean>;
 }
 
-export const useQuotes = create<QuotesState>((set, get) => ({
-  quotes: [],
-  isLoading: false,
-  
-  createQuote: async (quoteData) => {
-    set({ isLoading: true });
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const newQuote: Quote = {
-      id: `quote-${Date.now()}`,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      ...quoteData,
-    };
-    
-    set({ 
-      quotes: [...get().quotes, newQuote],
-      isLoading: false 
-    });
-    
-    return newQuote;
-  },
-  
-  updateQuote: async (id: string, updates: Partial<Quote>) => {
-    set({ isLoading: true });
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const { quotes } = get();
-    const quoteIndex = quotes.findIndex(q => q.id === id);
-    
-    if (quoteIndex === -1) {
-      set({ isLoading: false });
-      return false;
+export const useQuotes = create<QuotesState>()(
+  persist(
+    (set, get) => ({
+      quotes: [],
+      isLoading: false,
+      
+      fetchQuotes: async () => {
+        set({ isLoading: true });
+        
+        try {
+          // Simulate API call
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          const user = useAuth.getState().user;
+          if (!user) {
+            set({ isLoading: false });
+            return;
+          }
+          
+          // Get existing quotes from state
+          const existingQuotes = get().quotes;
+          
+          set({ 
+            quotes: existingQuotes,
+            isLoading: false 
+          });
+        } catch (error) {
+          console.error('Error fetching quotes:', error);
+          set({ isLoading: false });
+        }
+      },
+      
+      createQuote: async (quoteData) => {
+        set({ isLoading: true });
+        
+        try {
+          // Simulate API call
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          const user = useAuth.getState().user;
+          if (!user) throw new Error('User must be logged in to create a quote');
+          
+          const newQuote: Quote = {
+            id: `quote-${Date.now()}`,
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+            currency: 'EUR',
+            ...quoteData,
+          };
+          
+          const updatedQuotes = [...get().quotes, newQuote];
+          
+          set({ 
+            quotes: updatedQuotes,
+            isLoading: false 
+          });
+          
+          return newQuote;
+        } catch (error) {
+          console.error('Error creating quote:', error);
+          set({ isLoading: false });
+          throw error;
+        }
+      },
+      
+      updateQuote: async (id: string, updates: Partial<Quote>) => {
+        set({ isLoading: true });
+        
+        try {
+          // Simulate API call
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          const { quotes } = get();
+          const quoteIndex = quotes.findIndex(q => q.id === id);
+          
+          if (quoteIndex === -1) {
+            set({ isLoading: false });
+            return false;
+          }
+          
+          const updatedQuotes = [...quotes];
+          updatedQuotes[quoteIndex] = {
+            ...updatedQuotes[quoteIndex],
+            ...updates,
+            updatedAt: Date.now(),
+          };
+          
+          set({ 
+            quotes: updatedQuotes,
+            isLoading: false 
+          });
+          
+          return true;
+        } catch (error) {
+          console.error('Error updating quote:', error);
+          set({ isLoading: false });
+          return false;
+        }
+      },
+      
+      deleteQuote: async (id: string) => {
+        set({ isLoading: true });
+        
+        try {
+          // Simulate API call
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          const { quotes } = get();
+          const updatedQuotes = quotes.filter(q => q.id !== id);
+          
+          set({ 
+            quotes: updatedQuotes,
+            isLoading: false 
+          });
+          
+          return true;
+        } catch (error) {
+          console.error('Error deleting quote:', error);
+          set({ isLoading: false });
+          return false;
+        }
+      },
+      
+      acceptQuote: async (id: string) => {
+        return await get().updateQuote(id, { status: 'accepted' });
+      },
+      
+      rejectQuote: async (id: string) => {
+        return await get().updateQuote(id, { status: 'rejected' });
+      },
+    }),
+    {
+      name: 'quotes-storage',
+      storage: createJSONStorage(() => AsyncStorage),
+      partialize: (state) => ({
+        quotes: state.quotes,
+      }),
     }
-    
-    const updatedQuotes = [...quotes];
-    updatedQuotes[quoteIndex] = {
-      ...updatedQuotes[quoteIndex],
-      ...updates,
-      updatedAt: Date.now(),
-    };
-    
-    set({ 
-      quotes: updatedQuotes,
-      isLoading: false 
-    });
-    
-    return true;
-  },
-  
-  deleteQuote: async (id: string) => {
-    set({ isLoading: true });
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const { quotes } = get();
-    const updatedQuotes = quotes.filter(q => q.id !== id);
-    
-    set({ 
-      quotes: updatedQuotes,
-      isLoading: false 
-    });
-    
-    return true;
-  },
-  
-  getQuotesByProvider: (providerId: string) => {
-    return get().quotes.filter(quote => quote.providerId === providerId);
-  },
-  
-  getQuotesByClient: (clientId: string) => {
-    return get().quotes.filter(quote => quote.clientId === clientId);
-  },
-}));
+  )
+);

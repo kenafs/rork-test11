@@ -22,7 +22,7 @@ interface ListingsState {
   filterByLocation: (latitude: number, longitude: number, radius?: number) => void;
   clearFilters: () => void;
   
-  createListing: (listing: Omit<Listing, 'id' | 'createdAt' | 'status' | 'updatedAt' | 'creatorType'>) => Promise<Listing>;
+  createListing: (listing: Omit<Listing, 'id' | 'createdAt' | 'status' | 'updatedAt'>) => Promise<Listing>;
   updateListing: (id: string, updates: Partial<Listing>) => Promise<boolean>;
   deleteListing: (id: string) => Promise<boolean>;
 }
@@ -232,7 +232,6 @@ export const useListings = create<ListingsState>((set, get) => ({
         createdAt: Date.now(),
         updatedAt: Date.now(),
         status: 'active',
-        creatorType: user.userType,
         ...listingData,
       };
       
@@ -348,7 +347,7 @@ function applyCurrentFilters(listings: Listing[], state: ListingsState): Listing
     filtered = filtered.filter(listing => {
       return listing.category === state.selectedCategory ||
              listing.category === englishCategory ||
-             listing.category.toLowerCase() === state.selectedCategory.toLowerCase() ||
+             listing.category.toLowerCase() === (state.selectedCategory || '').toLowerCase() ||
              listing.category.toLowerCase() === englishCategory.toLowerCase();
     });
   }
