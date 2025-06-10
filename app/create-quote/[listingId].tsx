@@ -16,7 +16,7 @@ export default function CreateQuoteScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const { createQuote, isLoading } = useQuotes();
-  const { addContact, createConversation } = useMessages();
+  const { addContact, createConversation, sendMessage } = useMessages();
   
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -148,8 +148,15 @@ export default function CreateQuoteScreen() {
         try {
           const conversationId = await createConversation(clientId);
           
-          // Add quote message to conversation
-          const quoteMessage = `📋 Devis envoyé: ${title}\n💰 Montant: ${totalAmount.toFixed(2)}€\n📅 Valide jusqu'au: ${new Date(validUntil).toLocaleDateString('fr-FR')}`;
+          // Send quote message to conversation
+          const quoteMessage = `📋 Devis envoyé: ${title}
+💰 Montant: ${totalAmount.toFixed(2)}€
+📅 Valide jusqu'au: ${new Date(validUntil).toLocaleDateString('fr-FR')}
+
+${description}`;
+          
+          // Send the message
+          await sendMessage(conversationId, quoteMessage, clientId);
           
           // Add contact with quote message
           const targetUser = allUsers.find(u => u.id === clientId) || 
@@ -162,7 +169,7 @@ export default function CreateQuoteScreen() {
               participantImage: targetUser.profileImage,
               participantType: targetUser.userType === 'provider' ? 'provider' : 
                              targetUser.userType === 'business' ? 'business' : 'client',
-              lastMessage: quoteMessage,
+              lastMessage: `Devis envoyé: ${title}`,
               unread: 0,
               timestamp: Date.now(),
             });

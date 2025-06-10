@@ -158,7 +158,7 @@ export default function CreateListingScreen() {
         'Votre annonce a été publiée avec succès.', 
         [
           { 
-            text: 'OK', 
+            text: 'Voir l\'annonce', 
             onPress: () => {
               // Reset form
               setTitle('');
@@ -169,15 +169,28 @@ export default function CreateListingScreen() {
               setTags([]);
               setTagInput('');
               
-              // Navigate to home tab
-              router.replace('/(tabs)');
+              // Navigate to the listing
+              router.push(`/listing/${newListing.id}`);
+            }
+          },
+          { 
+            text: 'Créer une autre', 
+            onPress: () => {
+              // Reset form only
+              setTitle('');
+              setDescription('');
+              setCategory('');
+              setPrice('');
+              setImages([]);
+              setTags([]);
+              setTagInput('');
             }
           }
         ]
       );
     } catch (error) {
       console.error('Error creating listing:', error);
-      Alert.alert('Erreur', "Une erreur s'est produite lors de la publication de votre annonce.");
+      Alert.alert('Erreur', "Une erreur s'est produite lors de la publication de votre annonce. Veuillez réessayer.");
     }
   };
 
@@ -409,7 +422,7 @@ export default function CreateListingScreen() {
           end={{ x: 1, y: 1 }}
         >
           <TouchableOpacity
-            style={styles.submitButton}
+            style={[styles.submitButton, (!title.trim() || !description.trim() || !category || isLoading) && styles.submitButtonDisabled]}
             onPress={handleSubmit}
             disabled={isLoading || !title.trim() || !description.trim() || !category}
           >
@@ -661,6 +674,9 @@ const styles = StyleSheet.create({
     paddingVertical: 18,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  submitButtonDisabled: {
+    opacity: 0.6,
   },
   submitButtonText: {
     fontSize: 18,
