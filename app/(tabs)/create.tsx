@@ -100,7 +100,6 @@ export default function CreateListingScreen() {
         title,
         description,
         createdBy: user.id,
-        creatorType: user.userType,
         creatorName: user.name,
         creatorImage: user.profileImage,
         creatorRating: user.rating,

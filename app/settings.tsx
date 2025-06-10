@@ -49,12 +49,14 @@ export default function SettingsScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              console.log("Bouton déconnexion pressé");
+              console.log("Bouton déconnexion pressé dans settings");
               await logout();
-              console.log("Logout appelé, redirection...");
+              console.log("Logout appelé depuis settings, redirection...");
               router.replace("/");
             } catch (error) {
-              console.error('Logout error:', error);
+              console.error('Logout error in settings:', error);
+              // Force navigation even if logout fails
+              router.replace("/");
             }
           }
         }
@@ -80,7 +82,12 @@ export default function SettingsScreen() {
   };
 
   const handleEditProfile = () => {
-    router.push("/edit-profile");
+    try {
+      router.push("/edit-profile");
+    } catch (error) {
+      console.error('Navigation error to edit-profile:', error);
+      Alert.alert("Erreur", "Impossible d'accéder à la modification du profil");
+    }
   };
 
   const handlePrivacy = () => {

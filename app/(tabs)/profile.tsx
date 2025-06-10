@@ -39,10 +39,14 @@ export default function ProfileScreen() {
           style: 'destructive', 
           onPress: async () => {
             try {
+              console.log('Starting logout from profile...');
               await logout();
+              console.log('Logout completed, redirecting...');
               router.replace('/');
             } catch (error) {
               console.error('Logout error:', error);
+              // Force logout even if there's an error
+              router.replace('/');
             }
           }
         },

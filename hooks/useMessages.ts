@@ -27,7 +27,6 @@ interface MessagesState {
   markAsRead: (conversationId: string) => Promise<void>;
   refreshConversations: () => Promise<void>;
   addContact: (contact: MessageContact) => void;
-  addMessage: (contact: MessageContact) => void;
 }
 
 export const useMessages = create<MessagesState>()(
@@ -229,12 +228,12 @@ export const useMessages = create<MessagesState>()(
             updatedContacts[existingContactIndex] = {
               ...updatedContacts[existingContactIndex],
               lastMessage: contact.lastMessage,
-              timestamp: Date.now(),
+              timestamp: contact.timestamp || Date.now(),
             };
           } else {
             // Add new contact
             updatedContacts = [
-              { ...contact, timestamp: Date.now() },
+              { ...contact, timestamp: contact.timestamp || Date.now() },
               ...state.contacts
             ];
           }
@@ -246,11 +245,6 @@ export const useMessages = create<MessagesState>()(
             contacts: updatedContacts,
           };
         });
-      },
-      
-      addMessage: (contact: MessageContact) => {
-        // Alias for addContact for backward compatibility
-        get().addContact(contact);
       },
     }),
     {

@@ -52,7 +52,7 @@ export default function ConversationScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user: currentUser, isAuthenticated } = useAuth();
-  const { addMessage } = useMessages();
+  const { addContact } = useMessages();
   const [messages, setMessages] = useState<Message[]>(mockMessages);
   const [newMessage, setNewMessage] = useState('');
   const flatListRef = useRef<FlatList>(null);
@@ -86,8 +86,8 @@ export default function ConversationScreen() {
     setNewMessage('');
     
     // Add to global messages store
-    if (addMessage) {
-      addMessage({
+    if (addContact) {
+      addContact({
         participantId: otherUser.id,
         participantName: otherUser.name,
         participantImage: otherUser.profileImage,
@@ -95,6 +95,7 @@ export default function ConversationScreen() {
                         otherUser.userType === 'business' ? 'business' : 'client',
         lastMessage: newMessage.trim(),
         unread: 0,
+        timestamp: Date.now(),
       });
     }
     

@@ -42,3 +42,80 @@ export const businessCategories = [
   { id: 'cultural', name: 'Lieu culturel' },
   { id: 'sports', name: 'Complexe sportif' },
 ];
+
+// Category mapping for filtering - handles both French and English categories
+export const getCategoryFilter = (selectedCategory: string | null, listingCategory: string): boolean => {
+  if (!selectedCategory || selectedCategory === 'Tous') {
+    return true;
+  }
+  
+  // Direct match
+  if (listingCategory === selectedCategory) {
+    return true;
+  }
+  
+  // Case insensitive match
+  if (listingCategory.toLowerCase() === selectedCategory.toLowerCase()) {
+    return true;
+  }
+  
+  // Map French to English and check
+  const frenchToEnglish: { [key: string]: string } = {
+    'DJ': 'DJ',
+    'Traiteur': 'Catering',
+    'Photographe': 'Photography',
+    'Lieu': 'Venue',
+    'Décoration': 'Decoration',
+    'Musique': 'Music',
+    'Animation': 'Entertainment',
+    'Fleurs': 'Flowers',
+    'Transport': 'Transport',
+    'Sécurité': 'Security',
+    'Nettoyage': 'Cleaning',
+    'Matériel': 'Equipment',
+    'Personnel': 'Staff',
+  };
+  
+  // Map English to French and check
+  const englishToFrench: { [key: string]: string } = {
+    'DJ': 'DJ',
+    'Catering': 'Traiteur',
+    'Photography': 'Photographe',
+    'Venue': 'Lieu',
+    'Decoration': 'Décoration',
+    'Music': 'Musique',
+    'Entertainment': 'Animation',
+    'Flowers': 'Fleurs',
+    'Transport': 'Transport',
+    'Security': 'Sécurité',
+    'Cleaning': 'Nettoyage',
+    'Equipment': 'Matériel',
+    'Staff': 'Personnel',
+  };
+  
+  // Check if selected category maps to listing category
+  const mappedToEnglish = frenchToEnglish[selectedCategory];
+  const mappedToFrench = englishToFrench[selectedCategory];
+  
+  if (mappedToEnglish && listingCategory === mappedToEnglish) {
+    return true;
+  }
+  
+  if (mappedToFrench && listingCategory === mappedToFrench) {
+    return true;
+  }
+  
+  // Check reverse mapping
+  const listingMappedToFrench = englishToFrench[listingCategory];
+  const listingMappedToEnglish = frenchToEnglish[listingCategory];
+  
+  if (listingMappedToFrench && selectedCategory === listingMappedToFrench) {
+    return true;
+  }
+  
+  if (listingMappedToEnglish && selectedCategory === listingMappedToEnglish) {
+    return true;
+  }
+  
+  return false;
+};
