@@ -28,6 +28,8 @@ interface MessagesState {
   refreshConversations: () => Promise<void>;
   addContact: (contact: MessageContact) => void;
   addMessage: (contact: MessageContact) => void;
+  getConversationByParticipant: (participantId: string) => Conversation | undefined;
+  getAllConversations: () => MessageContact[];
 }
 
 export const useMessages = create<MessagesState>()(
@@ -43,7 +45,7 @@ export const useMessages = create<MessagesState>()(
         
         try {
           // Simulate API call
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise(resolve => setTimeout(resolve, 500));
           
           const user = useAuth.getState().user;
           if (!user) {
@@ -69,7 +71,7 @@ export const useMessages = create<MessagesState>()(
         
         try {
           // Simulate API call
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await new Promise(resolve => setTimeout(resolve, 300));
           
           const user = useAuth.getState().user;
           if (!user) {
@@ -99,7 +101,7 @@ export const useMessages = create<MessagesState>()(
           if (!user) return;
           
           const newMessage: Message = {
-            id: `msg-${Date.now()}`,
+            id: `msg-${Date.now()}-${Math.random()}`,
             conversationId,
             senderId: user.id,
             receiverId,
@@ -165,7 +167,7 @@ export const useMessages = create<MessagesState>()(
             return existingConversation.id;
           }
           
-          const conversationId = `conv-${Date.now()}`;
+          const conversationId = `conv-${Date.now()}-${Math.random()}`;
           
           const newConversation: Conversation = {
             id: conversationId,
@@ -251,6 +253,52 @@ export const useMessages = create<MessagesState>()(
       addMessage: (contact: MessageContact) => {
         // Alias for addContact for backward compatibility
         get().addContact(contact);
+      },
+      
+      getConversationByParticipant: (participantId: string) => {
+        const user = useAuth.getState().user;
+        if (!user) return undefined;
+        
+        return get().conversations.find(conv =>
+          conv.participants.includes(user.id) && conv.participants.includes(participantId)
+        );
+      },
+      
+      getAllConversations: () => {
+        const { conversations, messages, contacts } = get();
+        const user = useAuth.getState().user;
+        if (!user) return [];
+        
+        // Convert conversations to MessageContact format
+        const conversationContacts: MessageContact[] = conversations.map(conv => {
+          const otherParticipantId = conv.participants.find(p => p !== user.id) || '';
+          const conversationMessages = messages[conv.id] || [];
+          const lastMessage = conversationMessages[conversationMessages.length - 1];
+          
+          // Find participant info from contacts or use default
+          const existingContact = contacts.find(c => c.participantId === otherParticipantId);
+          
+          return {
+            participantId: otherParticipantId,
+            participantName: existingContact?.participantName || 'Utilisateur',
+            participantImage: existingContact?.participantImage,
+            participantType: existingContact?.participantType || 'client',
+            lastMessage: lastMessage?.content || 'Nouvelle conversation',
+            unread: conversationMessages.filter(msg => !msg.read && msg.receiverId === user.id).length,
+            timestamp: conv.updatedAt || conv.createdAt,
+          };
+        });
+        
+        // Merge with standalone contacts and remove duplicates
+        const allContacts = [...conversationContacts];
+        contacts.forEach(contact => {
+          if (!allContacts.find(c => c.participantId === contact.participantId)) {
+            allContacts.push(contact);
+          }
+        });
+        
+        // Sort by timestamp (most recent first)
+        return allContacts.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
       },
     }),
     {

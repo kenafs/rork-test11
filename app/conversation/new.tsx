@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
+import { useMessages } from '@/hooks/useMessages';
 import { mockProviders, mockVenues } from '@/mocks/users';
 import Colors from '@/constants/colors';
 import Button from '@/components/Button';
@@ -11,6 +12,7 @@ export default function NewConversationScreen() {
   const { recipientId } = useLocalSearchParams<{ recipientId: string }>();
   const router = useRouter();
   const { user: currentUser, isAuthenticated } = useAuth();
+  const { createConversation, addContact } = useMessages();
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
@@ -25,13 +27,37 @@ export default function NewConversationScreen() {
       return;
     }
     
+    if (!currentUser || !recipient) {
+      Alert.alert('Erreur', 'Impossible de créer la conversation');
+      return;
+    }
+    
     setIsLoading(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Navigate to conversation
-    router.replace(`/conversation/${recipientId}`);
+    try {
+      // Create conversation and send initial message
+      const conversationId = await createConversation(recipient.id, message.trim());
+      
+      // Add contact to the messages store
+      addContact({
+        participantId: recipient.id,
+        participantName: recipient.name,
+        participantImage: recipient.profileImage,
+        participantType: recipient.userType === 'provider' ? 'provider' : 
+                        recipient.userType === 'business' ? 'business' : 'client',
+        lastMessage: message.trim(),
+        unread: 0,
+        timestamp: Date.now(),
+      });
+      
+      // Navigate to the conversation
+      router.replace(`/conversation/${recipient.id}`);
+    } catch (error) {
+      console.error('Error creating conversation:', error);
+      Alert.alert('Erreur', 'Impossible de créer la conversation');
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   if (!isAuthenticated || !currentUser) {

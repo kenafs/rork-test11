@@ -10,9 +10,12 @@ import { MessageCircle, Clock, User } from 'lucide-react-native';
 export default function MessagesScreen() {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
-  const { conversations } = useMessages();
+  const { getAllConversations, fetchConversations } = useMessages();
   
-  // Mock conversation data - in real app this would come from API
+  // Get all conversations
+  const allConversations = getAllConversations();
+  
+  // Mock conversation data for demo - merge with real conversations
   const mockConversations = [
     {
       id: '1',
@@ -44,8 +47,18 @@ export default function MessagesScreen() {
       timestamp: Date.now() - 172800000, // 2 days ago
       unread: 0,
     },
-    ...conversations, // Add any new conversations from the store
   ];
+  
+  // Merge mock conversations with real ones, avoiding duplicates
+  const combinedConversations = [...allConversations];
+  mockConversations.forEach(mockConv => {
+    if (!combinedConversations.find(conv => conv.participantId === mockConv.participantId)) {
+      combinedConversations.push(mockConv);
+    }
+  });
+  
+  // Sort by timestamp (most recent first)
+  const sortedConversations = combinedConversations.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
   
   // Format timestamp to relative time
   const formatRelativeTime = (timestamp: number) => {
@@ -79,6 +92,13 @@ export default function MessagesScreen() {
     const date = new Date(timestamp);
     return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
   };
+  
+  // Fetch conversations on mount
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchConversations();
+    }
+  }, [isAuthenticated]);
   
   // If not authenticated, show login prompt
   if (!isAuthenticated) {
@@ -120,12 +140,12 @@ export default function MessagesScreen() {
       </View>
       
       <FlatList
-        data={mockConversations}
-        keyExtractor={(item) => item.id}
+        data={sortedConversations}
+        keyExtractor={(item) => item.participantId}
         renderItem={({ item }) => (
           <TouchableOpacity 
             style={styles.conversationItem}
-            onPress={() => router.push(`/conversation/${item.id}`)}
+            onPress={() => router.push(`/conversation/${item.participantId}`)}
             activeOpacity={0.8}
           >
             <View style={styles.avatarContainer}>
@@ -161,7 +181,7 @@ export default function MessagesScreen() {
                 <View style={styles.timeContainer}>
                   <Clock size={12} color={Colors.textLight} />
                   <Text style={styles.timestamp}>
-                    {formatRelativeTime(item.timestamp)}
+                    {formatRelativeTime(item.timestamp || Date.now())}
                   </Text>
                 </View>
               </View>
@@ -194,7 +214,7 @@ export default function MessagesScreen() {
             </TouchableOpacity>
           </View>
         }
-        contentContainerStyle={mockConversations.length === 0 ? styles.emptyList : undefined}
+        contentContainerStyle={sortedConversations.length === 0 ? styles.emptyList : undefined}
       />
     </View>
   );

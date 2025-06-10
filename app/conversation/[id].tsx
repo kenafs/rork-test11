@@ -16,50 +16,31 @@ interface Message {
   quoteId?: string;
 }
 
-// Mock messages for demo
-const mockMessages: Message[] = [
-  {
-    id: '1',
-    senderId: '1',
-    text: "Bonjour ! Je suis intéressé par vos services de DJ pour un événement d'entreprise le mois prochain.",
-    timestamp: Date.now() - 3600000,
-    type: 'text',
-  },
-  {
-    id: '2',
-    senderId: 'current-user',
-    text: "Bonjour ! Merci pour votre message. Je serais ravi de vous aider avec votre événement. Pouvez-vous me donner plus de détails ?",
-    timestamp: Date.now() - 3000000,
-    type: 'text',
-  },
-  {
-    id: '3',
-    senderId: '1',
-    text: "C'est pour une soirée d'entreprise avec environ 100 personnes. Nous cherchons une ambiance festive mais professionnelle.",
-    timestamp: Date.now() - 2400000,
-    type: 'text',
-  },
-  {
-    id: '4',
-    senderId: 'current-user',
-    text: "Parfait ! Je peux vous préparer un devis personnalisé. Quelle est la date prévue ?",
-    timestamp: Date.now() - 1800000,
-    type: 'text',
-  },
-];
-
 export default function ConversationScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user: currentUser, isAuthenticated } = useAuth();
-  const { addMessage } = useMessages();
-  const [messages, setMessages] = useState<Message[]>(mockMessages);
+  const { messages, sendMessage, getConversationByParticipant, addContact } = useMessages();
   const [newMessage, setNewMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const flatListRef = useRef<FlatList>(null);
   
   // Find the other participant
   const allUsers = [...mockProviders, ...mockVenues];
   const otherUser = allUsers.find(u => u.id === id);
+  
+  // Get conversation
+  const conversation = getConversationByParticipant(id || '');
+  const conversationMessages = conversation ? messages[conversation.id] || [] : [];
+  
+  // Convert to display format
+  const displayMessages: Message[] = conversationMessages.map(msg => ({
+    id: msg.id,
+    senderId: msg.senderId,
+    text: msg.content,
+    timestamp: msg.timestamp,
+    type: 'text',
+  }));
   
   // Format timestamp
   const formatTime = (timestamp: number) => {
@@ -71,22 +52,16 @@ export default function ConversationScreen() {
   };
   
   // Send message
-  const sendMessage = () => {
-    if (!newMessage.trim() || !currentUser || !otherUser) return;
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !currentUser || !otherUser || !conversation) return;
     
-    const message: Message = {
-      id: Date.now().toString(),
-      senderId: currentUser.id,
-      text: newMessage.trim(),
-      timestamp: Date.now(),
-      type: 'text',
-    };
+    setIsLoading(true);
     
-    setMessages(prev => [...prev, message]);
-    
-    // Add to global messages store
-    if (addMessage) {
-      addMessage({
+    try {
+      await sendMessage(conversation.id, newMessage.trim(), otherUser.id);
+      
+      // Update contact in messages store
+      addContact({
         participantId: otherUser.id,
         participantName: otherUser.name,
         participantImage: otherUser.profileImage,
@@ -96,14 +71,19 @@ export default function ConversationScreen() {
         unread: 0,
         timestamp: Date.now(),
       });
+      
+      setNewMessage('');
+      
+      // Scroll to bottom
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      Alert.alert('Erreur', 'Impossible d\'envoyer le message');
+    } finally {
+      setIsLoading(false);
     }
-    
-    setNewMessage('');
-    
-    // Scroll to bottom
-    setTimeout(() => {
-      flatListRef.current?.scrollToEnd({ animated: true });
-    }, 100);
   };
   
   // Send quote - only for providers
@@ -146,6 +126,15 @@ export default function ConversationScreen() {
     );
   };
   
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    if (displayMessages.length > 0) {
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    }
+  }, [displayMessages.length]);
+  
   if (!isAuthenticated || !currentUser) {
     return (
       <View style={styles.container}>
@@ -182,12 +171,18 @@ export default function ConversationScreen() {
       
       <FlatList
         ref={flatListRef}
-        data={messages}
+        data={displayMessages}
         keyExtractor={(item) => item.id}
         renderItem={renderMessage}
         style={styles.messagesList}
         contentContainerStyle={styles.messagesContent}
-        onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>
+              Début de votre conversation avec {otherUser.name}
+            </Text>
+          </View>
+        }
       />
       
       <View style={styles.inputContainer}>
@@ -206,9 +201,9 @@ export default function ConversationScreen() {
           </TouchableOpacity>
         </View>
         <TouchableOpacity 
-          style={[styles.sendButton, !newMessage.trim() && styles.sendButtonDisabled]}
-          onPress={sendMessage}
-          disabled={!newMessage.trim()}
+          style={[styles.sendButton, (!newMessage.trim() || isLoading) && styles.sendButtonDisabled]}
+          onPress={handleSendMessage}
+          disabled={!newMessage.trim() || isLoading}
         >
           <Send size={20} color="#fff" />
         </TouchableOpacity>
@@ -228,6 +223,17 @@ const styles = StyleSheet.create({
   messagesContent: {
     padding: 16,
     paddingBottom: 8,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: Colors.textLight,
+    textAlign: 'center',
   },
   messageContainer: {
     marginBottom: 16,

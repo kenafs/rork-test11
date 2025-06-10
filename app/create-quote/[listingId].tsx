@@ -16,7 +16,7 @@ export default function CreateQuoteScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const { createQuote, isLoading } = useQuotes();
-  const { addMessage } = useMessages();
+  const { addContact } = useMessages();
   
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -123,7 +123,7 @@ export default function CreateQuoteScreen() {
     try {
       const validUntil = Date.now() + (parseInt(validDays) * 24 * 60 * 60 * 1000);
       
-      await createQuote({
+      const quote = await createQuote({
         listingId: listing?.id,
         providerId: user.id,
         clientId: listing?.createdBy || conversationParticipant?.id || 'unknown',
@@ -136,8 +136,8 @@ export default function CreateQuoteScreen() {
       });
       
       // Add quote message to conversation if it's a conversation quote
-      if (conversationParticipant && addMessage) {
-        addMessage({
+      if (conversationParticipant && addContact) {
+        addContact({
           participantId: conversationParticipant.id,
           participantName: conversationParticipant.name,
           participantImage: conversationParticipant.profileImage,
@@ -145,11 +145,19 @@ export default function CreateQuoteScreen() {
                           conversationParticipant.userType === 'business' ? 'business' : 'client',
           lastMessage: `📋 Devis envoyé: ${title} - ${totalAmount.toFixed(2)}€`,
           unread: 0,
+          timestamp: Date.now(),
         });
       }
       
       Alert.alert('Succès', 'Devis créé avec succès', [
-        { text: 'OK', onPress: () => router.back() }
+        { 
+          text: 'Voir les devis', 
+          onPress: () => router.replace('/(tabs)/profile') 
+        },
+        { 
+          text: 'Retour aux messages', 
+          onPress: () => router.replace('/(tabs)/messages') 
+        }
       ]);
     } catch (error) {
       Alert.alert('Erreur', 'Impossible de créer le devis');
