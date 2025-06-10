@@ -110,6 +110,11 @@ export function useLocation() {
     isLoading,
     permissionStatus,
     hasPermission,
+    location: {
+      latitude: location.latitude,
+      longitude: location.longitude,
+      city: location.city,
+    },
     requestPermission,
     getCurrentLocation,
   };

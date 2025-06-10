@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { User, UserType } from '@/types';
+import { User, UserType, DemoAccount } from '@/types';
 
 interface AuthState {
   user: User | null;
@@ -9,7 +9,7 @@ interface AuthState {
   isLoading: boolean;
   
   login: (email: string, password: string) => Promise<boolean>;
-  loginWithDemo: (userData: Partial<User>) => Promise<boolean>;
+  loginWithDemo: (userData: DemoAccount) => Promise<boolean>;
   register: (userData: Partial<User>, password: string, userType: UserType) => Promise<boolean>;
   logout: () => Promise<void>;
   updateProfile: (updates: Partial<User>) => Promise<boolean>;
@@ -101,7 +101,7 @@ export const useAuth = create<AuthState>()(
         return false;
       },
       
-      loginWithDemo: async (userData: Partial<User>) => {
+      loginWithDemo: async (userData: DemoAccount) => {
         set({ isLoading: true });
         
         // Simulate API call
@@ -109,22 +109,23 @@ export const useAuth = create<AuthState>()(
         
         const demoUser: User = {
           id: `demo-${Date.now()}`,
-          name: userData.name || 'Demo User',
-          email: userData.email || 'demo@example.com',
-          userType: userData.userType || 'provider',
+          name: userData.name,
+          email: userData.email,
+          userType: userData.userType,
           profileImage: userData.profileImage,
           description: userData.description,
           specialties: userData.specialties,
           address: userData.address,
           website: userData.website,
           instagram: userData.instagram,
-          rating: userData.rating || 0,
-          reviewCount: userData.reviewCount || 0,
+          rating: userData.rating,
+          reviewCount: userData.reviewCount,
           location: {
             latitude: 48.8566,
             longitude: 2.3522,
-            city: userData.city || 'Paris',
+            city: userData.city,
           },
+          city: userData.city,
           createdAt: Date.now(),
         };
         
@@ -187,6 +188,7 @@ export const useAuth = create<AuthState>()(
           await AsyncStorage.removeItem('auth-storage');
           await AsyncStorage.removeItem('messages-storage');
           await AsyncStorage.removeItem('favorites-storage');
+          await AsyncStorage.removeItem('settings-storage');
           console.log('All storage cleared successfully');
         } catch (error) {
           console.error('Error clearing storage:', error);

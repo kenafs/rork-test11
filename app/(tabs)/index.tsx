@@ -10,7 +10,7 @@ import SearchBar from '@/components/SearchBar';
 import CategoryFilter from '@/components/CategoryFilter';
 import ListingCard from '@/components/ListingCard';
 import LocationPermissionRequest from '@/components/LocationPermissionRequest';
-import { Plus, MapPin } from 'lucide-react-native';
+import { Plus, MapPin, Star, Users, Calendar } from 'lucide-react-native';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -33,13 +33,12 @@ export default function HomeScreen() {
     error, 
     isLoading: locationLoading, 
     permissionStatus,
-    requestPermission 
+    requestPermission,
+    hasPermission
   } = useLocation();
   const { t } = useLanguage();
   
   const [refreshing, setRefreshing] = useState(false);
-  
-  const hasPermission = permissionStatus === 'granted';
   
   useEffect(() => {
     fetchListings();
@@ -68,9 +67,117 @@ export default function HomeScreen() {
     filterBySearch('');
   };
   
+  // Landing page for non-authenticated users
+  if (!user) {
+    return (
+      <View style={styles.container}>
+        <Stack.Screen options={{ headerShown: false }} />
+        
+        <ScrollView 
+          style={styles.content}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+          }
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Hero Section */}
+          <View style={styles.heroSection}>
+            <View style={styles.heroContent}>
+              <Text style={styles.heroTitle}>Trouvez le prestataire parfait pour votre événement</Text>
+              <Text style={styles.heroSubtitle}>
+                Connectez-vous avec les meilleurs DJ, traiteurs, photographes et lieux d'événements
+              </Text>
+              
+              <View style={styles.heroStats}>
+                <View style={styles.statItem}>
+                  <Star size={20} color={Colors.secondary} />
+                  <Text style={styles.statNumber}>4.8</Text>
+                  <Text style={styles.statLabel}>Note moyenne</Text>
+                </View>
+                <View style={styles.statItem}>
+                  <Users size={20} color={Colors.secondary} />
+                  <Text style={styles.statNumber}>500+</Text>
+                  <Text style={styles.statLabel}>Prestataires</Text>
+                </View>
+                <View style={styles.statItem}>
+                  <Calendar size={20} color={Colors.secondary} />
+                  <Text style={styles.statNumber}>1000+</Text>
+                  <Text style={styles.statLabel}>Événements</Text>
+                </View>
+              </View>
+              
+              <View style={styles.heroActions}>
+                <TouchableOpacity 
+                  style={styles.primaryButton}
+                  onPress={() => router.push('/(auth)/demo')}
+                >
+                  <Text style={styles.primaryButtonText}>Essayer la démo</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={styles.secondaryButton}
+                  onPress={() => router.push('/(auth)/login')}
+                >
+                  <Text style={styles.secondaryButtonText}>Se connecter</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+          
+          {/* Search Bar */}
+          <SearchBar
+            value={searchQuery}
+            onChangeText={handleSearch}
+            onClear={handleClearSearch}
+            onLocationPress={handleLocationPress}
+            placeholder="Rechercher un prestataire..."
+          />
+          
+          {/* Location Permission Request */}
+          {!hasPermission && (
+            <LocationPermissionRequest onRequestPermission={requestPermission} />
+          )}
+          
+          {/* Category Filter */}
+          <CategoryFilter
+            selectedCategory={selectedCategory}
+            onSelectCategory={filterByCategory}
+          />
+          
+          {/* Listings */}
+          <View style={styles.listingsContainer}>
+            <View style={styles.listingsHeader}>
+              <Text style={styles.listingsTitle}>
+                {selectedCategory ? 'Résultats filtrés' : 'Annonces récentes'}
+              </Text>
+              <Text style={styles.listingsCount}>
+                {filteredListings.length} résultat{filteredListings.length > 1 ? 's' : ''}
+              </Text>
+            </View>
+            
+            {filteredListings.map((listing) => (
+              <ListingCard
+                key={listing.id}
+                listing={listing}
+              />
+            ))}
+            
+            {filteredListings.length === 0 && !isLoading && (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyTitle}>Aucun résultat</Text>
+                <Text style={styles.emptyText}>
+                  Essayez de modifier vos critères de recherche
+                </Text>
+              </View>
+            )}
+          </View>
+        </ScrollView>
+      </View>
+    );
+  }
+  
+  // Authenticated user experience
   const getWelcomeMessage = () => {
-    if (!user) return "Découvrez les meilleurs prestataires";
-    
     switch (user.userType) {
       case 'provider':
         return `Bonjour ${user.name.split(' ')[0]} 👋`;
@@ -84,8 +191,6 @@ export default function HomeScreen() {
   };
   
   const getSubtitle = () => {
-    if (!user) return "Trouvez le prestataire parfait pour votre événement";
-    
     switch (user.userType) {
       case 'provider':
         return "Gérez vos annonces et développez votre activité";
@@ -99,8 +204,6 @@ export default function HomeScreen() {
   };
   
   const getCreateButtonText = () => {
-    if (!user) return "Se connecter";
-    
     switch (user.userType) {
       case 'provider':
         return "✨ Créer une annonce";
@@ -114,9 +217,7 @@ export default function HomeScreen() {
   };
   
   const handleCreatePress = () => {
-    if (!user) {
-      router.push('/(auth)/login');
-    } else if (user.userType === 'client') {
+    if (user.userType === 'client') {
       router.push('/(tabs)/search');
     } else {
       router.push('/(tabs)/create');
@@ -140,7 +241,7 @@ export default function HomeScreen() {
             <Text style={styles.welcomeText}>{getWelcomeMessage()}</Text>
             <Text style={styles.subtitleText}>{getSubtitle()}</Text>
             
-            {user && user.userType !== 'client' && (
+            {user.userType !== 'client' && (
               <TouchableOpacity 
                 style={styles.createButton}
                 onPress={handleCreatePress}
@@ -223,6 +324,81 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  heroSection: {
+    backgroundColor: Colors.primary,
+    paddingTop: 60,
+    paddingBottom: 40,
+    paddingHorizontal: 20,
+  },
+  heroContent: {
+    alignItems: 'center',
+  },
+  heroTitle: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 12,
+    lineHeight: 34,
+  },
+  heroSubtitle: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.9)',
+    textAlign: 'center',
+    marginBottom: 32,
+    lineHeight: 22,
+  },
+  heroStats: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    marginBottom: 32,
+  },
+  statItem: {
+    alignItems: 'center',
+  },
+  statNumber: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#fff',
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.8)',
+  },
+  heroActions: {
+    flexDirection: 'row',
+    gap: 16,
+    width: '100%',
+  },
+  primaryButton: {
+    flex: 1,
+    backgroundColor: Colors.secondary,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  primaryButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  secondaryButton: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  secondaryButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
   header: {
     backgroundColor: Colors.primary,

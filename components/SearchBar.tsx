@@ -8,6 +8,7 @@ interface SearchBarProps {
   onChangeText: (text: string) => void;
   onClear: () => void;
   onLocationPress?: () => void;
+  onSearch?: (query: string) => void;
   placeholder?: string;
   showLocationButton?: boolean;
 }
@@ -17,13 +18,16 @@ export default function SearchBar({
   onChangeText,
   onClear,
   onLocationPress,
+  onSearch,
   placeholder = "Rechercher...",
   showLocationButton = true,
 }: SearchBarProps) {
   const [isFocused, setIsFocused] = useState(false);
   
   const handleSubmit = () => {
-    // Search is handled by onChangeText, no additional action needed
+    if (onSearch) {
+      onSearch(value);
+    }
   };
   
   return (

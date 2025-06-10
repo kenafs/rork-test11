@@ -12,7 +12,7 @@ interface MessagesState {
   fetchConversations: () => Promise<void>;
   fetchMessages: (conversationId: string) => Promise<void>;
   sendMessage: (conversationId: string, content: string, receiverId: string) => Promise<void>;
-  createConversation: (participantId: string, initialMessage?: string) => Promise<string>;
+  createConversation: (participantId: string, initialMessage?: string, listingId?: string) => Promise<string>;
   markAsRead: (conversationId: string) => Promise<void>;
   refreshConversations: () => Promise<void>;
 }
@@ -119,7 +119,7 @@ export const useMessages = create<MessagesState>()(
         console.log('Message envoyé:', newMessage);
       },
       
-      createConversation: async (participantId: string, initialMessage?: string) => {
+      createConversation: async (participantId: string, initialMessage?: string, listingId?: string) => {
         const user = useAuth.getState().user;
         if (!user) throw new Error('User must be logged in');
         

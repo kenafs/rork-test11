@@ -2,24 +2,10 @@ import React, { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
+import { DemoAccount } from '@/types';
 import Colors from '@/constants/colors';
 import Button from '@/components/Button';
 import { User, Building2, Users, ArrowRight } from 'lucide-react-native';
-
-interface DemoAccount {
-  name: string;
-  email: string;
-  userType: 'provider' | 'business' | 'client';
-  profileImage: string;
-  description: string;
-  specialties?: string;
-  address?: string;
-  website?: string;
-  instagram?: string;
-  rating: number;
-  reviewCount: number;
-  city: string;
-}
 
 const demoAccounts: Record<'provider' | 'business' | 'client', DemoAccount> = {
   provider: {

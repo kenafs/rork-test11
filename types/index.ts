@@ -26,6 +26,21 @@ export interface User {
   city?: string;
 }
 
+export interface DemoAccount {
+  name: string;
+  email: string;
+  userType: 'provider' | 'business' | 'client';
+  profileImage: string;
+  description: string;
+  specialties?: string;
+  address?: string;
+  website?: string;
+  instagram?: string;
+  rating: number;
+  reviewCount: number;
+  city: string;
+}
+
 export interface Provider extends User {
   userType: 'provider';
   services: string[];

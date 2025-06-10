@@ -23,7 +23,7 @@ interface ListingsState {
   filterByLocation: (latitude: number, longitude: number, radius?: number) => void;
   clearFilters: () => void;
   
-  createListing: (listing: Omit<Listing, 'id' | 'createdAt' | 'status'>) => Promise<Listing>;
+  createListing: (listing: Omit<Listing, 'id' | 'createdAt' | 'status' | 'createdBy' | 'creatorName' | 'updatedAt'>) => Promise<Listing>;
   updateListing: (id: string, updates: Partial<Listing>) => Promise<boolean>;
   deleteListing: (id: string) => Promise<boolean>;
 }
@@ -181,8 +181,10 @@ export const useListings = create<ListingsState>((set, get) => ({
     const newListing: Listing = {
       id: `listing-${Date.now()}`,
       createdAt: Date.now(),
+      updatedAt: Date.now(),
       status: 'active',
       createdBy: user.id,
+      creatorName: user.name,
       ...listingData,
     };
     
@@ -215,6 +217,7 @@ export const useListings = create<ListingsState>((set, get) => ({
     updatedListings[listingIndex] = {
       ...updatedListings[listingIndex],
       ...updates,
+      updatedAt: Date.now(),
     };
     
     set({ 
