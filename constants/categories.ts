@@ -1,103 +1,83 @@
-export const serviceCategories = [
+export const CATEGORIES = [
   {
-    id: 'dj',
+    id: 'dj_services',
     name: 'Services DJ',
-    icon: 'music',
+    icon: '🎵',
+    subcategories: [
+      'DJ Mariage',
+      'DJ Soirée',
+      'DJ Entreprise',
+      'DJ Bar/Club',
+      'Animation musicale'
+    ]
   },
   {
     id: 'catering',
     name: 'Traiteur',
-    icon: 'utensils',
-  },
-  {
-    id: 'staff',
-    name: 'Services de Personnel',
-    icon: 'users',
-  },
-  {
-    id: 'photography',
-    name: 'Photographie',
-    icon: 'camera',
-  },
-  {
-    id: 'decoration',
-    name: 'Décoration',
-    icon: 'palette',
-  },
-  {
-    id: 'entertainment',
-    name: 'Animation',
-    icon: 'microphone',
-  },
-];
-
-export const venueCategories = [
-  {
-    id: 'restaurant',
-    name: 'Restaurants',
-    icon: 'utensils',
-  },
-  {
-    id: 'bar',
-    name: 'Bars & Clubs',
-    icon: 'glass-martini',
-  },
-  {
-    id: 'hotel',
-    name: 'Hôtels',
-    icon: 'hotel',
-  },
-  {
-    id: 'chateau',
-    name: 'Châteaux',
-    icon: 'landmark',
-  },
-  {
-    id: 'garden',
-    name: 'Jardins & Extérieur',
-    icon: 'tree',
-  },
-  {
-    id: 'unusual',
-    name: 'Lieux Insolites',
-    icon: 'star',
-  },
-];
-
-export const listingCategories = [
-  {
-    id: 'all',
-    name: 'Toutes les Annonces',
-    icon: 'list',
+    icon: '🍽️',
+    subcategories: [
+      'Traiteur Mariage',
+      'Traiteur Entreprise',
+      'Buffet',
+      'Cocktail dinatoire',
+      'Service à table'
+    ]
   },
   {
     id: 'venue_rental',
     name: 'Location de Lieu',
-    icon: 'building',
-  },
-  {
-    id: 'dj_services',
-    name: 'Services DJ',
-    icon: 'music',
-  },
-  {
-    id: 'catering',
-    name: 'Traiteur',
-    icon: 'utensils',
-  },
-  {
-    id: 'staff_needed',
-    name: 'Personnel Recherché',
-    icon: 'user-plus',
+    icon: '🏛️',
+    subcategories: [
+      'Salle de réception',
+      'Château',
+      'Restaurant privatisé',
+      'Loft',
+      'Jardin/Terrasse'
+    ]
   },
   {
     id: 'staff_services',
     name: 'Services de Personnel',
-    icon: 'users',
+    icon: '👥',
+    subcategories: [
+      'Serveurs',
+      'Barman',
+      'Hôtesses',
+      'Sécurité',
+      'Photographe'
+    ]
   },
   {
-    id: 'wedding_venue',
-    name: 'Lieux de Mariage',
-    icon: 'heart',
+    id: 'decoration',
+    name: 'Décoration',
+    icon: '🎨',
+    subcategories: [
+      'Fleuriste',
+      'Décoration florale',
+      'Éclairage',
+      'Mobilier',
+      'Thématique'
+    ]
   },
+  {
+    id: 'entertainment',
+    name: 'Animation',
+    icon: '🎭',
+    subcategories: [
+      'Magicien',
+      'Groupe de musique',
+      'Danseurs',
+      'Spectacle',
+      'Jeux'
+    ]
+  }
 ];
+
+export const getCategoryById = (id: string) => {
+  return CATEGORIES.find(cat => cat.id === id);
+};
+
+export const getCategoryName = (id: string) => {
+  const category = getCategoryById(id);
+  return category ? category.name : id;
+};

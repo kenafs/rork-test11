@@ -10,7 +10,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import ListingCard from '@/components/ListingCard';
 import CategoryFilter from '@/components/CategoryFilter';
 import Button from '@/components/Button';
-import Colors from '@/constants/colors';
+import Colors, { gradients } from '@/constants/colors';
 import { Sparkles, Users, MapPin, Calendar, Star, Plus, Zap, Music, Utensils, Camera, Palette, PartyPopper, Mic, Heart, Gift, Rocket, Crown, Flame, Coffee, Headphones, Gamepad2 } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
@@ -81,7 +81,7 @@ export default function HomeScreen() {
       id: 'dj_services', 
       name: 'DJ & Musique', 
       icon: Music, 
-      gradient: ['#FF1493', '#FF69B4'],
+      gradient: gradients.music,
       emoji: '🎵',
       description: 'Ambiance garantie',
       illustration: '🎧'
@@ -90,7 +90,7 @@ export default function HomeScreen() {
       id: 'catering', 
       name: 'Traiteur', 
       icon: Utensils, 
-      gradient: ['#FF6B35', '#FF7F50'],
+      gradient: gradients.catering,
       emoji: '🍽️',
       description: 'Saveurs d\'exception',
       illustration: '👨‍🍳'
@@ -99,7 +99,7 @@ export default function HomeScreen() {
       id: 'venue_rental', 
       name: 'Lieux', 
       icon: Calendar, 
-      gradient: ['#00BFFF', '#40E0D0'],
+      gradient: gradients.venue,
       emoji: '🏛️',
       description: 'Espaces magiques',
       illustration: '🏰'
@@ -108,7 +108,7 @@ export default function HomeScreen() {
       id: 'staff_services', 
       name: 'Personnel', 
       icon: Users, 
-      gradient: ['#10B981', '#32CD32'],
+      gradient: gradients.staff,
       emoji: '👥',
       description: 'Service premium',
       illustration: '💼'
@@ -132,7 +132,7 @@ export default function HomeScreen() {
   const renderHeader = () => (
     <View style={styles.headerContainer}>
       <LinearGradient
-        colors={['#667eea', '#764ba2']}
+        colors={gradients.primary}
         style={styles.headerGradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -273,7 +273,7 @@ export default function HomeScreen() {
           
           <View style={styles.loginPromptModern}>
             <LinearGradient
-              colors={['#667eea', '#764ba2']}
+              colors={gradients.primary}
               style={styles.loginGradient}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
@@ -350,11 +350,6 @@ export default function HomeScreen() {
         {renderHeroSection()}
         {renderQuickActions()}
         {renderFeaturedCategories()}
-        
-        <CategoryFilter
-          selectedCategory={selectedCategory}
-          onSelectCategory={handleCategorySelect}
-        />
         
         <View style={styles.listingsSection}>
           <View style={styles.sectionHeader}>

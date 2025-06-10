@@ -46,14 +46,14 @@ export default {
   cardVibrant2: '#00BFFF',
   cardVibrant3: '#FF6B35',
   cardVibrant4: '#32CD32',
-  
-  // Gradient combinations as const tuples
-  gradients: {
-    music: ['#FF1493', '#FF69B4'] as const,
-    catering: ['#FF6B35', '#FF7F50'] as const,
-    venue: ['#00BFFF', '#40E0D0'] as const,
-    staff: ['#10B981', '#32CD32'] as const,
-    primary: ['#6366F1', '#8B5CF6'] as const,
-    secondary: ['#8B5CF6', '#EC4899'] as const,
-  }
 } as const;
+
+// Gradient combinations as const tuples
+export const gradients = {
+  music: ['#FF1493', '#FF69B4'] as const,
+  catering: ['#FF6B35', '#FF7F50'] as const,
+  venue: ['#00BFFF', '#40E0D0'] as const,
+  staff: ['#10B981', '#32CD32'] as const,
+  primary: ['#6366F1', '#8B5CF6'] as const,
+  secondary: ['#8B5CF6', '#EC4899'] as const,
+};

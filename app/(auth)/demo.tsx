@@ -3,7 +3,7 @@ import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Alert } from 'rea
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { UserType } from '@/types';
-import Colors from '@/constants/colors';
+import Colors, { gradients } from '@/constants/colors';
 import Button from '@/components/Button';
 import { StatusBar } from 'expo-status-bar';
 import { User, Building, Briefcase, Sparkles } from 'lucide-react-native';
@@ -16,7 +16,7 @@ const demoAccounts = [
     description: 'Découvrez l\'expérience d\'un prestataire DJ',
     icon: Briefcase,
     color: Colors.primary,
-    gradient: ['#667eea', '#764ba2'] as const,
+    gradient: gradients.primary,
     userData: {
       name: 'Alex Martin - DJ Pro',
       email: 'demo.dj@example.com',
@@ -35,7 +35,7 @@ const demoAccounts = [
     description: 'Explorez l\'interface d\'un établissement',
     icon: Building,
     color: Colors.accent,
-    gradient: ['#FF6B35', '#FF7F50'] as const,
+    gradient: gradients.catering,
     userData: {
       name: 'Restaurant Le Gourmet',
       email: 'demo.restaurant@example.com',
@@ -56,7 +56,7 @@ const demoAccounts = [
     description: 'Testez l\'expérience d\'un client',
     icon: User,
     color: Colors.secondary,
-    gradient: ['#10B981', '#32CD32'] as const,
+    gradient: gradients.staff,
     userData: {
       name: 'Marie Dubois',
       email: 'demo.client@example.com',
@@ -98,7 +98,7 @@ export default function DemoScreen() {
       <StatusBar style="light" />
       
       <LinearGradient
-        colors={['#667eea', '#764ba2'] as const}
+        colors={gradients.primary}
         style={styles.headerGradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -155,7 +155,7 @@ export default function DemoScreen() {
                       <>
                         <Text style={styles.featureText}>• Publier des offres</Text>
                         <Text style={styles.featureText}>• Recevoir des demandes</Text>
-                        <Text style={styles.featureText}>• Gérer l'établissement</Text>
+                        <Text style={styles.featureText}>• Gérer l\'établissement</Text>
                       </>
                     ) : (
                       <>
