@@ -50,7 +50,7 @@ export default function NewConversationScreen() {
         timestamp: Date.now(),
       });
       
-      // Navigate to the conversation
+      // Navigate to the conversation with the participant ID
       router.replace(`/conversation/${recipient.id}`);
     } catch (error) {
       console.error('Error creating conversation:', error);
@@ -63,7 +63,16 @@ export default function NewConversationScreen() {
   if (!isAuthenticated || !currentUser) {
     return (
       <View style={styles.container}>
-        <Text style={styles.errorText}>Vous devez être connecté pour envoyer un message</Text>
+        <Stack.Screen options={{ title: "Nouveau message" }} />
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Vous devez être connecté pour envoyer un message</Text>
+          <TouchableOpacity 
+            style={styles.loginButton}
+            onPress={() => router.push('/(auth)/login')}
+          >
+            <Text style={styles.loginButtonText}>Se connecter</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   }
@@ -71,7 +80,16 @@ export default function NewConversationScreen() {
   if (!recipient) {
     return (
       <View style={styles.container}>
-        <Text style={styles.errorText}>Destinataire non trouvé</Text>
+        <Stack.Screen options={{ title: "Nouveau message" }} />
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Destinataire non trouvé</Text>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
+            <Text style={styles.backButtonText}>Retour</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   }
@@ -88,7 +106,8 @@ export default function NewConversationScreen() {
         <View style={styles.recipientInfo}>
           <Text style={styles.recipientName}>{recipient.name}</Text>
           <Text style={styles.recipientType}>
-            {recipient.userType === 'provider' ? 'Prestataire' : 'Établissement'}
+            {recipient.userType === 'provider' ? 'Prestataire' : 
+             recipient.userType === 'business' ? 'Établissement' : 'Client'}
           </Text>
         </View>
         
@@ -133,6 +152,42 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.backgroundAlt,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  errorText: {
+    fontSize: 18,
+    color: Colors.text,
+    textAlign: 'center',
+    marginBottom: 24,
+    fontWeight: '600',
+  },
+  loginButton: {
+    backgroundColor: Colors.primary,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  loginButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  backButton: {
+    backgroundColor: Colors.border,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+  },
+  backButtonText: {
+    color: Colors.text,
+    fontSize: 16,
+    fontWeight: '600',
   },
   content: {
     flex: 1,
@@ -225,11 +280,5 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderTopWidth: 1,
     borderTopColor: Colors.border,
-  },
-  errorText: {
-    fontSize: 18,
-    color: Colors.error,
-    textAlign: 'center',
-    margin: 20,
   },
 });

@@ -60,7 +60,14 @@ export default function ConversationScreen() {
   
   // Send message
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || !currentUser || !otherUser || !conversation) return;
+    if (!newMessage.trim() || !currentUser || !otherUser) {
+      return;
+    }
+    
+    if (!conversation) {
+      Alert.alert('Erreur', 'Conversation non trouvée');
+      return;
+    }
     
     setIsLoading(true);
     
@@ -145,7 +152,16 @@ export default function ConversationScreen() {
   if (!isAuthenticated || !currentUser) {
     return (
       <View style={styles.container}>
-        <Text style={styles.errorText}>Vous devez être connecté pour accéder aux messages</Text>
+        <Stack.Screen options={{ title: "Messages" }} />
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Vous devez être connecté pour accéder aux messages</Text>
+          <TouchableOpacity 
+            style={styles.loginButton}
+            onPress={() => router.push('/(auth)/login')}
+          >
+            <Text style={styles.loginButtonText}>Se connecter</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   }
@@ -153,7 +169,16 @@ export default function ConversationScreen() {
   if (!otherUser) {
     return (
       <View style={styles.container}>
-        <Text style={styles.errorText}>Conversation non trouvée</Text>
+        <Stack.Screen options={{ title: "Messages" }} />
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Conversation non trouvée</Text>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
+            <Text style={styles.backButtonText}>Retour</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   }
@@ -167,7 +192,7 @@ export default function ConversationScreen() {
         options={{ 
           title: otherUser.name,
           headerRight: () => (
-            currentUser.userType === 'provider' ? (
+            currentUser.userType === 'provider' && otherUser.userType !== 'business' ? (
               <TouchableOpacity onPress={sendQuote} style={styles.quoteButton}>
                 <Text style={styles.quoteButtonText}>Devis</Text>
               </TouchableOpacity>
@@ -187,6 +212,9 @@ export default function ConversationScreen() {
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>
               Début de votre conversation avec {otherUser.name}
+            </Text>
+            <Text style={styles.emptySubtext}>
+              Envoyez votre premier message pour commencer !
             </Text>
           </View>
         }
@@ -224,6 +252,42 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.backgroundAlt,
   },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  errorText: {
+    fontSize: 18,
+    color: Colors.text,
+    textAlign: 'center',
+    marginBottom: 24,
+    fontWeight: '600',
+  },
+  loginButton: {
+    backgroundColor: Colors.primary,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  loginButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  backButton: {
+    backgroundColor: Colors.border,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+  },
+  backButtonText: {
+    color: Colors.text,
+    fontSize: 16,
+    fontWeight: '600',
+  },
   messagesList: {
     flex: 1,
   },
@@ -239,6 +303,13 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
+    color: Colors.text,
+    textAlign: 'center',
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  emptySubtext: {
+    fontSize: 14,
     color: Colors.textLight,
     textAlign: 'center',
   },
@@ -341,11 +412,5 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontWeight: '600',
-  },
-  errorText: {
-    fontSize: 18,
-    color: Colors.error,
-    textAlign: 'center',
-    margin: 20,
   },
 });

@@ -107,8 +107,8 @@ export default function ListingDetailScreen() {
         listing.id
       );
       
-      // Navigate to the conversation
-      router.push(`/conversation/${conversationId}`);
+      // Navigate to the conversation with the participant ID
+      router.push(`/conversation/${listing.createdBy}`);
     } catch (error) {
       console.error('Error creating conversation:', error);
       Alert.alert('Erreur', 'Impossible de créer la conversation');
@@ -147,8 +147,8 @@ export default function ListingDetailScreen() {
           listing.id
         );
         
-        // Navigate to the conversation
-        router.push(`/conversation/${conversationId}`);
+        // Navigate to the conversation with the participant ID
+        router.push(`/conversation/${listing.createdBy}`);
       } catch (error) {
         console.error('Error creating quote request conversation:', error);
         Alert.alert('Erreur', 'Impossible de créer la demande de devis');
@@ -301,7 +301,7 @@ export default function ListingDetailScreen() {
           />
           
           {/* Only show quote button for providers or when requesting quotes from providers */}
-          {(user?.userType === 'provider' || listing.creatorType === 'provider') && (
+          {(user?.userType === 'provider' || listing.creatorType === 'provider') && user?.userType !== 'business' && (
             <Button
               title={user?.userType === 'provider' ? "📋 Créer devis" : "📋 Demander devis"}
               variant="outline"

@@ -84,6 +84,7 @@ export default function SettingsScreen() {
 
   const handleEditProfile = () => {
     try {
+      console.log("Navigating to edit-profile...");
       router.push("/edit-profile");
     } catch (error) {
       console.error('Navigation error to edit-profile:', error);

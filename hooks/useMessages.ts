@@ -164,6 +164,7 @@ export const useMessages = create<MessagesState>()(
           console.log('Message envoyé:', newMessage);
         } catch (error) {
           console.error('Error sending message:', error);
+          throw error;
         }
       },
       

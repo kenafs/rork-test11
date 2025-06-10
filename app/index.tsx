@@ -65,6 +65,32 @@ export default function LandingScreen() {
           </TouchableOpacity>
         </View>
       </LinearGradient>
+      
+      {/* Why Choose Us Section */}
+      <View style={styles.whySection}>
+        <Text style={styles.whyTitle}>Pourquoi nous choisir ?</Text>
+        <View style={styles.featuresContainer}>
+          <View style={styles.feature}>
+            <View style={styles.featureIcon}>
+              <Text style={styles.featureEmoji}>👥</Text>
+            </View>
+            <Text style={styles.featureTitle}>Communauté</Text>
+            <Text style={styles.featureText}>
+              Rejoignez une communauté de professionnels passionnés
+            </Text>
+          </View>
+          
+          <View style={styles.feature}>
+            <View style={styles.featureIcon}>
+              <Text style={styles.featureEmoji}>⭐</Text>
+            </View>
+            <Text style={styles.featureTitle}>Qualité</Text>
+            <Text style={styles.featureText}>
+              Des prestataires vérifiés et des avis authentiques
+            </Text>
+          </View>
+        </View>
+      </View>
     </View>
   );
 }
@@ -149,5 +175,50 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     textAlign: 'center',
+  },
+  whySection: {
+    padding: 20,
+    paddingBottom: 40,
+  },
+  whyTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: Colors.text,
+    textAlign: 'center',
+    marginBottom: 32,
+  },
+  featuresContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  feature: {
+    alignItems: 'center',
+    flex: 1,
+    paddingHorizontal: 16,
+  },
+  featureIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: Colors.backgroundAlt,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  featureEmoji: {
+    fontSize: 28,
+  },
+  featureTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.text,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  featureText: {
+    fontSize: 14,
+    color: Colors.textLight,
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, ScrollView, TextInput, Alert, Platform, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, Stack } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useListings } from '@/hooks/useListings';
 import { useLocation } from '@/hooks/useLocation';
@@ -29,12 +29,33 @@ export default function CreateListingScreen() {
   // Redirect to login if not authenticated
   React.useEffect(() => {
     if (!isAuthenticated || !user) {
-      router.replace('/(auth)/login');
+      Alert.alert(
+        'Connexion requise',
+        'Vous devez être connecté pour créer une annonce.',
+        [
+          { text: 'OK', onPress: () => router.replace('/(auth)/login') }
+        ]
+      );
     }
   }, [isAuthenticated, user]);
   
   if (!isAuthenticated || !user) {
-    return null;
+    return (
+      <View style={styles.container}>
+        <Stack.Screen options={{ title: "Créer une annonce" }} />
+        <View style={styles.loginPrompt}>
+          <Text style={styles.loginTitle}>Connexion requise</Text>
+          <Text style={styles.loginSubtitle}>
+            Vous devez être connecté pour créer une annonce
+          </Text>
+          <Button
+            title="Se connecter"
+            onPress={() => router.replace('/(auth)/login')}
+            style={styles.loginButton}
+          />
+        </View>
+      </View>
+    );
   }
   
   // Handle image picker
@@ -44,15 +65,20 @@ export default function CreateListingScreen() {
       return;
     }
     
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.8,
-    });
-    
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      setImages([...images, result.assets[0].uri]);
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+      
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setImages([...images, result.assets[0].uri]);
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      Alert.alert('Erreur', 'Impossible de sélectionner l\'image');
     }
   };
   
@@ -95,10 +121,15 @@ export default function CreateListingScreen() {
       return;
     }
     
+    if (!user) {
+      Alert.alert('Erreur', 'Vous devez être connecté pour créer une annonce.');
+      return;
+    }
+    
     try {
       await createListing({
-        title,
-        description,
+        title: title.trim(),
+        description: description.trim(),
         createdBy: user.id,
         creatorType: user.userType,
         creatorName: user.name,
@@ -116,16 +147,43 @@ export default function CreateListingScreen() {
         tags,
       });
       
-      Alert.alert('Succès', 'Votre annonce a été publiée avec succès.', [
-        { text: 'OK', onPress: () => router.replace('/(tabs)') }
-      ]);
+      Alert.alert(
+        'Succès', 
+        'Votre annonce a été publiée avec succès.', 
+        [
+          { 
+            text: 'OK', 
+            onPress: () => {
+              // Reset form
+              setTitle('');
+              setDescription('');
+              setCategory('');
+              setPrice('');
+              setImages([]);
+              setTags([]);
+              setTagInput('');
+              
+              // Navigate to home tab
+              router.replace('/(tabs)');
+            }
+          }
+        ]
+      );
     } catch (error) {
+      console.error('Error creating listing:', error);
       Alert.alert('Erreur', "Une erreur s'est produite lors de la publication de votre annonce.");
     }
   };
   
   return (
     <View style={styles.container}>
+      <Stack.Screen options={{ 
+        title: "Créer une annonce",
+        headerStyle: { backgroundColor: Colors.primary },
+        headerTintColor: "#fff",
+        headerTitleStyle: { fontWeight: "700" }
+      }} />
+      
       <LinearGradient
         colors={[Colors.primary, Colors.secondary] as const}
         style={styles.headerGradient}
@@ -321,8 +379,31 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.backgroundAlt,
   },
+  loginPrompt: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  loginTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: Colors.text,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  loginSubtitle: {
+    fontSize: 16,
+    color: Colors.textLight,
+    textAlign: 'center',
+    marginBottom: 32,
+    lineHeight: 24,
+  },
+  loginButton: {
+    paddingHorizontal: 32,
+  },
   headerGradient: {
-    paddingTop: Platform.OS === 'ios' ? 60 : 40,
+    paddingTop: Platform.OS === 'ios' ? 0 : 0,
     paddingBottom: 24,
     paddingHorizontal: 20,
     borderBottomLeftRadius: 24,
