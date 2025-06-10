@@ -93,7 +93,7 @@ export default function ProfileScreen() {
     <View style={styles.infoSection}>
       <Text style={styles.sectionTitle}>Services proposés</Text>
       <View style={styles.servicesList}>
-        {provider.services.map((service, index) => (
+        {provider.services && provider.services.map((service, index) => (
           <View key={index} style={styles.serviceTag}>
             <Text style={styles.serviceText}>{service}</Text>
           </View>
@@ -241,11 +241,13 @@ export default function ProfileScreen() {
           onPress={() => router.push('/edit-profile')}
           style={styles.actionButton}
         />
-        <Button 
-          title={getCreateButtonText()}
-          onPress={() => router.push('/create-listing')}
-          style={styles.actionButton}
-        />
+        {user.userType !== 'client' && (
+          <Button 
+            title={getCreateButtonText()}
+            onPress={() => router.push('/create-listing')}
+            style={styles.actionButton}
+          />
+        )}
       </View>
       
       <View style={styles.card}>
@@ -283,11 +285,7 @@ export default function ProfileScreen() {
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>Description</Text>
         <Text style={styles.description}>
-          {user.description || 
-           (user.userType === 'provider' 
-            ? (user as Provider).description 
-            : (user as Venue).description) ||
-           'Aucune description disponible.'}
+          {user.description || 'Aucune description disponible.'}
         </Text>
       </View>
       

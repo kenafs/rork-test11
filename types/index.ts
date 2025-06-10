@@ -1,11 +1,10 @@
+export type UserType = 'client' | 'provider' | 'business';
+
 export interface Location {
   latitude: number;
   longitude: number;
   city: string;
-  address?: string;
 }
-
-export type UserType = 'client' | 'provider' | 'business';
 
 export interface User {
   id: string;
@@ -14,24 +13,47 @@ export interface User {
   phone?: string;
   userType: UserType;
   profileImage?: string;
+  description?: string;
   location?: Location;
+  city?: string;
   rating?: number;
   reviewCount?: number;
   createdAt: number;
-  description?: string;
+  
+  // Social links
   website?: string;
   instagram?: string;
+}
+
+export interface Provider extends User {
+  userType: 'provider';
+  services: string[];
   specialties?: string;
+  priceRange?: {
+    min: number;
+    max: number;
+  };
+  availability?: string[];
+}
+
+export interface Venue extends User {
+  userType: 'business';
+  venueType: string;
   address?: string;
-  city?: string;
+  capacity?: number;
+  amenities?: string[];
+}
+
+export interface Client extends User {
+  userType: 'client';
 }
 
 export interface DemoAccount {
   name: string;
   email: string;
-  userType: 'provider' | 'business' | 'client';
+  userType: UserType;
   profileImage: string;
-  description: string;
+  description?: string;
   specialties?: string;
   address?: string;
   website?: string;
@@ -39,34 +61,15 @@ export interface DemoAccount {
   rating: number;
   reviewCount: number;
   city: string;
-}
-
-export interface Provider extends User {
-  userType: 'provider';
-  services: string[];
-  description: string;
-  priceRange?: {
-    min: number;
-    max: number;
-  };
-  availability?: string[];
-  portfolio?: string[];
-}
-
-export interface Venue extends User {
-  userType: 'business';
-  venueType: string;
-  description: string;
+  services?: string[];
+  venueType?: string;
   capacity?: number;
   amenities?: string[];
   priceRange?: {
     min: number;
     max: number;
   };
-}
-
-export interface Client extends User {
-  userType: 'client';
+  availability?: string[];
 }
 
 export interface Listing {
@@ -74,34 +77,18 @@ export interface Listing {
   title: string;
   description: string;
   category: string;
-  subcategory?: string;
   price?: number;
   priceType?: 'fixed' | 'hourly' | 'daily' | 'negotiable';
   images?: string[];
   location: Location;
-  createdBy: string;
-  creatorName: string;
+  tags?: string[];
   createdAt: number;
   updatedAt: number;
-  status: 'active' | 'inactive' | 'draft';
-  tags?: string[];
+  status: 'active' | 'inactive' | 'pending';
+  createdBy: string;
+  creatorName: string;
   creatorRating?: number;
   creatorReviewCount?: number;
-}
-
-export interface Review {
-  id: string;
-  listingId?: string;
-  providerId?: string;
-  venueId?: string;
-  reviewerId: string;
-  reviewerName: string;
-  reviewerImage?: string;
-  rating: number;
-  comment: string;
-  createdAt: number;
-  helpful?: number;
-  response?: string;
 }
 
 export interface Message {
@@ -113,6 +100,7 @@ export interface Message {
   timestamp: number;
   read: boolean;
   type: 'text' | 'image' | 'quote';
+  quoteId?: string;
 }
 
 export interface Conversation {
@@ -120,7 +108,23 @@ export interface Conversation {
   participants: string[];
   lastMessage?: Message;
   createdAt: number;
+  updatedAt?: number;
+}
+
+export interface Quote {
+  id: string;
+  listingId: string;
+  clientId: string;
+  providerId: string;
+  title: string;
+  description: string;
+  price: number;
+  currency: string;
+  validUntil: number;
+  status: 'pending' | 'accepted' | 'rejected' | 'expired';
+  createdAt: number;
   updatedAt: number;
+  items?: QuoteItem[];
 }
 
 export interface QuoteItem {
@@ -129,46 +133,27 @@ export interface QuoteItem {
   description?: string;
   quantity: number;
   unitPrice: number;
-  totalPrice: number;
+  total: number;
 }
 
-export interface Quote {
+export interface Review {
   id: string;
   listingId?: string;
-  providerId: string;
-  clientId: string;
-  title: string;
-  description: string;
-  items: QuoteItem[];
-  totalAmount: number;
-  status: 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired';
-  validUntil: number;
+  userId: string;
+  reviewerId: string;
+  reviewerName: string;
+  reviewerImage?: string;
+  rating: number;
+  comment: string;
   createdAt: number;
-  updatedAt: number;
-  notes?: string;
 }
 
-export interface Language {
-  code: string;
-  name: string;
-  flag: string;
-}
-
-export interface SettingItemSwitch {
+export interface SettingItem {
   icon: any;
   title: string;
   subtitle: string;
-  type: 'switch';
-  value: boolean;
-  onToggle: (value: boolean) => void;
+  type: 'switch' | 'navigation';
+  value?: boolean;
+  onToggle?: () => void;
+  onPress?: () => void;
 }
-
-export interface SettingItemNavigation {
-  icon: any;
-  title: string;
-  subtitle: string;
-  type: 'navigation';
-  onPress: () => void;
-}
-
-export type SettingItem = SettingItemSwitch | SettingItemNavigation;

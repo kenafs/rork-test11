@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { User, UserType, DemoAccount } from '@/types';
+import { User, UserType, DemoAccount, Provider, Venue, Client } from '@/types';
 
 interface AuthState {
   user: User | null;
@@ -50,7 +50,7 @@ const mockUsers: User[] = [
       city: 'Paris',
     },
     createdAt: Date.now() - 86400000 * 60,
-  },
+  } as Provider,
   {
     id: 'business-1',
     name: 'Restaurant Le Gourmet',
@@ -69,7 +69,7 @@ const mockUsers: User[] = [
       city: 'Paris',
     },
     createdAt: Date.now() - 86400000 * 90,
-  },
+  } as Venue,
 ];
 
 export const useAuth = create<AuthState>()(
@@ -107,27 +107,75 @@ export const useAuth = create<AuthState>()(
         // Simulate API call
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        const demoUser: User = {
-          id: `demo-${Date.now()}`,
-          name: userData.name,
-          email: userData.email,
-          userType: userData.userType,
-          profileImage: userData.profileImage,
-          description: userData.description,
-          specialties: userData.specialties,
-          address: userData.address,
-          website: userData.website,
-          instagram: userData.instagram,
-          rating: userData.rating,
-          reviewCount: userData.reviewCount,
-          location: {
-            latitude: 48.8566,
-            longitude: 2.3522,
+        let demoUser: User;
+        
+        if (userData.userType === 'provider') {
+          demoUser = {
+            id: `demo-${Date.now()}`,
+            name: userData.name,
+            email: userData.email,
+            userType: userData.userType,
+            profileImage: userData.profileImage,
+            description: userData.description,
+            specialties: userData.specialties,
+            website: userData.website,
+            instagram: userData.instagram,
+            rating: userData.rating,
+            reviewCount: userData.reviewCount,
+            location: {
+              latitude: 48.8566,
+              longitude: 2.3522,
+              city: userData.city,
+            },
             city: userData.city,
-          },
-          city: userData.city,
-          createdAt: Date.now(),
-        };
+            createdAt: Date.now(),
+            services: userData.services || ['DJ', 'Animation', 'Sonorisation'],
+            priceRange: userData.priceRange,
+            availability: userData.availability,
+          } as Provider;
+        } else if (userData.userType === 'business') {
+          demoUser = {
+            id: `demo-${Date.now()}`,
+            name: userData.name,
+            email: userData.email,
+            userType: userData.userType,
+            profileImage: userData.profileImage,
+            description: userData.description,
+            address: userData.address,
+            website: userData.website,
+            instagram: userData.instagram,
+            rating: userData.rating,
+            reviewCount: userData.reviewCount,
+            location: {
+              latitude: 48.8566,
+              longitude: 2.3522,
+              city: userData.city,
+            },
+            city: userData.city,
+            createdAt: Date.now(),
+            venueType: userData.venueType || 'Restaurant',
+            capacity: userData.capacity,
+            amenities: userData.amenities,
+          } as Venue;
+        } else {
+          demoUser = {
+            id: `demo-${Date.now()}`,
+            name: userData.name,
+            email: userData.email,
+            userType: userData.userType,
+            profileImage: userData.profileImage,
+            description: userData.description,
+            rating: userData.rating,
+            reviewCount: userData.reviewCount,
+            location: {
+              latitude: 48.8566,
+              longitude: 2.3522,
+              city: userData.city,
+            },
+            city: userData.city,
+            createdAt: Date.now(),
+          } as Client;
+        }
         
         set({ 
           user: demoUser, 
@@ -143,27 +191,75 @@ export const useAuth = create<AuthState>()(
         // Simulate API call
         await new Promise(resolve => setTimeout(resolve, 1500));
         
-        const newUser: User = {
-          id: `user-${Date.now()}`,
-          name: userData.name || '',
-          email: userData.email || '',
-          userType,
-          phone: userData.phone,
-          profileImage: userData.profileImage,
-          description: userData.description,
-          specialties: userData.specialties,
-          address: userData.address,
-          website: userData.website,
-          instagram: userData.instagram,
-          rating: 0,
-          reviewCount: 0,
-          location: {
-            latitude: 48.8566,
-            longitude: 2.3522,
-            city: userData.city || 'Paris',
-          },
-          createdAt: Date.now(),
-        };
+        let newUser: User;
+        
+        if (userType === 'provider') {
+          newUser = {
+            id: `user-${Date.now()}`,
+            name: userData.name || '',
+            email: userData.email || '',
+            userType,
+            phone: userData.phone,
+            profileImage: userData.profileImage,
+            description: userData.description,
+            specialties: (userData as any).specialties,
+            website: userData.website,
+            instagram: userData.instagram,
+            rating: 0,
+            reviewCount: 0,
+            location: {
+              latitude: 48.8566,
+              longitude: 2.3522,
+              city: userData.city || 'Paris',
+            },
+            createdAt: Date.now(),
+            services: (userData as any).services || [],
+            priceRange: (userData as any).priceRange,
+            availability: (userData as any).availability,
+          } as Provider;
+        } else if (userType === 'business') {
+          newUser = {
+            id: `user-${Date.now()}`,
+            name: userData.name || '',
+            email: userData.email || '',
+            userType,
+            phone: userData.phone,
+            profileImage: userData.profileImage,
+            description: userData.description,
+            address: (userData as any).address,
+            website: userData.website,
+            instagram: userData.instagram,
+            rating: 0,
+            reviewCount: 0,
+            location: {
+              latitude: 48.8566,
+              longitude: 2.3522,
+              city: userData.city || 'Paris',
+            },
+            createdAt: Date.now(),
+            venueType: (userData as any).venueType || 'Lieu',
+            capacity: (userData as any).capacity,
+            amenities: (userData as any).amenities || [],
+          } as Venue;
+        } else {
+          newUser = {
+            id: `user-${Date.now()}`,
+            name: userData.name || '',
+            email: userData.email || '',
+            userType,
+            phone: userData.phone,
+            profileImage: userData.profileImage,
+            description: userData.description,
+            rating: 0,
+            reviewCount: 0,
+            location: {
+              latitude: 48.8566,
+              longitude: 2.3522,
+              city: userData.city || 'Paris',
+            },
+            createdAt: Date.now(),
+          } as Client;
+        }
         
         set({ 
           user: newUser, 

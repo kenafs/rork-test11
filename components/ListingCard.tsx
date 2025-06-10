@@ -13,21 +13,16 @@ const CARD_WIDTH = width - 40;
 
 interface ListingCardProps {
   listing: Listing;
-  onPress?: () => void;
 }
 
-export default function ListingCard({ listing, onPress }: ListingCardProps) {
+export default function ListingCard({ listing }: ListingCardProps) {
   const router = useRouter();
   const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
   
   const isListingFavorite = isFavorite(listing.id);
   
   const handlePress = () => {
-    if (onPress) {
-      onPress();
-    } else {
-      router.push(`/listing/${listing.id}`);
-    }
+    router.push(`/listing/${listing.id}`);
   };
   
   const handleFavoritePress = (e: any) => {

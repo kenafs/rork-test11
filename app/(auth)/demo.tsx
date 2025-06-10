@@ -20,6 +20,9 @@ const demoAccounts: Record<'provider' | 'business' | 'client', DemoAccount> = {
     rating: 4.8,
     reviewCount: 127,
     city: 'Paris',
+    services: ['DJ', 'Animation', 'Sonorisation', 'Éclairage'],
+    priceRange: { min: 300, max: 800 },
+    availability: ['Vendredi', 'Samedi', 'Dimanche'],
   },
   business: {
     name: 'Restaurant Le Gourmet',
@@ -33,6 +36,9 @@ const demoAccounts: Record<'provider' | 'business' | 'client', DemoAccount> = {
     rating: 4.6,
     reviewCount: 89,
     city: 'Paris',
+    venueType: 'Restaurant',
+    capacity: 120,
+    amenities: ['Terrasse', 'Parking', 'Climatisation', 'Sonorisation'],
   },
   client: {
     name: 'Jean Dupont',
@@ -156,9 +162,11 @@ export default function DemoScreen() {
               </View>
             </View>
             
-            <Text style={styles.previewDescription}>
-              {selectedAccount.description}
-            </Text>
+            {selectedAccount.description && (
+              <Text style={styles.previewDescription}>
+                {selectedAccount.description}
+              </Text>
+            )}
             
             <View style={styles.previewStats}>
               <View style={styles.statItem}>
