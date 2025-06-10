@@ -27,6 +27,7 @@ interface MessagesState {
   markAsRead: (conversationId: string) => Promise<void>;
   refreshConversations: () => Promise<void>;
   addContact: (contact: MessageContact) => void;
+  addMessage: (contact: MessageContact) => void;
 }
 
 export const useMessages = create<MessagesState>()(
@@ -40,153 +41,176 @@ export const useMessages = create<MessagesState>()(
       fetchConversations: async () => {
         set({ isLoading: true });
         
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        const user = useAuth.getState().user;
-        if (!user) {
+        try {
+          // Simulate API call
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          const user = useAuth.getState().user;
+          if (!user) {
+            set({ isLoading: false });
+            return;
+          }
+          
+          // Get existing conversations from state
+          const existingConversations = get().conversations;
+          
+          set({ 
+            conversations: existingConversations,
+            isLoading: false 
+          });
+        } catch (error) {
+          console.error('Error fetching conversations:', error);
           set({ isLoading: false });
-          return;
         }
-        
-        // Get existing conversations from state
-        const existingConversations = get().conversations;
-        
-        set({ 
-          conversations: existingConversations,
-          isLoading: false 
-        });
       },
       
       fetchMessages: async (conversationId: string) => {
         set({ isLoading: true });
         
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        const user = useAuth.getState().user;
-        if (!user) {
+        try {
+          // Simulate API call
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
+          const user = useAuth.getState().user;
+          if (!user) {
+            set({ isLoading: false });
+            return;
+          }
+          
+          // Get existing messages for this conversation
+          const existingMessages = get().messages[conversationId] || [];
+          
+          set(state => ({
+            messages: {
+              ...state.messages,
+              [conversationId]: existingMessages,
+            },
+            isLoading: false,
+          }));
+        } catch (error) {
+          console.error('Error fetching messages:', error);
           set({ isLoading: false });
-          return;
         }
-        
-        // Get existing messages for this conversation
-        const existingMessages = get().messages[conversationId] || [];
-        
-        set(state => ({
-          messages: {
-            ...state.messages,
-            [conversationId]: existingMessages,
-          },
-          isLoading: false,
-        }));
       },
       
       sendMessage: async (conversationId: string, content: string, receiverId: string) => {
-        const user = useAuth.getState().user;
-        if (!user) return;
-        
-        const newMessage: Message = {
-          id: `msg-${Date.now()}`,
-          conversationId,
-          senderId: user.id,
-          receiverId,
-          content,
-          timestamp: Date.now(),
-          read: false,
-          type: 'text',
-        };
-        
-        // Add message to conversation immediately
-        set(state => ({
-          messages: {
-            ...state.messages,
-            [conversationId]: [
-              ...(state.messages[conversationId] || []),
-              newMessage,
-            ],
-          },
-        }));
-        
-        // Update conversation's last message and move to top
-        set(state => {
-          const updatedConversations = state.conversations.map(conv => {
-            if (conv.id === conversationId) {
-              return {
-                ...conv,
-                lastMessage: newMessage,
-                updatedAt: Date.now(),
-              };
-            }
-            return conv;
+        try {
+          const user = useAuth.getState().user;
+          if (!user) return;
+          
+          const newMessage: Message = {
+            id: `msg-${Date.now()}`,
+            conversationId,
+            senderId: user.id,
+            receiverId,
+            content,
+            timestamp: Date.now(),
+            read: false,
+            type: 'text',
+          };
+          
+          // Add message to conversation immediately
+          set(state => ({
+            messages: {
+              ...state.messages,
+              [conversationId]: [
+                ...(state.messages[conversationId] || []),
+                newMessage,
+              ],
+            },
+          }));
+          
+          // Update conversation's last message and move to top
+          set(state => {
+            const updatedConversations = state.conversations.map(conv => {
+              if (conv.id === conversationId) {
+                return {
+                  ...conv,
+                  lastMessage: newMessage,
+                  updatedAt: Date.now(),
+                };
+              }
+              return conv;
+            });
+            
+            // Sort conversations by updatedAt (most recent first)
+            updatedConversations.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+            
+            return {
+              conversations: updatedConversations,
+            };
           });
           
-          // Sort conversations by updatedAt (most recent first)
-          updatedConversations.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
-          
-          return {
-            conversations: updatedConversations,
-          };
-        });
-        
-        console.log('Message envoyé:', newMessage);
+          console.log('Message envoyé:', newMessage);
+        } catch (error) {
+          console.error('Error sending message:', error);
+        }
       },
       
       createConversation: async (participantId: string, initialMessage?: string, listingId?: string) => {
-        const user = useAuth.getState().user;
-        if (!user) throw new Error('User must be logged in');
-        
-        // Check if conversation already exists
-        const existingConversation = get().conversations.find(conv =>
-          conv.participants.includes(user.id) && conv.participants.includes(participantId)
-        );
-        
-        if (existingConversation) {
+        try {
+          const user = useAuth.getState().user;
+          if (!user) throw new Error('User must be logged in');
+          
+          // Check if conversation already exists
+          const existingConversation = get().conversations.find(conv =>
+            conv.participants.includes(user.id) && conv.participants.includes(participantId)
+          );
+          
+          if (existingConversation) {
+            // Send initial message if provided
+            if (initialMessage) {
+              await get().sendMessage(existingConversation.id, initialMessage, participantId);
+            }
+            return existingConversation.id;
+          }
+          
+          const conversationId = `conv-${Date.now()}`;
+          
+          const newConversation: Conversation = {
+            id: conversationId,
+            participants: [user.id, participantId],
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+          };
+          
+          set(state => ({
+            conversations: [newConversation, ...state.conversations],
+            messages: {
+              ...state.messages,
+              [conversationId]: [],
+            },
+          }));
+          
           // Send initial message if provided
           if (initialMessage) {
-            await get().sendMessage(existingConversation.id, initialMessage, participantId);
+            await get().sendMessage(conversationId, initialMessage, participantId);
           }
-          return existingConversation.id;
+          
+          console.log('Nouvelle conversation créée:', conversationId);
+          return conversationId;
+        } catch (error) {
+          console.error('Error creating conversation:', error);
+          throw error;
         }
-        
-        const conversationId = `conv-${Date.now()}`;
-        
-        const newConversation: Conversation = {
-          id: conversationId,
-          participants: [user.id, participantId],
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-        };
-        
-        set(state => ({
-          conversations: [newConversation, ...state.conversations],
-          messages: {
-            ...state.messages,
-            [conversationId]: [],
-          },
-        }));
-        
-        // Send initial message if provided
-        if (initialMessage) {
-          await get().sendMessage(conversationId, initialMessage, participantId);
-        }
-        
-        console.log('Nouvelle conversation créée:', conversationId);
-        return conversationId;
       },
       
       markAsRead: async (conversationId: string) => {
-        const user = useAuth.getState().user;
-        if (!user) return;
-        
-        set(state => ({
-          messages: {
-            ...state.messages,
-            [conversationId]: (state.messages[conversationId] || []).map(msg =>
-              msg.receiverId === user.id ? { ...msg, read: true } : msg
-            ),
-          },
-        }));
+        try {
+          const user = useAuth.getState().user;
+          if (!user) return;
+          
+          set(state => ({
+            messages: {
+              ...state.messages,
+              [conversationId]: (state.messages[conversationId] || []).map(msg =>
+                msg.receiverId === user.id ? { ...msg, read: true } : msg
+              ),
+            },
+          }));
+        } catch (error) {
+          console.error('Error marking messages as read:', error);
+        }
       },
       
       refreshConversations: async () => {
@@ -222,6 +246,11 @@ export const useMessages = create<MessagesState>()(
             contacts: updatedContacts,
           };
         });
+      },
+      
+      addMessage: (contact: MessageContact) => {
+        // Alias for addContact for backward compatibility
+        get().addContact(contact);
       },
     }),
     {

@@ -52,7 +52,7 @@ export default function ConversationScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user: currentUser, isAuthenticated } = useAuth();
-  const { addContact } = useMessages();
+  const { addMessage } = useMessages();
   const [messages, setMessages] = useState<Message[]>(mockMessages);
   const [newMessage, setNewMessage] = useState('');
   const flatListRef = useRef<FlatList>(null);
@@ -86,8 +86,8 @@ export default function ConversationScreen() {
     setNewMessage('');
     
     // Add to global messages store
-    if (addContact) {
-      addContact({
+    if (addMessage) {
+      addMessage({
         participantId: otherUser.id,
         participantName: otherUser.name,
         participantImage: otherUser.profileImage,

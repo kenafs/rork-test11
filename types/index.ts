@@ -27,7 +27,7 @@ export interface User {
 
 export interface Provider extends User {
   userType: 'provider';
-  services: string[];
+  services?: string[];
   specialties?: string;
   priceRange?: {
     min: number;
@@ -38,7 +38,7 @@ export interface Provider extends User {
 
 export interface Venue extends User {
   userType: 'business';
-  venueType: string;
+  venueType?: string;
   address?: string;
   capacity?: number;
   amenities?: string[];

@@ -38,8 +38,12 @@ export default function ProfileScreen() {
           text: 'Déconnexion', 
           style: 'destructive', 
           onPress: async () => {
-            await logout();
-            router.replace('/');
+            try {
+              await logout();
+              router.replace('/');
+            } catch (error) {
+              console.error('Logout error:', error);
+            }
           }
         },
       ]
@@ -126,7 +130,7 @@ export default function ProfileScreen() {
       <Text style={styles.sectionTitle}>Informations sur l'établissement</Text>
       <View style={styles.infoRow}>
         <Text style={styles.infoLabel}>Type:</Text>
-        <Text style={styles.infoValue}>{venue.venueType}</Text>
+        <Text style={styles.infoValue}>{venue.venueType || 'Non spécifié'}</Text>
       </View>
       
       {venue.capacity && (

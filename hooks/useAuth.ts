@@ -88,212 +88,236 @@ export const useAuth = create<AuthState>()(
       login: async (email: string, password: string) => {
         set({ isLoading: true });
         
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Find user by email
-        const user = mockUsers.find(u => u.email === email);
-        
-        if (user && password === 'password') {
-          set({ 
-            user, 
-            isAuthenticated: true, 
-            isLoading: false 
-          });
-          return true;
+        try {
+          // Simulate API call
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          // Find user by email
+          const user = mockUsers.find(u => u.email === email);
+          
+          if (user && password === 'password') {
+            set({ 
+              user, 
+              isAuthenticated: true, 
+              isLoading: false 
+            });
+            return true;
+          }
+          
+          set({ isLoading: false });
+          return false;
+        } catch (error) {
+          console.error('Login error:', error);
+          set({ isLoading: false });
+          return false;
         }
-        
-        set({ isLoading: false });
-        return false;
       },
       
       loginWithDemo: async (userData: DemoAccount) => {
         set({ isLoading: true });
         
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        let demoUser: User;
-        
-        if (userData.userType === 'provider') {
-          demoUser = {
-            id: `demo-${Date.now()}`,
-            name: userData.name,
-            email: userData.email,
-            userType: userData.userType,
-            profileImage: userData.profileImage,
-            description: userData.description,
-            specialties: userData.specialties,
-            website: userData.website,
-            instagram: userData.instagram,
-            rating: userData.rating,
-            reviewCount: userData.reviewCount,
-            location: {
-              latitude: 48.8566,
-              longitude: 2.3522,
+        try {
+          // Simulate API call
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          let demoUser: User;
+          
+          if (userData.userType === 'provider') {
+            demoUser = {
+              id: `demo-${Date.now()}`,
+              name: userData.name,
+              email: userData.email,
+              userType: userData.userType,
+              profileImage: userData.profileImage,
+              description: userData.description,
+              specialties: userData.specialties,
+              website: userData.website,
+              instagram: userData.instagram,
+              rating: userData.rating,
+              reviewCount: userData.reviewCount,
+              location: {
+                latitude: 48.8566,
+                longitude: 2.3522,
+                city: userData.city,
+              },
               city: userData.city,
-            },
-            city: userData.city,
-            createdAt: Date.now(),
-            services: userData.services || ['DJ', 'Animation', 'Sonorisation'],
-            priceRange: userData.priceRange,
-            availability: userData.availability,
-          } as Provider;
-        } else if (userData.userType === 'business') {
-          demoUser = {
-            id: `demo-${Date.now()}`,
-            name: userData.name,
-            email: userData.email,
-            userType: userData.userType,
-            profileImage: userData.profileImage,
-            description: userData.description,
-            address: userData.address,
-            website: userData.website,
-            instagram: userData.instagram,
-            rating: userData.rating,
-            reviewCount: userData.reviewCount,
-            location: {
-              latitude: 48.8566,
-              longitude: 2.3522,
+              createdAt: Date.now(),
+              services: userData.services || ['DJ', 'Animation', 'Sonorisation'],
+              priceRange: userData.priceRange,
+              availability: userData.availability,
+            } as Provider;
+          } else if (userData.userType === 'business') {
+            demoUser = {
+              id: `demo-${Date.now()}`,
+              name: userData.name,
+              email: userData.email,
+              userType: userData.userType,
+              profileImage: userData.profileImage,
+              description: userData.description,
+              address: userData.address,
+              website: userData.website,
+              instagram: userData.instagram,
+              rating: userData.rating,
+              reviewCount: userData.reviewCount,
+              location: {
+                latitude: 48.8566,
+                longitude: 2.3522,
+                city: userData.city,
+              },
               city: userData.city,
-            },
-            city: userData.city,
-            createdAt: Date.now(),
-            venueType: userData.venueType || 'Restaurant',
-            capacity: userData.capacity,
-            amenities: userData.amenities,
-          } as Venue;
-        } else {
-          demoUser = {
-            id: `demo-${Date.now()}`,
-            name: userData.name,
-            email: userData.email,
-            userType: userData.userType,
-            profileImage: userData.profileImage,
-            description: userData.description,
-            rating: userData.rating,
-            reviewCount: userData.reviewCount,
-            location: {
-              latitude: 48.8566,
-              longitude: 2.3522,
+              createdAt: Date.now(),
+              venueType: userData.venueType || 'Restaurant',
+              capacity: userData.capacity,
+              amenities: userData.amenities,
+            } as Venue;
+          } else {
+            demoUser = {
+              id: `demo-${Date.now()}`,
+              name: userData.name,
+              email: userData.email,
+              userType: userData.userType,
+              profileImage: userData.profileImage,
+              description: userData.description,
+              rating: userData.rating,
+              reviewCount: userData.reviewCount,
+              location: {
+                latitude: 48.8566,
+                longitude: 2.3522,
+                city: userData.city,
+              },
               city: userData.city,
-            },
-            city: userData.city,
-            createdAt: Date.now(),
-          } as Client;
+              createdAt: Date.now(),
+            } as Client;
+          }
+          
+          set({ 
+            user: demoUser, 
+            isAuthenticated: true, 
+            isLoading: false 
+          });
+          return true;
+        } catch (error) {
+          console.error('Demo login error:', error);
+          set({ isLoading: false });
+          return false;
         }
-        
-        set({ 
-          user: demoUser, 
-          isAuthenticated: true, 
-          isLoading: false 
-        });
-        return true;
       },
       
       register: async (userData: Partial<User>, password: string, userType: UserType) => {
         set({ isLoading: true });
         
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        let newUser: User;
-        
-        if (userType === 'provider') {
-          newUser = {
-            id: `user-${Date.now()}`,
-            name: userData.name || '',
-            email: userData.email || '',
-            userType,
-            phone: userData.phone,
-            profileImage: userData.profileImage,
-            description: userData.description,
-            specialties: (userData as any).specialties,
-            website: userData.website,
-            instagram: userData.instagram,
-            rating: 0,
-            reviewCount: 0,
-            location: {
-              latitude: 48.8566,
-              longitude: 2.3522,
-              city: userData.city || 'Paris',
-            },
-            createdAt: Date.now(),
-            services: (userData as any).services || [],
-            priceRange: (userData as any).priceRange,
-            availability: (userData as any).availability,
-          } as Provider;
-        } else if (userType === 'business') {
-          newUser = {
-            id: `user-${Date.now()}`,
-            name: userData.name || '',
-            email: userData.email || '',
-            userType,
-            phone: userData.phone,
-            profileImage: userData.profileImage,
-            description: userData.description,
-            address: (userData as any).address,
-            website: userData.website,
-            instagram: userData.instagram,
-            rating: 0,
-            reviewCount: 0,
-            location: {
-              latitude: 48.8566,
-              longitude: 2.3522,
-              city: userData.city || 'Paris',
-            },
-            createdAt: Date.now(),
-            venueType: (userData as any).venueType || 'Lieu',
-            capacity: (userData as any).capacity,
-            amenities: (userData as any).amenities || [],
-          } as Venue;
-        } else {
-          newUser = {
-            id: `user-${Date.now()}`,
-            name: userData.name || '',
-            email: userData.email || '',
-            userType,
-            phone: userData.phone,
-            profileImage: userData.profileImage,
-            description: userData.description,
-            rating: 0,
-            reviewCount: 0,
-            location: {
-              latitude: 48.8566,
-              longitude: 2.3522,
-              city: userData.city || 'Paris',
-            },
-            createdAt: Date.now(),
-          } as Client;
+        try {
+          // Simulate API call
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          
+          let newUser: User;
+          
+          if (userType === 'provider') {
+            newUser = {
+              id: `user-${Date.now()}`,
+              name: userData.name || '',
+              email: userData.email || '',
+              userType,
+              phone: userData.phone,
+              profileImage: userData.profileImage,
+              description: userData.description,
+              specialties: (userData as any).specialties,
+              website: userData.website,
+              instagram: userData.instagram,
+              rating: 0,
+              reviewCount: 0,
+              location: {
+                latitude: 48.8566,
+                longitude: 2.3522,
+                city: userData.city || 'Paris',
+              },
+              createdAt: Date.now(),
+              services: (userData as any).services || [],
+              priceRange: (userData as any).priceRange,
+              availability: (userData as any).availability,
+            } as Provider;
+          } else if (userType === 'business') {
+            newUser = {
+              id: `user-${Date.now()}`,
+              name: userData.name || '',
+              email: userData.email || '',
+              userType,
+              phone: userData.phone,
+              profileImage: userData.profileImage,
+              description: userData.description,
+              address: (userData as any).address,
+              website: userData.website,
+              instagram: userData.instagram,
+              rating: 0,
+              reviewCount: 0,
+              location: {
+                latitude: 48.8566,
+                longitude: 2.3522,
+                city: userData.city || 'Paris',
+              },
+              createdAt: Date.now(),
+              venueType: (userData as any).venueType || 'Lieu',
+              capacity: (userData as any).capacity,
+              amenities: (userData as any).amenities || [],
+            } as Venue;
+          } else {
+            newUser = {
+              id: `user-${Date.now()}`,
+              name: userData.name || '',
+              email: userData.email || '',
+              userType,
+              phone: userData.phone,
+              profileImage: userData.profileImage,
+              description: userData.description,
+              rating: 0,
+              reviewCount: 0,
+              location: {
+                latitude: 48.8566,
+                longitude: 2.3522,
+                city: userData.city || 'Paris',
+              },
+              createdAt: Date.now(),
+            } as Client;
+          }
+          
+          set({ 
+            user: newUser, 
+            isAuthenticated: true, 
+            isLoading: false 
+          });
+          return true;
+        } catch (error) {
+          console.error('Registration error:', error);
+          set({ isLoading: false });
+          return false;
         }
-        
-        set({ 
-          user: newUser, 
-          isAuthenticated: true, 
-          isLoading: false 
-        });
-        return true;
       },
       
       logout: async () => {
-        console.log('Starting logout process...');
-        
-        // Clear all auth data immediately
-        set({ 
-          user: null, 
-          isAuthenticated: false,
-          isLoading: false
-        });
-        
-        // Clear persisted storage
         try {
+          console.log('Starting logout process...');
+          
+          // Clear all auth data immediately
+          set({ 
+            user: null, 
+            isAuthenticated: false,
+            isLoading: false
+          });
+          
+          // Clear persisted storage
           await AsyncStorage.removeItem('auth-storage');
           console.log('Auth storage cleared successfully');
+          
+          console.log('User logged out successfully');
         } catch (error) {
-          console.error('Error clearing auth storage:', error);
+          console.error('Error during logout:', error);
+          // Even if there's an error, ensure user is logged out
+          set({ 
+            user: null, 
+            isAuthenticated: false,
+            isLoading: false
+          });
         }
-        
-        console.log('User logged out successfully');
       },
       
       updateProfile: async (updates: Partial<User>) => {
@@ -302,15 +326,21 @@ export const useAuth = create<AuthState>()(
         
         set({ isLoading: true });
         
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        const updatedUser = { ...user, ...updates };
-        set({ 
-          user: updatedUser, 
-          isLoading: false 
-        });
-        return true;
+        try {
+          // Simulate API call
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          const updatedUser = { ...user, ...updates };
+          set({ 
+            user: updatedUser, 
+            isLoading: false 
+          });
+          return true;
+        } catch (error) {
+          console.error('Profile update error:', error);
+          set({ isLoading: false });
+          return false;
+        }
       },
     }),
     {

@@ -48,10 +48,14 @@ export default function SettingsScreen() {
           text: "Déconnexion", 
           style: "destructive",
           onPress: async () => {
-            console.log("Bouton déconnexion pressé");
-            await logout();
-            console.log("Logout appelé, redirection...");
-            router.replace("/");
+            try {
+              console.log("Bouton déconnexion pressé");
+              await logout();
+              console.log("Logout appelé, redirection...");
+              router.replace("/");
+            } catch (error) {
+              console.error('Logout error:', error);
+            }
           }
         }
       ]

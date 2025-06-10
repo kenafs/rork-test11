@@ -78,14 +78,19 @@ export const useListings = create<ListingsState>((set, get) => ({
   fetchListings: async () => {
     set({ isLoading: true });
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    set({ 
-      listings: mockListings,
-      filteredListings: mockListings,
-      isLoading: false 
-    });
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      set({ 
+        listings: mockListings,
+        filteredListings: mockListings,
+        isLoading: false 
+      });
+    } catch (error) {
+      console.error('Error fetching listings:', error);
+      set({ isLoading: false });
+    }
   },
 
   refreshListings: async () => {
@@ -215,77 +220,95 @@ export const useListings = create<ListingsState>((set, get) => ({
   createListing: async (listingData) => {
     set({ isLoading: true });
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const user = useAuth.getState().user;
-    if (!user) throw new Error('User must be logged in to create a listing');
-    
-    const newListing: Listing = {
-      id: `listing-${Date.now()}`,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      status: 'active',
-      ...listingData,
-    };
-    
-    const updatedListings = [...get().listings, newListing];
-    
-    set({ 
-      listings: updatedListings,
-      filteredListings: applyCurrentFilters(updatedListings, get()),
-      isLoading: false 
-    });
-    
-    return newListing;
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const user = useAuth.getState().user;
+      if (!user) throw new Error('User must be logged in to create a listing');
+      
+      const newListing: Listing = {
+        id: `listing-${Date.now()}`,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        status: 'active',
+        ...listingData,
+      };
+      
+      const updatedListings = [...get().listings, newListing];
+      
+      set({ 
+        listings: updatedListings,
+        filteredListings: applyCurrentFilters(updatedListings, get()),
+        isLoading: false 
+      });
+      
+      return newListing;
+    } catch (error) {
+      console.error('Error creating listing:', error);
+      set({ isLoading: false });
+      throw error;
+    }
   },
   
   updateListing: async (id: string, updates: Partial<Listing>) => {
     set({ isLoading: true });
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const { listings } = get();
-    const listingIndex = listings.findIndex(l => l.id === id);
-    
-    if (listingIndex === -1) {
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const { listings } = get();
+      const listingIndex = listings.findIndex(l => l.id === id);
+      
+      if (listingIndex === -1) {
+        set({ isLoading: false });
+        return false;
+      }
+      
+      const updatedListings = [...listings];
+      updatedListings[listingIndex] = {
+        ...updatedListings[listingIndex],
+        ...updates,
+        updatedAt: Date.now(),
+      };
+      
+      set({ 
+        listings: updatedListings,
+        filteredListings: applyCurrentFilters(updatedListings, get()),
+        isLoading: false 
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error updating listing:', error);
       set({ isLoading: false });
       return false;
     }
-    
-    const updatedListings = [...listings];
-    updatedListings[listingIndex] = {
-      ...updatedListings[listingIndex],
-      ...updates,
-      updatedAt: Date.now(),
-    };
-    
-    set({ 
-      listings: updatedListings,
-      filteredListings: applyCurrentFilters(updatedListings, get()),
-      isLoading: false 
-    });
-    
-    return true;
   },
   
   deleteListing: async (id: string) => {
     set({ isLoading: true });
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const { listings } = get();
-    const updatedListings = listings.filter(l => l.id !== id);
-    
-    set({ 
-      listings: updatedListings,
-      filteredListings: applyCurrentFilters(updatedListings, get()),
-      isLoading: false 
-    });
-    
-    return true;
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const { listings } = get();
+      const updatedListings = listings.filter(l => l.id !== id);
+      
+      set({ 
+        listings: updatedListings,
+        filteredListings: applyCurrentFilters(updatedListings, get()),
+        isLoading: false 
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error deleting listing:', error);
+      set({ isLoading: false });
+      return false;
+    }
   },
 }));
 
@@ -324,7 +347,7 @@ function applyCurrentFilters(listings: Listing[], state: ListingsState): Listing
     filtered = filtered.filter(listing => {
       return listing.category === state.selectedCategory ||
              listing.category === englishCategory ||
-             listing.category.toLowerCase() === state.selectedCategory.toLowerCase() ||
+             listing.category.toLowerCase() === (state.selectedCategory || '').toLowerCase() ||
              listing.category.toLowerCase() === englishCategory.toLowerCase();
     });
   }
