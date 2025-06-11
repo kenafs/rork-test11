@@ -129,10 +129,11 @@ export interface Conversation {
 
 export interface QuoteItem {
   id: string;
+  name: string;
   description: string;
   quantity: number;
   unitPrice: number;
-  total: number;
+  totalPrice: number;
 }
 
 export interface Quote {
@@ -146,6 +147,7 @@ export interface Quote {
   subtotal: number;
   tax: number;
   total: number;
+  totalAmount: number;
   currency: string;
   status: 'pending' | 'accepted' | 'rejected' | 'expired';
   validUntil: number;

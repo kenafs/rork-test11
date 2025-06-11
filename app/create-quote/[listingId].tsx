@@ -157,7 +157,9 @@ export default function CreateQuoteScreen() {
           
           if (conversation) {
             // Send quote message
-            const quoteMessage = `📋 Devis envoyé: ${title}\n💰 Montant: ${totalAmount.toFixed(2)}€\n📅 Valide jusqu'au: ${new Date(validUntil).toLocaleDateString('fr-FR')}`;
+            const quoteMessage = `📋 Devis envoyé: ${title}
+💰 Montant: ${totalAmount.toFixed(2)}€
+📅 Valide jusqu'au: ${new Date(validUntil).toLocaleDateString('fr-FR')}`;
             await sendMessage(conversation.id, quoteMessage, conversationParticipant.id);
           }
           
