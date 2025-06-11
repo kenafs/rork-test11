@@ -12,11 +12,10 @@ interface SettingsState {
   toggleNotifications: () => void;
   toggleEmailNotifications: () => void;
   togglePushNotifications: () => void;
-  resetSettings: () => void;
-  setDarkMode: (value: boolean) => void;
-  setNotifications: (value: boolean) => void;
-  setEmailNotifications: (value: boolean) => void;
-  setPushNotifications: (value: boolean) => void;
+  setDarkMode: (enabled: boolean) => void;
+  setNotifications: (enabled: boolean) => void;
+  setEmailNotifications: (enabled: boolean) => void;
+  setPushNotifications: (enabled: boolean) => void;
 }
 
 export const useSettings = create<SettingsState>()(
@@ -28,57 +27,47 @@ export const useSettings = create<SettingsState>()(
       pushNotifications: true,
       
       toggleDarkMode: () => {
-        const newValue = !get().darkMode;
-        set({ darkMode: newValue });
-        console.log('Dark mode toggled to:', newValue);
+        const currentValue = get().darkMode;
+        set({ darkMode: !currentValue });
+        console.log('Dark mode toggled:', !currentValue);
       },
       
       toggleNotifications: () => {
-        const newValue = !get().notifications;
-        set({ notifications: newValue });
-        console.log('Notifications toggled to:', newValue);
+        const currentValue = get().notifications;
+        set({ notifications: !currentValue });
+        console.log('Notifications toggled:', !currentValue);
       },
       
       toggleEmailNotifications: () => {
-        const newValue = !get().emailNotifications;
-        set({ emailNotifications: newValue });
-        console.log('Email notifications toggled to:', newValue);
+        const currentValue = get().emailNotifications;
+        set({ emailNotifications: !currentValue });
+        console.log('Email notifications toggled:', !currentValue);
       },
       
       togglePushNotifications: () => {
-        const newValue = !get().pushNotifications;
-        set({ pushNotifications: newValue });
-        console.log('Push notifications toggled to:', newValue);
+        const currentValue = get().pushNotifications;
+        set({ pushNotifications: !currentValue });
+        console.log('Push notifications toggled:', !currentValue);
       },
       
-      setDarkMode: (value: boolean) => {
-        set({ darkMode: value });
-        console.log('Dark mode set to:', value);
+      setDarkMode: (enabled: boolean) => {
+        set({ darkMode: enabled });
+        console.log('Dark mode set to:', enabled);
       },
       
-      setNotifications: (value: boolean) => {
-        set({ notifications: value });
-        console.log('Notifications set to:', value);
+      setNotifications: (enabled: boolean) => {
+        set({ notifications: enabled });
+        console.log('Notifications set to:', enabled);
       },
       
-      setEmailNotifications: (value: boolean) => {
-        set({ emailNotifications: value });
-        console.log('Email notifications set to:', value);
+      setEmailNotifications: (enabled: boolean) => {
+        set({ emailNotifications: enabled });
+        console.log('Email notifications set to:', enabled);
       },
       
-      setPushNotifications: (value: boolean) => {
-        set({ pushNotifications: value });
-        console.log('Push notifications set to:', value);
-      },
-      
-      resetSettings: () => {
-        set({
-          darkMode: false,
-          notifications: true,
-          emailNotifications: true,
-          pushNotifications: true,
-        });
-        console.log('Settings reset to defaults');
+      setPushNotifications: (enabled: boolean) => {
+        set({ pushNotifications: enabled });
+        console.log('Push notifications set to:', enabled);
       },
     }),
     {

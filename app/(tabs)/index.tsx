@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
@@ -31,6 +31,10 @@ export default function HomeScreen() {
     requestPermission 
   } = useLocation();
 
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
   // Fetch listings on component mount
   useEffect(() => {
     fetchListings();
@@ -44,11 +48,25 @@ export default function HomeScreen() {
   }, [isAuthenticated]);
 
   const handleSearch = (query: string) => {
+    setSearchQuery(query);
     filterBySearch(query);
   };
 
-  const handleCategoryFilter = (category: string) => {
-    filterByCategory(category);
+  const handleSearchChange = (text: string) => {
+    setSearchQuery(text);
+    if (text === '') {
+      filterBySearch('');
+    }
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    filterBySearch('');
+  };
+
+  const handleCategoryFilter = (category: string | null) => {
+    setSelectedCategory(category);
+    filterByCategory(category || '');
   };
 
   const handleRefresh = async () => {
@@ -95,8 +113,17 @@ export default function HomeScreen() {
 
       {/* Search and Filters */}
       <View style={styles.searchSection}>
-        <SearchBar onSearch={handleSearch} />
-        <CategoryFilter onCategorySelect={handleCategoryFilter} />
+        <SearchBar 
+          value={searchQuery}
+          onChangeText={handleSearchChange}
+          onClear={handleClearSearch}
+          onSearch={handleSearch}
+          placeholder="Rechercher des annonces..."
+        />
+        <CategoryFilter 
+          selectedCategory={selectedCategory}
+          onSelectCategory={handleCategoryFilter}
+        />
       </View>
 
       {/* Quick Actions */}

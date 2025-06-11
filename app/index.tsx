@@ -1,66 +1,160 @@
-import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Dimensions } from 'react-native';
+import React, { useEffect } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity, Alert, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Sparkles } from 'lucide-react-native';
+import { useAuth } from '@/hooks/useAuth';
+import { demoAccounts } from '@/mocks/users';
 import Colors from '@/constants/colors';
-
-const { width, height } = Dimensions.get('window');
+import { LinearGradient } from 'expo-linear-gradient';
+import { Sparkles, Star, Users } from 'lucide-react-native';
 
 export default function LandingScreen() {
   const router = useRouter();
+  const { isAuthenticated, loginWithDemo, isLoading } = useAuth();
+
+  // Redirect to home if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace('/(tabs)');
+    }
+  }, [isAuthenticated]);
+
+  const handleDemoLogin = () => {
+    Alert.alert(
+      "✨ Essayer avec un compte démo",
+      "Choisissez le type de compte que vous souhaitez tester :",
+      [
+        {
+          text: "👤 Client",
+          onPress: async () => {
+            const clientDemo = demoAccounts.find(acc => acc.userType === 'client');
+            if (clientDemo) {
+              try {
+                const success = await loginWithDemo(clientDemo);
+                if (success) {
+                  router.replace('/(tabs)');
+                } else {
+                  Alert.alert("Erreur", "Impossible de se connecter avec le compte démo client.");
+                }
+              } catch (error) {
+                console.error('Demo login error:', error);
+                Alert.alert("Erreur", "Une erreur s'est produite lors de la connexion démo.");
+              }
+            }
+          }
+        },
+        {
+          text: "🎯 Prestataire",
+          onPress: async () => {
+            const providerDemo = demoAccounts.find(acc => acc.userType === 'provider');
+            if (providerDemo) {
+              try {
+                const success = await loginWithDemo(providerDemo);
+                if (success) {
+                  router.replace('/(tabs)');
+                } else {
+                  Alert.alert("Erreur", "Impossible de se connecter avec le compte démo prestataire.");
+                }
+              } catch (error) {
+                console.error('Demo login error:', error);
+                Alert.alert("Erreur", "Une erreur s'est produite lors de la connexion démo.");
+              }
+            }
+          }
+        },
+        {
+          text: "🏢 Établissement",
+          onPress: async () => {
+            const businessDemo = demoAccounts.find(acc => acc.userType === 'business');
+            if (businessDemo) {
+              try {
+                const success = await loginWithDemo(businessDemo);
+                if (success) {
+                  router.replace('/(tabs)');
+                } else {
+                  Alert.alert("Erreur", "Impossible de se connecter avec le compte démo établissement.");
+                }
+              } catch (error) {
+                console.error('Demo login error:', error);
+                Alert.alert("Erreur", "Une erreur s'est produite lors de la connexion démo.");
+              }
+            }
+          }
+        },
+        { text: "Annuler", style: "cancel" }
+      ]
+    );
+  };
+
+  if (isAuthenticated) {
+    return null; // Will redirect via useEffect
+  }
 
   return (
-    <View style={styles.container}>
-      <LinearGradient
-        colors={[Colors.primary, Colors.secondary]}
-        style={styles.gradient}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
-        <View style={styles.content}>
-          {/* Logo/Icon */}
-          <View style={styles.logoContainer}>
-            <View style={styles.iconWrapper}>
-              <Sparkles size={60} color="#fff" />
-            </View>
-          </View>
-
-          {/* Title */}
-          <Text style={styles.title}>EventApp</Text>
-          
-          {/* Subtitle */}
-          <Text style={styles.subtitle}>
-            La plateforme qui connecte clients, prestataires et établissements pour vos événements
-          </Text>
-
-          {/* Action Buttons */}
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={styles.primaryButton}
-              onPress={() => router.push('/(auth)/login')}
-            >
-              <Text style={styles.primaryButtonText}>Se connecter</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.secondaryButton}
-              onPress={() => router.push('/(auth)/register')}
-            >
-              <Text style={styles.secondaryButtonText}>Créer un compte</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.demoButton}
-              onPress={() => router.push('/(auth)/demo')}
-            >
-              <Sparkles size={20} color="rgba(255, 255, 255, 0.8)" style={{ marginRight: 8 }} />
-              <Text style={styles.demoButtonText}>Essayer avec un compte démo</Text>
-            </TouchableOpacity>
+    <LinearGradient
+      colors={[Colors.primary, Colors.secondary]}
+      style={styles.container}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+    >
+      <View style={styles.content}>
+        {/* Logo/Icon */}
+        <View style={styles.logoContainer}>
+          <View style={styles.logoCircle}>
+            <Sparkles size={48} color="#fff" />
           </View>
         </View>
-      </LinearGradient>
-    </View>
+
+        {/* Title */}
+        <Text style={styles.title}>EventApp</Text>
+        
+        {/* Subtitle */}
+        <Text style={styles.subtitle}>
+          La plateforme qui connecte clients, prestataires et établissements pour vos événements
+        </Text>
+
+        {/* Features */}
+        <View style={styles.featuresContainer}>
+          <View style={styles.feature}>
+            <Users size={24} color="rgba(255, 255, 255, 0.9)" />
+            <Text style={styles.featureText}>Mise en relation simplifiée</Text>
+          </View>
+          <View style={styles.feature}>
+            <Star size={24} color="rgba(255, 255, 255, 0.9)" />
+            <Text style={styles.featureText}>Prestataires vérifiés</Text>
+          </View>
+        </View>
+
+        {/* Buttons */}
+        <View style={styles.buttonsContainer}>
+          <TouchableOpacity
+            style={styles.primaryButton}
+            onPress={() => router.push('/(auth)/login')}
+            disabled={isLoading}
+          >
+            <Text style={styles.primaryButtonText}>Se connecter</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.secondaryButton}
+            onPress={() => router.push('/(auth)/register')}
+            disabled={isLoading}
+          >
+            <Text style={styles.secondaryButtonText}>Créer un compte</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.demoButton}
+            onPress={handleDemoLogin}
+            disabled={isLoading}
+          >
+            <Sparkles size={20} color="rgba(255, 255, 255, 0.9)" style={{ marginRight: 8 }} />
+            <Text style={styles.demoButtonText}>
+              {isLoading ? 'Connexion...' : 'Essayer avec un compte démo'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </LinearGradient>
   );
 }
 
@@ -68,22 +162,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  gradient: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   content: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 40,
-    width: '100%',
+    paddingHorizontal: 32,
+    paddingTop: Platform.OS === 'ios' ? 60 : 40,
   },
   logoContainer: {
-    marginBottom: 40,
+    marginBottom: 32,
   },
-  iconWrapper: {
+  logoCircle: {
     width: 120,
     height: 120,
     borderRadius: 60,
@@ -105,24 +194,37 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
     lineHeight: 26,
-    marginBottom: 60,
+    marginBottom: 48,
     fontWeight: '500',
   },
-  buttonContainer: {
+  featuresContainer: {
+    marginBottom: 48,
+    gap: 16,
+  },
+  feature: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  featureText: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontWeight: '600',
+  },
+  buttonsContainer: {
     width: '100%',
     gap: 16,
   },
   primaryButton: {
     backgroundColor: '#fff',
     paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 12,
+    borderRadius: 16,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.2,
     shadowRadius: 8,
-    elevation: 8,
+    elevation: 6,
   },
   primaryButtonText: {
     fontSize: 18,
@@ -132,11 +234,10 @@ const styles = StyleSheet.create({
   secondaryButton: {
     backgroundColor: 'transparent',
     paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 12,
+    borderRadius: 16,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.8)',
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   secondaryButtonText: {
     fontSize: 18,
@@ -146,13 +247,12 @@ const styles = StyleSheet.create({
   demoButton: {
     backgroundColor: 'rgba(255, 255, 255, 0.15)',
     paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: 12,
+    borderRadius: 16,
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   demoButtonText: {
     fontSize: 16,

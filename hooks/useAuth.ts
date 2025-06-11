@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User, DemoAccount } from '@/types';
-import { mockProviders, mockVenues, mockClients } from '@/mocks/users';
+import { mockProviders, mockVenues, mockClients, demoAccounts } from '@/mocks/users';
 
 interface AuthState {
   user: User | null;
