@@ -55,7 +55,6 @@ export const useQuotes = create<QuotesState>()(
             id: `quote-${Date.now()}-${Math.random()}`,
             createdAt: Date.now(),
             updatedAt: Date.now(),
-            currency: 'EUR',
             ...quoteData,
             total: quoteData.totalAmount, // Add backward compatibility
           };

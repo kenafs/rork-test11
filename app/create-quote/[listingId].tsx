@@ -167,6 +167,7 @@ export default function CreateQuoteScreen() {
         totalAmount,
         validUntil: new Date(validUntil).getTime(),
         status: 'pending',
+        currency: 'EUR',
         items: items.map(item => ({
           ...item,
           name: item.name.trim(),
