@@ -147,7 +147,6 @@ export interface Quote {
   subtotal: number;
   tax: number;
   total: number;
-  totalAmount: number;
   currency: string;
   status: 'pending' | 'accepted' | 'rejected' | 'expired';
   validUntil: number;

@@ -252,7 +252,7 @@ export default function HomeScreen() {
             <View style={styles.statsRow}>
               <View style={styles.statCard}>
                 <Heart size={16} color="#FF6B6B" />
-                <Text style={styles.statCardNumber}>{favorites.length}</Text>
+                <Text style={styles.statCardNumber}>{favorites?.length || 0}</Text>
                 <Text style={styles.statCardLabel}>Favoris</Text>
               </View>
               <View style={styles.statCard}>

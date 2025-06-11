@@ -150,6 +150,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
     paddingBottom: 8,
+    paddingTop: 8,
   },
   categorySection: {
     backgroundColor: '#fff',

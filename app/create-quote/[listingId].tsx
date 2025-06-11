@@ -135,7 +135,6 @@ export default function CreateQuoteScreen() {
         title,
         description,
         items,
-        totalAmount,
         status: 'pending', // Set to pending instead of draft
         validUntil,
       });
@@ -403,7 +402,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 20, // Reduced padding since submit button is fixed
+    paddingBottom: 120, // Increased padding for submit button
   },
   section: {
     marginBottom: 32,

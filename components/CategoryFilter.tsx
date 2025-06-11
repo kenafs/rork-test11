@@ -70,6 +70,7 @@ export default function CategoryFilter({ selectedCategory, onSelectCategory }: C
 const styles = StyleSheet.create({
   wrapper: {
     backgroundColor: '#fff',
+    paddingTop: 8,
   },
   container: {
     paddingHorizontal: 16,

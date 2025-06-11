@@ -478,7 +478,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 20,
-    paddingBottom: 20, // Reduced padding since submit button is fixed
+    paddingBottom: 120, // Increased padding for fixed submit button
   },
   formCard: {
     backgroundColor: '#fff',

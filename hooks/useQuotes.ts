@@ -60,7 +60,7 @@ export const useQuotes = create<QuotesState>()(
           
           const subtotal = quoteData.items.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
           const tax = subtotal * 0.2;
-          const totalAmount = subtotal + tax;
+          const total = subtotal + tax;
           
           const newQuote: Quote = {
             ...quoteData,
@@ -70,7 +70,7 @@ export const useQuotes = create<QuotesState>()(
             currency: 'EUR',
             subtotal,
             tax,
-            total: totalAmount,
+            total,
           };
           
           set(state => ({

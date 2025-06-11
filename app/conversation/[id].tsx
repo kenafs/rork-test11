@@ -390,6 +390,7 @@ const styles = StyleSheet.create({
     paddingBottom: Platform.OS === 'ios' ? 40 : 20,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
+    minHeight: Platform.OS === 'ios' ? 80 : 60, // Ensure minimum height for keyboard
   },
   inputWrapper: {
     flex: 1,
