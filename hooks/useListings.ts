@@ -80,9 +80,10 @@ export const useListings = create<ListingsState>()(
           
           set(state => {
             const updatedListings = [newListing, ...state.listings];
+            const applyFilters = get().applyFilters;
             return {
               listings: updatedListings,
-              filteredListings: get().applyFilters(updatedListings),
+              filteredListings: applyFilters(updatedListings),
               isLoading: false 
             };
           });
@@ -118,9 +119,10 @@ export const useListings = create<ListingsState>()(
             updatedAt: Date.now(),
           };
           
+          const applyFilters = get().applyFilters;
           set({ 
             listings: updatedListings,
-            filteredListings: get().applyFilters(updatedListings),
+            filteredListings: applyFilters(updatedListings),
             isLoading: false 
           });
           
@@ -143,9 +145,10 @@ export const useListings = create<ListingsState>()(
           const { listings } = get();
           const updatedListings = listings.filter(l => l.id !== id);
           
+          const applyFilters = get().applyFilters;
           set({ 
             listings: updatedListings,
-            filteredListings: get().applyFilters(updatedListings),
+            filteredListings: applyFilters(updatedListings),
             isLoading: false 
           });
           
@@ -160,20 +163,20 @@ export const useListings = create<ListingsState>()(
       
       filterBySearch: (query: string) => {
         set(state => {
-          const newState = { ...state, searchQuery: query };
+          const applyFilters = get().applyFilters;
           return {
-            ...newState,
-            filteredListings: get().applyFilters(state.listings, query, state.selectedCategory),
+            searchQuery: query,
+            filteredListings: applyFilters(state.listings, query, state.selectedCategory),
           };
         });
       },
       
       filterByCategory: (category: string | null) => {
         set(state => {
-          const newState = { ...state, selectedCategory: category };
+          const applyFilters = get().applyFilters;
           return {
-            ...newState,
-            filteredListings: get().applyFilters(state.listings, state.searchQuery, category),
+            selectedCategory: category,
+            filteredListings: applyFilters(state.listings, state.searchQuery, category),
           };
         });
       },

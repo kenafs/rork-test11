@@ -27,6 +27,7 @@ export default function HomeScreen() {
   } = useListings();
   const { city, hasPermission, requestPermission } = useLocation();
   const [refreshing, setRefreshing] = useState(false);
+  const [searchValue, setSearchValue] = useState('');
 
   // Fetch listings on component mount
   useEffect(() => {
@@ -42,7 +43,20 @@ export default function HomeScreen() {
 
   // Handle search
   const handleSearch = (query: string) => {
+    setSearchValue(query);
     filterBySearch(query);
+  };
+
+  // Handle search text change
+  const handleSearchChange = (text: string) => {
+    setSearchValue(text);
+    filterBySearch(text);
+  };
+
+  // Handle search clear
+  const handleSearchClear = () => {
+    setSearchValue('');
+    filterBySearch('');
   };
 
   // Handle category filter
@@ -107,7 +121,12 @@ export default function HomeScreen() {
 
       {/* Search and Filters */}
       <View style={styles.searchSection}>
-        <SearchBar onSearch={handleSearch} />
+        <SearchBar 
+          value={searchValue}
+          onSearch={handleSearch}
+          onChangeText={handleSearchChange}
+          onClear={handleSearchClear}
+        />
         <CategoryFilter 
           onCategorySelect={handleCategoryFilter} 
           selectedCategory={selectedCategory}

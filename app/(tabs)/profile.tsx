@@ -267,6 +267,7 @@ export default function ProfileScreen() {
       case 'accepted': return '#10B981';
       case 'rejected': return '#EF4444';
       case 'pending': return '#F59E0B';
+      case 'draft': return '#6B7280';
       default: return Colors.textLight;
     }
   };
@@ -276,6 +277,7 @@ export default function ProfileScreen() {
       case 'accepted': return 'Accepté';
       case 'rejected': return 'Refusé';
       case 'pending': return 'En attente';
+      case 'draft': return 'Brouillon';
       default: return status;
     }
   };

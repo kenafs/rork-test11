@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -8,19 +7,14 @@ import { StatusBar } from 'expo-status-bar';
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
-
   useEffect(() => {
-    if (loaded) {
+    // Hide splash screen after a short delay
+    const timer = setTimeout(() => {
       SplashScreen.hideAsync();
-    }
-  }, [loaded]);
+    }, 1000);
 
-  if (!loaded) {
-    return null;
-  }
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <>
@@ -29,7 +23,6 @@ export default function RootLayout() {
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="listing/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="profile/[id]" options={{ headerShown: false }} />
-        <Stack.Screen name="conversation/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="create-quote/[listingId]" options={{ headerShown: false }} />
         <Stack.Screen name="edit-profile" options={{ headerShown: false }} />
         <Stack.Screen name="favorites" options={{ headerShown: false }} />
