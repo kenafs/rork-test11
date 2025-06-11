@@ -49,12 +49,14 @@ export default function ProfileScreen() {
               console.log('Starting logout from profile...');
               await logout();
               console.log('Logout completed, redirecting...');
+              // Force navigation to home
               router.dismissAll();
-              router.replace('/');
+              router.replace('/(tabs)');
             } catch (error) {
               console.error('Logout error:', error);
+              // Force navigation even if logout fails
               router.dismissAll();
-              router.replace('/');
+              router.replace('/(tabs)');
             }
           }
         },
@@ -198,6 +200,7 @@ export default function ProfileScreen() {
   };
 
   const renderQuotesSection = () => {
+    // Don't show quotes section for business accounts
     if (user.userType === 'business') return null;
     
     const quotes = user.userType === 'provider' ? userQuotes : receivedQuotes;

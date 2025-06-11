@@ -52,12 +52,14 @@ export default function SettingsScreen() {
               console.log("Starting logout from settings...");
               await logout();
               console.log("Logout completed, redirecting to home...");
+              // Force navigation to home
               router.dismissAll();
-              router.replace("/");
+              router.replace("/(tabs)");
             } catch (error) {
               console.error('Logout error in settings:', error);
+              // Force navigation even if logout fails
               router.dismissAll();
-              router.replace("/");
+              router.replace("/(tabs)");
             }
           }
         }

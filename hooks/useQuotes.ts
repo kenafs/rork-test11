@@ -62,6 +62,7 @@ export const useQuotes = create<QuotesState>()(
           const totalAmount = subtotal + tax;
           
           const newQuote: Quote = {
+            ...quoteData,
             id: `quote-${Date.now()}-${Math.random()}`,
             createdAt: Date.now(),
             updatedAt: Date.now(),
@@ -69,7 +70,6 @@ export const useQuotes = create<QuotesState>()(
             subtotal,
             tax,
             total: totalAmount,
-            ...quoteData,
           };
           
           set(state => ({

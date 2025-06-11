@@ -205,6 +205,7 @@ export default function ConversationScreen() {
     <KeyboardAvoidingView 
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
       <Stack.Screen 
         options={{ 
@@ -386,6 +387,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'flex-end',
     gap: 12,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 16,
   },
   inputWrapper: {
     flex: 1,

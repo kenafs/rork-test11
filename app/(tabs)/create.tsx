@@ -388,6 +388,9 @@ export default function CreateListingScreen() {
             </View>
           </View>
         </View>
+        
+        {/* Add extra padding at bottom to ensure submit button is visible */}
+        <View style={styles.bottomPadding} />
       </ScrollView>
       
       <View style={styles.bottomContainer}>
@@ -467,7 +470,6 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 20,
-    paddingBottom: 120,
   },
   formCard: {
     backgroundColor: '#fff',
@@ -630,6 +632,9 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     fontWeight: '700',
   },
+  bottomPadding: {
+    height: 100,
+  },
   bottomContainer: {
     position: 'absolute',
     bottom: 0,
@@ -637,6 +642,7 @@ const styles = StyleSheet.create({
     right: 0,
     padding: 20,
     paddingBottom: Platform.OS === 'ios' ? 34 : 20,
+    backgroundColor: Colors.backgroundAlt,
   },
   submitGradient: {
     borderRadius: 20,

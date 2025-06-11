@@ -10,7 +10,7 @@ import SearchBar from '@/components/SearchBar';
 import CategoryFilter from '@/components/CategoryFilter';
 import ListingCard from '@/components/ListingCard';
 import LocationPermissionRequest from '@/components/LocationPermissionRequest';
-import { Plus, MapPin, Star, Users, Calendar } from 'lucide-react-native';
+import { Plus, MapPin, Star, Users, Calendar, Heart, TrendingUp } from 'lucide-react-native';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -68,7 +68,7 @@ export default function HomeScreen() {
   };
   
   // Ensure filteredListings is always an array
-  const safeFilteredListings = filteredListings || [];
+  const safeFilteredListings = Array.isArray(filteredListings) ? filteredListings : [];
   
   // Landing page for non-authenticated users
   if (!user) {
@@ -243,6 +243,25 @@ export default function HomeScreen() {
           <View style={styles.headerContent}>
             <Text style={styles.welcomeText}>{getWelcomeMessage()}</Text>
             <Text style={styles.subtitleText}>{getSubtitle()}</Text>
+            
+            {/* Stats Row */}
+            <View style={styles.statsRow}>
+              <View style={styles.statCard}>
+                <Heart size={16} color={Colors.secondary} />
+                <Text style={styles.statCardNumber}>24</Text>
+                <Text style={styles.statCardLabel}>Favoris</Text>
+              </View>
+              <View style={styles.statCard}>
+                <Star size={16} color="#FFD700" />
+                <Text style={styles.statCardNumber}>4.8</Text>
+                <Text style={styles.statCardLabel}>Note</Text>
+              </View>
+              <View style={styles.statCard}>
+                <TrendingUp size={16} color="#10B981" />
+                <Text style={styles.statCardNumber}>{safeFilteredListings.length}</Text>
+                <Text style={styles.statCardLabel}>Offres</Text>
+              </View>
+            </View>
             
             {user.userType !== 'client' && (
               <TouchableOpacity 
@@ -423,6 +442,33 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.9)',
     marginBottom: 20,
     lineHeight: 22,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 20,
+    width: '100%',
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 12,
+    padding: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  statCardNumber: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#fff',
+    marginTop: 4,
+    marginBottom: 2,
+  },
+  statCardLabel: {
+    fontSize: 11,
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontWeight: '500',
   },
   createButton: {
     flexDirection: 'row',
