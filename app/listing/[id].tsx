@@ -245,6 +245,7 @@ export default function ListingDetailScreen() {
                     rating={listing.creatorRating} 
                     size="small" 
                     showNumber={false}
+                    showCount={false}
                   />
                 )}
               </View>

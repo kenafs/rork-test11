@@ -123,7 +123,6 @@ export interface Quote {
   description: string;
   price?: number;
   totalAmount: number;
-  total: number; // Added this property
   currency: string;
   validUntil: number;
   status: 'draft' | 'pending' | 'accepted' | 'rejected' | 'expired';

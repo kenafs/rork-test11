@@ -207,7 +207,7 @@ export default function ProfileScreen() {
     );
   };
 
-  // Render quotes section (only for providers and clients, NOT for business)
+  // Render quotes section (only for providers and clients)
   const renderQuotesSection = () => {
     if (user.userType === 'business') return null; // No quotes for business accounts
     
@@ -240,7 +240,7 @@ export default function ProfileScreen() {
                   <Text style={styles.statusText}>{getStatusText(quote.status)}</Text>
                 </View>
               </View>
-              <Text style={styles.quoteTotal}>{quote.totalAmount}€</Text>
+              <Text style={styles.quoteTotal}>{quote.total}€</Text>
               <Text style={styles.quoteDate}>
                 {new Date(quote.createdAt).toLocaleDateString('fr-FR')}
               </Text>
@@ -426,7 +426,7 @@ export default function ProfileScreen() {
         </View>
       )}
       
-      {/* Quotes section - only for providers and clients, NOT for business */}
+      {/* Quotes section - only for providers and clients */}
       {renderQuotesSection()}
       
       {/* Settings and logout */}

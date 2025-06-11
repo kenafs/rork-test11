@@ -3,7 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Message, Conversation } from '@/types';
 import { useAuth } from './useAuth';
-import { mockProviders, mockVenues, mockClients } from '@/mocks/users';
+import { mockProviders, mockVenues } from '@/mocks/users';
 
 interface MessageContact {
   participantId: string;
@@ -147,7 +147,7 @@ export const useMessages = create<MessagesState>()(
           });
           
           // Update contact info
-          const allUsers = [...mockProviders, ...mockVenues, ...mockClients];
+          const allUsers = [...mockProviders, ...mockVenues];
           const receiverUser = allUsers.find(u => u.id === receiverId);
           
           if (receiverUser) {
@@ -216,7 +216,7 @@ export const useMessages = create<MessagesState>()(
           }
           
           // Add contact info
-          const allUsers = [...mockProviders, ...mockVenues, ...mockClients];
+          const allUsers = [...mockProviders, ...mockVenues];
           const participantUser = allUsers.find(u => u.id === participantId);
           
           if (participantUser) {
@@ -323,7 +323,7 @@ export const useMessages = create<MessagesState>()(
           
           if (!existingContact) {
             // Try to find user info from mock data
-            const allUsers = [...mockProviders, ...mockVenues, ...mockClients];
+            const allUsers = [...mockProviders, ...mockVenues];
             const participantUser = allUsers.find(u => u.id === otherParticipantId);
             
             if (participantUser) {
