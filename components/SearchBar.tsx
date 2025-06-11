@@ -4,52 +4,25 @@ import { Search, X, MapPin } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 
 interface SearchBarProps {
-  value?: string;
+  value: string;
+  onChangeText: (text: string) => void;
+  onClear: () => void;
+  onLocationPress?: () => void;
   onSearch?: (query: string) => void;
-  onChangeText?: (text: string) => void;
-  onClear?: () => void;
   placeholder?: string;
   showLocationButton?: boolean;
-  onLocationPress?: () => void;
 }
 
 export default function SearchBar({
-  value: propValue,
-  onSearch,
+  value,
   onChangeText,
   onClear,
-  placeholder = "Rechercher...",
-  showLocationButton = false,
   onLocationPress,
+  onSearch,
+  placeholder = "Rechercher...",
+  showLocationButton = true,
 }: SearchBarProps) {
-  const [internalValue, setInternalValue] = useState('');
   const [isFocused, setIsFocused] = useState(false);
-  
-  const value = propValue !== undefined ? propValue : internalValue;
-  
-  const handleChangeText = (text: string) => {
-    if (propValue === undefined) {
-      setInternalValue(text);
-    }
-    if (onChangeText) {
-      onChangeText(text);
-    }
-    if (onSearch) {
-      onSearch(text);
-    }
-  };
-  
-  const handleClear = () => {
-    if (propValue === undefined) {
-      setInternalValue('');
-    }
-    if (onClear) {
-      onClear();
-    }
-    if (onSearch) {
-      onSearch('');
-    }
-  };
   
   const handleSubmit = () => {
     if (onSearch) {
@@ -67,7 +40,7 @@ export default function SearchBar({
           placeholder={placeholder}
           placeholderTextColor={Colors.textLight}
           value={value}
-          onChangeText={handleChangeText}
+          onChangeText={onChangeText}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           onSubmitEditing={handleSubmit}
@@ -76,7 +49,7 @@ export default function SearchBar({
         />
         
         {value.length > 0 && (
-          <TouchableOpacity onPress={handleClear} style={styles.clearButton}>
+          <TouchableOpacity onPress={onClear} style={styles.clearButton}>
             <X size={18} color={Colors.textLight} />
           </TouchableOpacity>
         )}
@@ -99,20 +72,23 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
   },
   searchContainer: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: Colors.backgroundAlt,
     borderRadius: 12,
     paddingHorizontal: 12,
     height: 48,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: 'transparent',
   },
   searchContainerFocused: {
     borderColor: Colors.secondary,
+    backgroundColor: '#fff',
     ...Platform.select({
       ios: {
         shadowColor: Colors.primary,

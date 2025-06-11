@@ -3,23 +3,22 @@ import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Image, Alert, Lin
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuotes } from '@/hooks/useQuotes';
-import { useListings } from '@/hooks/useListings';
 import { User, Provider, Venue } from '@/types';
 import Colors from '@/constants/colors';
 import Button from '@/components/Button';
 import RatingStars from '@/components/RatingStars';
-import { MapPin, Mail, Phone, Calendar, Edit, Plus, Globe, Instagram, ExternalLink, FileText, LogOut } from 'lucide-react-native';
+import { MapPin, Mail, Phone, Calendar, Settings, LogOut, Edit, Plus, Globe, Instagram, ExternalLink, FileText } from 'lucide-react-native';
+import { mockListings } from '@/mocks/listings';
 import ListingCard from '@/components/ListingCard';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuth();
   const { getQuotesByUser, getQuotesForUser } = useQuotes();
-  const { getUserListings } = useListings();
   
   // Get user's listings
   const userListings = user 
-    ? getUserListings(user.id).slice(0, 3)
+    ? mockListings.filter(listing => listing.createdBy === user.id).slice(0, 3)
     : [];
   
   // Get user's quotes (only for providers)
@@ -41,7 +40,7 @@ export default function ProfileScreen() {
   };
   
   // Handle logout
-  const handleLogout = async () => {
+  const handleLogout = () => {
     Alert.alert(
       'Déconnexion',
       'Êtes-vous sûr de vouloir vous déconnecter ?',
@@ -55,11 +54,11 @@ export default function ProfileScreen() {
               console.log('Starting logout from profile...');
               await logout();
               console.log('Logout completed, redirecting...');
-              router.replace('/(auth)/login');
+              router.replace('/');
             } catch (error) {
               console.error('Logout error:', error);
               // Force logout even if there's an error
-              router.replace('/(auth)/login');
+              router.replace('/');
             }
           }
         },
@@ -208,7 +207,7 @@ export default function ProfileScreen() {
     );
   };
 
-  // Render quotes section (only for providers and clients, NOT business)
+  // Render quotes section (only for providers and clients)
   const renderQuotesSection = () => {
     if (user.userType === 'business') return null; // No quotes for business accounts
     
@@ -225,7 +224,7 @@ export default function ProfileScreen() {
           <Text style={styles.sectionTitle}>{sectionTitle}</Text>
           <TouchableOpacity 
             style={styles.viewAllButton}
-            onPress={() => router.push('/(tabs)/messages')}
+            onPress={() => router.push('/quotes')}
           >
             <Text style={styles.viewAllText}>Voir tout</Text>
           </TouchableOpacity>
@@ -233,11 +232,7 @@ export default function ProfileScreen() {
         
         {quotes.length > 0 ? (
           quotes.map(quote => (
-            <TouchableOpacity 
-              key={quote.id} 
-              style={styles.quoteCard}
-              onPress={() => router.push('/(tabs)/messages')}
-            >
+            <View key={quote.id} style={styles.quoteCard}>
               <View style={styles.quoteHeader}>
                 <FileText size={20} color={Colors.primary} />
                 <Text style={styles.quoteTitle}>Devis #{quote.id.slice(-6)}</Text>
@@ -245,11 +240,11 @@ export default function ProfileScreen() {
                   <Text style={styles.statusText}>{getStatusText(quote.status)}</Text>
                 </View>
               </View>
-              <Text style={styles.quoteTotal}>{quote.totalAmount || quote.total || 0}€</Text>
+              <Text style={styles.quoteTotal}>{quote.total}€</Text>
               <Text style={styles.quoteDate}>
                 {new Date(quote.createdAt).toLocaleDateString('fr-FR')}
               </Text>
-            </TouchableOpacity>
+            </View>
           ))
         ) : (
           <View style={styles.emptyListings}>
@@ -267,7 +262,6 @@ export default function ProfileScreen() {
       case 'accepted': return '#10B981';
       case 'rejected': return '#EF4444';
       case 'pending': return '#F59E0B';
-      case 'draft': return '#6B7280';
       default: return Colors.textLight;
     }
   };
@@ -277,7 +271,6 @@ export default function ProfileScreen() {
       case 'accepted': return 'Accepté';
       case 'rejected': return 'Refusé';
       case 'pending': return 'En attente';
-      case 'draft': return 'Brouillon';
       default: return status;
     }
   };
@@ -290,7 +283,7 @@ export default function ProfileScreen() {
       case 'business':
         return 'Publier une offre';
       default:
-        return 'Créer une demande';
+        return 'Créer une annonce';
     }
   };
   
@@ -338,11 +331,13 @@ export default function ProfileScreen() {
           onPress={() => router.push('/edit-profile')}
           style={styles.actionButton}
         />
-        <Button 
-          title={getCreateButtonText()}
-          onPress={() => router.push('/(tabs)/create')}
-          style={styles.actionButton}
-        />
+        {user.userType !== 'client' && (
+          <Button 
+            title={getCreateButtonText()}
+            onPress={() => router.push('/(tabs)/create')}
+            style={styles.actionButton}
+          />
+        )}
       </View>
       
       <View style={styles.card}>
@@ -398,7 +393,7 @@ export default function ProfileScreen() {
             </Text>
             <TouchableOpacity 
               style={styles.viewAllButton}
-              onPress={() => router.push('/(tabs)/search')}
+              onPress={() => router.push('/my-listings')}
             >
               <Text style={styles.viewAllText}>Voir tout</Text>
             </TouchableOpacity>
@@ -431,16 +426,24 @@ export default function ProfileScreen() {
         </View>
       )}
       
-      {/* Quotes section - only for providers and clients, NOT business */}
+      {/* Quotes section - only for providers and clients */}
       {renderQuotesSection()}
       
-      {/* Logout section */}
-      <View style={styles.logoutContainer}>
+      {/* Settings and logout */}
+      <View style={styles.settingsContainer}>
+        <TouchableOpacity 
+          style={styles.settingsButton}
+          onPress={() => router.push('/settings')}
+        >
+          <Settings size={20} color={Colors.text} style={styles.settingsIcon} />
+          <Text style={styles.settingsText}>Paramètres</Text>
+        </TouchableOpacity>
+        
         <TouchableOpacity 
           style={styles.logoutButton}
           onPress={handleLogout}
         >
-          <LogOut size={20} color={Colors.error} style={styles.logoutIcon} />
+          <LogOut size={20} color={Colors.error} style={styles.settingsIcon} />
           <Text style={styles.logoutText}>Déconnexion</Text>
         </TouchableOpacity>
       </View>
@@ -717,7 +720,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.textLight,
   },
-  logoutContainer: {
+  settingsContainer: {
     backgroundColor: '#fff',
     borderRadius: 12,
     marginHorizontal: 16,
@@ -729,13 +732,24 @@ const styles = StyleSheet.create({
     elevation: 2,
     overflow: 'hidden',
   },
+  settingsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
   },
-  logoutIcon: {
+  settingsIcon: {
     marginRight: 12,
+  },
+  settingsText: {
+    fontSize: 16,
+    color: Colors.text,
   },
   logoutText: {
     fontSize: 16,

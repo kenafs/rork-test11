@@ -78,7 +78,7 @@ export default function CreateListingScreen() {
       }
     } catch (error) {
       console.error('Error picking image:', error);
-      Alert.alert('Erreur', "Impossible de sélectionner l'image");
+      Alert.alert('Erreur', 'Impossible de sélectionner l\'image');
     }
   };
   
@@ -106,7 +106,6 @@ export default function CreateListingScreen() {
   
   // Handle form submission
   const handleSubmit = async () => {
-    // Validation
     if (!title.trim()) {
       Alert.alert('Erreur', 'Veuillez saisir un titre pour votre annonce.');
       return;
@@ -158,7 +157,7 @@ export default function CreateListingScreen() {
         'Votre annonce a été publiée avec succès.', 
         [
           { 
-            text: "Voir l'annonce", 
+            text: 'OK', 
             onPress: () => {
               // Reset form
               setTitle('');
@@ -169,28 +168,15 @@ export default function CreateListingScreen() {
               setTags([]);
               setTagInput('');
               
-              // Navigate to the listing
-              router.push(`/listing/${newListing.id}`);
-            }
-          },
-          { 
-            text: 'Créer une autre', 
-            onPress: () => {
-              // Reset form only
-              setTitle('');
-              setDescription('');
-              setCategory('');
-              setPrice('');
-              setImages([]);
-              setTags([]);
-              setTagInput('');
+              // Navigate to home tab
+              router.replace('/(tabs)');
             }
           }
         ]
       );
     } catch (error) {
       console.error('Error creating listing:', error);
-      Alert.alert('Erreur', "Une erreur s'est produite lors de la publication de votre annonce. Veuillez réessayer.");
+      Alert.alert('Erreur', "Une erreur s'est produite lors de la publication de votre annonce.");
     }
   };
 
@@ -422,9 +408,9 @@ export default function CreateListingScreen() {
           end={{ x: 1, y: 1 }}
         >
           <TouchableOpacity
-            style={[styles.submitButton, (!title.trim() || !description.trim() || !category || isLoading) && styles.submitButtonDisabled]}
+            style={styles.submitButton}
             onPress={handleSubmit}
-            disabled={isLoading || !title.trim() || !description.trim() || !category}
+            disabled={isLoading}
           >
             <Text style={styles.submitButtonText}>
               {isLoading ? '🚀 Publication...' : `🚀 Publier ${user.userType === 'business' ? "l'offre" : "l'annonce"}`}
@@ -674,9 +660,6 @@ const styles = StyleSheet.create({
     paddingVertical: 18,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  submitButtonDisabled: {
-    opacity: 0.6,
   },
   submitButtonText: {
     fontSize: 18,

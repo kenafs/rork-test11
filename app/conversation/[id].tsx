@@ -1,131 +1,201 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, View, Text, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
-import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
+import React, { useState, useRef, useEffect } from 'react';
+import { StyleSheet, View, Text, FlatList, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useMessages } from '@/hooks/useMessages';
-import { useQuotes } from '@/hooks/useQuotes';
-import { Message } from '@/types';
+import { mockProviders, mockVenues } from '@/mocks/users';
 import Colors from '@/constants/colors';
-import { Send, FileText, Check, CheckCheck } from 'lucide-react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { Send, Paperclip, Image as ImageIcon } from 'lucide-react-native';
+
+interface Message {
+  id: string;
+  senderId: string;
+  text: string;
+  timestamp: number;
+  type: 'text' | 'image' | 'quote';
+  quoteId?: string;
+}
 
 export default function ConversationScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { id: conversationId } = useLocalSearchParams<{ id: string }>();
-  const { user } = useAuth();
-  const { messages, sendMessage, fetchMessages, markAsRead } = useMessages();
-  const { getQuoteById } = useQuotes();
-  const [messageText, setMessageText] = useState('');
-  const [isSending, setIsSending] = useState(false);
-  const scrollViewRef = useRef<ScrollView>(null);
+  const { user: currentUser, isAuthenticated } = useAuth();
+  const { messages, sendMessage, getConversationByParticipant, addContact, fetchMessages, createConversation } = useMessages();
+  const [newMessage, setNewMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const flatListRef = useRef<FlatList>(null);
   
-  const conversationMessages = conversationId ? messages[conversationId] || [] : [];
+  // Find the other participant
+  const allUsers = [...mockProviders, ...mockVenues];
+  const otherUser = allUsers.find(u => u.id === id);
   
-  // Get other participant info
-  const otherParticipantId = conversationMessages.length > 0 
-    ? conversationMessages[0].senderId === user?.id 
-      ? conversationMessages[0].receiverId 
-      : conversationMessages[0].senderId
-    : '';
+  // Get or create conversation
+  const [conversation, setConversation] = useState(getConversationByParticipant(id || ''));
+  const conversationMessages = conversation ? messages[conversation.id] || [] : [];
   
+  // Create conversation if it doesn't exist
   useEffect(() => {
-    if (conversationId) {
-      fetchMessages(conversationId);
-      markAsRead(conversationId);
-    }
-  }, [conversationId]);
-  
-  useEffect(() => {
-    // Scroll to bottom when new messages arrive
-    setTimeout(() => {
-      scrollViewRef.current?.scrollToEnd({ animated: true });
-    }, 100);
-  }, [conversationMessages.length]);
-  
-  const handleSendMessage = async () => {
-    if (!messageText.trim() || !conversationId || !user || isSending) return;
+    const initializeConversation = async () => {
+      if (!conversation && id && currentUser && otherUser) {
+        try {
+          console.log('Creating new conversation for participant:', id);
+          const conversationId = await createConversation(id);
+          const newConversation = getConversationByParticipant(id);
+          setConversation(newConversation);
+        } catch (error) {
+          console.error('Error creating conversation:', error);
+        }
+      }
+    };
     
-    setIsSending(true);
+    initializeConversation();
+  }, [id, currentUser, otherUser, conversation]);
+  
+  // Convert to display format
+  const displayMessages: Message[] = conversationMessages.map(msg => ({
+    id: msg.id,
+    senderId: msg.senderId,
+    text: msg.content,
+    timestamp: msg.timestamp,
+    type: 'text',
+  }));
+  
+  // Load messages when conversation is found
+  useEffect(() => {
+    if (conversation) {
+      fetchMessages(conversation.id);
+    }
+  }, [conversation?.id]);
+  
+  // Format timestamp
+  const formatTime = (timestamp: number) => {
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString('fr-FR', { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+  };
+  
+  // Send message
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !currentUser || !otherUser) {
+      return;
+    }
+    
+    if (!conversation) {
+      Alert.alert('Erreur', 'Conversation non trouvée');
+      return;
+    }
+    
+    setIsLoading(true);
+    
     try {
-      await sendMessage(conversationId, messageText.trim(), otherParticipantId);
-      setMessageText('');
+      await sendMessage(conversation.id, newMessage.trim(), otherUser.id);
+      
+      // Update contact in messages store
+      addContact({
+        participantId: otherUser.id,
+        participantName: otherUser.name,
+        participantImage: otherUser.profileImage,
+        participantType: otherUser.userType === 'provider' ? 'provider' : 
+                        otherUser.userType === 'business' ? 'business' : 'client',
+        lastMessage: newMessage.trim(),
+        unread: 0,
+        timestamp: Date.now(),
+      });
+      
+      setNewMessage('');
+      
+      // Scroll to bottom
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: true });
+      }, 100);
     } catch (error) {
       console.error('Error sending message:', error);
+      Alert.alert('Erreur', 'Impossible d\'envoyer le message');
     } finally {
-      setIsSending(false);
+      setIsLoading(false);
     }
   };
   
-  const renderMessage = (message: Message) => {
-    const isOwnMessage = message.senderId === user?.id;
-    
-    if (message.type === 'quote' && message.quoteId) {
-      const quote = getQuoteById(message.quoteId);
-      
-      return (
-        <View key={message.id} style={[styles.messageContainer, isOwnMessage && styles.ownMessage]}>
-          <View style={[styles.quoteMessage, isOwnMessage && styles.ownQuoteMessage]}>
-            <View style={styles.quoteHeader}>
-              <FileText size={20} color={isOwnMessage ? '#fff' : Colors.primary} />
-              <Text style={[styles.quoteTitle, isOwnMessage && styles.ownQuoteTitle]}>
-                Devis envoyé
-              </Text>
-            </View>
-            {quote && (
-              <>
-                <Text style={[styles.quoteText, isOwnMessage && styles.ownQuoteText]}>
-                  {quote.title}
-                </Text>
-                <Text style={[styles.quoteAmount, isOwnMessage && styles.ownQuoteAmount]}>
-                  {quote.totalAmount}€
-                </Text>
-              </>
-            )}
-            <Text style={[styles.messageTime, isOwnMessage && styles.ownMessageTime]}>
-              {new Date(message.timestamp).toLocaleTimeString('fr-FR', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-              })}
-            </Text>
-          </View>
-        </View>
-      );
+  // Send quote - only for providers
+  const sendQuote = () => {
+    if (!currentUser || currentUser.userType !== 'provider') {
+      Alert.alert('Erreur', 'Seuls les prestataires peuvent envoyer des devis');
+      return;
     }
     
+    router.push(`/create-quote/conversation-${id}`);
+  };
+  
+  // Render message
+  const renderMessage = ({ item }: { item: Message }) => {
+    const isCurrentUser = item.senderId === currentUser?.id;
+    
     return (
-      <View key={message.id} style={[styles.messageContainer, isOwnMessage && styles.ownMessage]}>
-        <View style={[styles.messageBubble, isOwnMessage && styles.ownMessageBubble]}>
-          <Text style={[styles.messageText, isOwnMessage && styles.ownMessageText]}>
-            {message.content}
+      <View style={[
+        styles.messageContainer,
+        isCurrentUser ? styles.currentUserMessage : styles.otherUserMessage
+      ]}>
+        <View style={[
+          styles.messageBubble,
+          isCurrentUser ? styles.currentUserBubble : styles.otherUserBubble
+        ]}>
+          <Text style={[
+            styles.messageText,
+            isCurrentUser ? styles.currentUserText : styles.otherUserText
+          ]}>
+            {item.text}
           </Text>
-          <View style={styles.messageFooter}>
-            <Text style={[styles.messageTime, isOwnMessage && styles.ownMessageTime]}>
-              {new Date(message.timestamp).toLocaleTimeString('fr-FR', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-              })}
-            </Text>
-            {isOwnMessage && (
-              <View style={styles.readStatus}>
-                {message.read ? (
-                  <CheckCheck size={16} color="rgba(255, 255, 255, 0.7)" />
-                ) : (
-                  <Check size={16} color="rgba(255, 255, 255, 0.7)" />
-                )}
-              </View>
-            )}
-          </View>
+          <Text style={[
+            styles.messageTime,
+            isCurrentUser ? styles.currentUserTime : styles.otherUserTime
+          ]}>
+            {formatTime(item.timestamp)}
+          </Text>
         </View>
       </View>
     );
   };
   
-  if (!conversationId) {
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    if (displayMessages.length > 0) {
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    }
+  }, [displayMessages.length]);
+  
+  if (!isAuthenticated || !currentUser) {
     return (
       <View style={styles.container}>
-        <Stack.Screen options={{ title: "Conversation" }} />
+        <Stack.Screen options={{ title: "Messages" }} />
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>Conversation introuvable</Text>
+          <Text style={styles.errorText}>Vous devez être connecté pour accéder aux messages</Text>
+          <TouchableOpacity 
+            style={styles.loginButton}
+            onPress={() => router.push('/(auth)/login')}
+          >
+            <Text style={styles.loginButtonText}>Se connecter</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+  
+  if (!otherUser) {
+    return (
+      <View style={styles.container}>
+        <Stack.Screen options={{ title: "Messages" }} />
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Conversation non trouvée</Text>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
+            <Text style={styles.backButtonText}>Retour</Text>
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -133,60 +203,63 @@ export default function ConversationScreen() {
   
   return (
     <KeyboardAvoidingView 
-      style={styles.container} 
+      style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <Stack.Screen 
         options={{ 
-          title: "Conversation",
-          headerStyle: { backgroundColor: Colors.primary },
-          headerTintColor: "#fff",
-          headerTitleStyle: { fontWeight: "700" }
+          title: otherUser.name,
+          headerRight: () => (
+            currentUser.userType === 'provider' && otherUser.userType !== 'business' ? (
+              <TouchableOpacity onPress={sendQuote} style={styles.quoteButton}>
+                <Text style={styles.quoteButtonText}>Devis</Text>
+              </TouchableOpacity>
+            ) : null
+          )
         }} 
       />
       
-      <ScrollView 
-        ref={scrollViewRef}
-        style={styles.messagesContainer}
+      <FlatList
+        ref={flatListRef}
+        data={displayMessages}
+        keyExtractor={(item) => item.id}
+        renderItem={renderMessage}
+        style={styles.messagesList}
         contentContainerStyle={styles.messagesContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {conversationMessages.length === 0 ? (
+        ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>Aucun message pour le moment</Text>
-            <Text style={styles.emptySubtext}>Commencez la conversation !</Text>
+            <Text style={styles.emptyText}>
+              Début de votre conversation avec {otherUser.name}
+            </Text>
+            <Text style={styles.emptySubtext}>
+              Envoyez votre premier message pour commencer !
+            </Text>
           </View>
-        ) : (
-          conversationMessages.map(renderMessage)
-        )}
-      </ScrollView>
+        }
+      />
       
       <View style={styles.inputContainer}>
         <View style={styles.inputWrapper}>
           <TextInput
             style={styles.textInput}
-            value={messageText}
-            onChangeText={setMessageText}
+            value={newMessage}
+            onChangeText={setNewMessage}
             placeholder="Tapez votre message..."
             placeholderTextColor={Colors.textLight}
             multiline
             maxLength={500}
           />
-          <TouchableOpacity
-            style={[styles.sendButton, (!messageText.trim() || isSending) && styles.sendButtonDisabled]}
-            onPress={handleSendMessage}
-            disabled={!messageText.trim() || isSending}
-          >
-            <LinearGradient
-              colors={[Colors.primary, Colors.secondary] as const}
-              style={styles.sendButtonGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <Send size={20} color="#fff" />
-            </LinearGradient>
+          <TouchableOpacity style={styles.attachButton}>
+            <Paperclip size={20} color={Colors.textLight} />
           </TouchableOpacity>
         </View>
+        <TouchableOpacity 
+          style={[styles.sendButton, (!newMessage.trim() || isLoading) && styles.sendButtonDisabled]}
+          onPress={handleSendMessage}
+          disabled={!newMessage.trim() || isLoading}
+        >
+          <Send size={20} color="#fff" />
+        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );
@@ -205,158 +278,157 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 18,
-    color: Colors.error,
+    color: Colors.text,
     textAlign: 'center',
+    marginBottom: 24,
+    fontWeight: '600',
   },
-  messagesContainer: {
+  loginButton: {
+    backgroundColor: Colors.primary,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  loginButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  backButton: {
+    backgroundColor: Colors.border,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+  },
+  backButtonText: {
+    color: Colors.text,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  messagesList: {
     flex: 1,
   },
   messagesContent: {
     padding: 16,
-    paddingBottom: 20,
+    paddingBottom: 8,
   },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 60,
+    paddingVertical: 40,
   },
   emptyText: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 16,
     color: Colors.text,
+    textAlign: 'center',
+    fontWeight: '600',
     marginBottom: 8,
   },
   emptySubtext: {
-    fontSize: 16,
+    fontSize: 14,
     color: Colors.textLight,
+    textAlign: 'center',
   },
   messageContainer: {
-    marginBottom: 12,
-    alignItems: 'flex-start',
+    marginBottom: 16,
   },
-  ownMessage: {
+  currentUserMessage: {
     alignItems: 'flex-end',
   },
+  otherUserMessage: {
+    alignItems: 'flex-start',
+  },
   messageBubble: {
-    backgroundColor: '#fff',
-    borderRadius: 18,
+    maxWidth: '80%',
+    borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    maxWidth: '80%',
+  },
+  currentUserBubble: {
+    backgroundColor: Colors.primary,
+    borderBottomRightRadius: 4,
+  },
+  otherUserBubble: {
+    backgroundColor: '#fff',
+    borderBottomLeftRadius: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
   },
-  ownMessageBubble: {
-    backgroundColor: Colors.primary,
-  },
   messageText: {
     fontSize: 16,
-    color: Colors.text,
     lineHeight: 22,
+    marginBottom: 4,
   },
-  ownMessageText: {
+  currentUserText: {
     color: '#fff',
   },
-  messageFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 4,
-    gap: 4,
+  otherUserText: {
+    color: Colors.text,
   },
   messageTime: {
     fontSize: 12,
-    color: Colors.textLight,
+    alignSelf: 'flex-end',
   },
-  ownMessageTime: {
+  currentUserTime: {
     color: 'rgba(255, 255, 255, 0.7)',
   },
-  readStatus: {
-    marginLeft: 4,
-  },
-  quoteMessage: {
-    backgroundColor: '#fff',
-    borderRadius: 18,
-    padding: 16,
-    maxWidth: '80%',
-    borderWidth: 2,
-    borderColor: Colors.primary,
-  },
-  ownQuoteMessage: {
-    backgroundColor: Colors.primary,
-    borderColor: '#fff',
-  },
-  quoteHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  quoteTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.primary,
-    marginLeft: 8,
-  },
-  ownQuoteTitle: {
-    color: '#fff',
-  },
-  quoteText: {
-    fontSize: 14,
-    color: Colors.text,
-    marginBottom: 4,
-  },
-  ownQuoteText: {
-    color: 'rgba(255, 255, 255, 0.9)',
-  },
-  quoteAmount: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: Colors.primary,
-    marginBottom: 8,
-  },
-  ownQuoteAmount: {
-    color: '#fff',
+  otherUserTime: {
+    color: Colors.textLight,
   },
   inputContainer: {
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderTopColor: Colors.border,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    paddingBottom: Platform.OS === 'ios' ? 34 : 12,
-  },
-  inputWrapper: {
     flexDirection: 'row',
+    padding: 16,
+    backgroundColor: '#fff',
     alignItems: 'flex-end',
     gap: 12,
   },
+  inputWrapper: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    backgroundColor: Colors.backgroundAlt,
+    borderRadius: 24,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    maxHeight: 100,
+  },
   textInput: {
     flex: 1,
-    backgroundColor: Colors.backgroundAlt,
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
     fontSize: 16,
     color: Colors.text,
-    maxHeight: 100,
-    borderWidth: 1,
-    borderColor: Colors.border,
+    paddingVertical: 8,
+    maxHeight: 80,
+  },
+  attachButton: {
+    padding: 8,
+    marginLeft: 8,
   },
   sendButton: {
+    backgroundColor: Colors.primary,
     width: 44,
     height: 44,
     borderRadius: 22,
-    overflow: 'hidden',
-  },
-  sendButtonDisabled: {
-    opacity: 0.5,
-  },
-  sendButtonGradient: {
-    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  sendButtonDisabled: {
+    backgroundColor: Colors.textLight,
+  },
+  quoteButton: {
+    backgroundColor: Colors.accent,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    marginRight: 8,
+  },
+  quoteButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

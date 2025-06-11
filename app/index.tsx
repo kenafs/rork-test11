@@ -1,11 +1,9 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Dimensions } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import Colors from '@/constants/colors';
 import { LinearGradient } from 'expo-linear-gradient';
-
-const { width } = Dimensions.get('window');
 
 export default function LandingScreen() {
   const router = useRouter();
@@ -22,18 +20,18 @@ export default function LandingScreen() {
   }
   
   return (
-    <View style={styles.container}>
-      <LinearGradient
-        colors={[Colors.primary, Colors.secondary]}
-        style={styles.content}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
+    <LinearGradient
+      colors={[Colors.primary, Colors.secondary]}
+      style={styles.container}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+    >
+      <View style={styles.content}>
         <View style={styles.logoSection}>
           <Text style={styles.logo}>🎉</Text>
           <Text style={styles.appName}>EventApp</Text>
           <Text style={styles.tagline}>
-            Connectez-vous pour organiser vos événements
+            La plateforme qui connecte clients, prestataires et établissements pour vos événements
           </Text>
         </View>
         
@@ -61,8 +59,8 @@ export default function LandingScreen() {
             </Text>
           </TouchableOpacity>
         </View>
-      </LinearGradient>
-    </View>
+      </View>
+    </LinearGradient>
   );
 }
 
@@ -91,7 +89,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   tagline: {
-    fontSize: 18,
+    fontSize: 16,
     color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
     lineHeight: 24,

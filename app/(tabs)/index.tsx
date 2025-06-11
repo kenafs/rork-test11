@@ -1,222 +1,318 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
-import { useRouter } from 'expo-router';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, RefreshControl, Alert } from 'react-native';
+import { useRouter, Stack } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useListings } from '@/hooks/useListings';
 import { useLocation } from '@/hooks/useLocation';
+import { useLanguage } from '@/hooks/useLanguage';
 import Colors from '@/constants/colors';
 import SearchBar from '@/components/SearchBar';
 import CategoryFilter from '@/components/CategoryFilter';
 import ListingCard from '@/components/ListingCard';
 import LocationPermissionRequest from '@/components/LocationPermissionRequest';
-import { MapPin, Plus, Sparkles } from 'lucide-react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { Plus, MapPin, Star, Users, Calendar } from 'lucide-react-native';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { user, isAuthenticated } = useAuth();
+  const { user } = useAuth();
   const { 
     filteredListings, 
     isLoading, 
     fetchListings, 
     refreshListings,
-    filterBySearch,
-    filterByCategory,
-    clearFilters,
-    selectedCategory 
+    filterByCategory, 
+    filterBySearch, 
+    filterByLocation,
+    selectedCategory,
+    searchQuery 
   } = useListings();
-  const { city, hasPermission, requestPermission } = useLocation();
+  const { 
+    latitude, 
+    longitude, 
+    city, 
+    error, 
+    isLoading: locationLoading, 
+    permissionStatus,
+    requestPermission,
+    hasPermission
+  } = useLocation();
+  const { t } = useLanguage();
+  
   const [refreshing, setRefreshing] = useState(false);
-  const [searchValue, setSearchValue] = useState('');
-
-  // Fetch listings on component mount
+  
   useEffect(() => {
     fetchListings();
   }, []);
-
-  // Handle refresh
-  const onRefresh = async () => {
+  
+  const handleRefresh = async () => {
     setRefreshing(true);
     await refreshListings();
     setRefreshing(false);
   };
-
-  // Handle search
-  const handleSearch = (query: string) => {
-    setSearchValue(query);
-    filterBySearch(query);
-  };
-
-  // Handle search text change
-  const handleSearchChange = (text: string) => {
-    setSearchValue(text);
-    filterBySearch(text);
-  };
-
-  // Handle search clear
-  const handleSearchClear = () => {
-    setSearchValue('');
-    filterBySearch('');
-  };
-
-  // Handle category filter
-  const handleCategoryFilter = (category: string | null) => {
-    filterByCategory(category);
-  };
-
-  // Get greeting based on time
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Bonjour';
-    if (hour < 18) return 'Bon après-midi';
-    return 'Bonsoir';
-  };
-
-  // Get appropriate CTA text based on user type
-  const getCreateButtonText = () => {
-    if (!user) return 'Créer une annonce';
-    
-    switch (user.userType) {
-      case 'provider':
-        return 'Créer une annonce';
-      case 'business':
-        return 'Publier une offre';
-      default:
-        return 'Créer une demande';
+  
+  const handleLocationPress = () => {
+    if (!hasPermission) {
+      requestPermission();
+    } else if (latitude && longitude) {
+      filterByLocation(latitude, longitude);
+      Alert.alert('Localisation', `Filtrage par votre position: ${city || 'Position actuelle'}`);
     }
   };
-
-  return (
-    <View style={styles.container}>
-      {/* Header */}
-      <LinearGradient
-        colors={[Colors.primary, Colors.secondary] as const}
-        style={styles.header}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
-        <View style={styles.headerContent}>
-          <View style={styles.greetingSection}>
-            <Text style={styles.greeting}>
-              {getGreeting()}{user ? `, ${user.name.split(' ')[0]}` : ''} 👋
-            </Text>
-            <Text style={styles.subtitle}>
-              Trouvez les meilleurs prestataires pour vos événements
-            </Text>
+  
+  const handleSearch = (query: string) => {
+    filterBySearch(query);
+  };
+  
+  const handleClearSearch = () => {
+    filterBySearch('');
+  };
+  
+  // Landing page for non-authenticated users
+  if (!user) {
+    return (
+      <View style={styles.container}>
+        <Stack.Screen options={{ headerShown: false }} />
+        
+        <ScrollView 
+          style={styles.content}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+          }
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Hero Section */}
+          <View style={styles.heroSection}>
+            <View style={styles.heroContent}>
+              <Text style={styles.heroTitle}>Trouvez le prestataire parfait pour votre événement</Text>
+              <Text style={styles.heroSubtitle}>
+                Connectez-vous avec les meilleurs DJ, traiteurs, photographes et lieux d'événements
+              </Text>
+              
+              <View style={styles.heroStats}>
+                <View style={styles.statItem}>
+                  <Star size={20} color={Colors.secondary} />
+                  <Text style={styles.statNumber}>4.8</Text>
+                  <Text style={styles.statLabel}>Note moyenne</Text>
+                </View>
+                <View style={styles.statItem}>
+                  <Users size={20} color={Colors.secondary} />
+                  <Text style={styles.statNumber}>500+</Text>
+                  <Text style={styles.statLabel}>Prestataires</Text>
+                </View>
+                <View style={styles.statItem}>
+                  <Calendar size={20} color={Colors.secondary} />
+                  <Text style={styles.statNumber}>1000+</Text>
+                  <Text style={styles.statLabel}>Événements</Text>
+                </View>
+              </View>
+              
+              <View style={styles.heroActions}>
+                <TouchableOpacity 
+                  style={styles.primaryButton}
+                  onPress={() => router.push('/(auth)/demo')}
+                >
+                  <Text style={styles.primaryButtonText}>Essayer la démo</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={styles.secondaryButton}
+                  onPress={() => router.push('/(auth)/login')}
+                >
+                  <Text style={styles.secondaryButtonText}>Se connecter</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
           
-          {city && (
-            <View style={styles.locationContainer}>
-              <MapPin size={16} color="rgba(255, 255, 255, 0.9)" />
-              <Text style={styles.locationText}>{city}</Text>
-            </View>
+          {/* Search Bar */}
+          <SearchBar
+            value={searchQuery}
+            onChangeText={handleSearch}
+            onClear={handleClearSearch}
+            onLocationPress={handleLocationPress}
+            placeholder="Rechercher un prestataire..."
+          />
+          
+          {/* Location Permission Request */}
+          {!hasPermission && (
+            <LocationPermissionRequest onRequestPermission={requestPermission} />
           )}
-        </View>
-      </LinearGradient>
-
-      {/* Location Permission Request */}
-      {!hasPermission && (
-        <LocationPermissionRequest onRequestPermission={requestPermission} />
-      )}
-
-      {/* Search and Filters */}
-      <View style={styles.searchSection}>
-        <SearchBar 
-          value={searchValue}
-          onSearch={handleSearch}
-          onChangeText={handleSearchChange}
-          onClear={handleSearchClear}
-        />
-        <CategoryFilter 
-          onCategorySelect={handleCategoryFilter} 
-          selectedCategory={selectedCategory}
-        />
+          
+          {/* Category Filter */}
+          <CategoryFilter
+            selectedCategory={selectedCategory}
+            onSelectCategory={filterByCategory}
+          />
+          
+          {/* Listings */}
+          <View style={styles.listingsContainer}>
+            <View style={styles.listingsHeader}>
+              <Text style={styles.listingsTitle}>
+                {selectedCategory ? 'Résultats filtrés' : 'Annonces récentes'}
+              </Text>
+              <Text style={styles.listingsCount}>
+                {filteredListings.length} résultat{filteredListings.length > 1 ? 's' : ''}
+              </Text>
+            </View>
+            
+            {filteredListings.map((listing) => (
+              <ListingCard
+                key={listing.id}
+                listing={listing}
+              />
+            ))}
+            
+            {filteredListings.length === 0 && !isLoading && (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyTitle}>Aucun résultat</Text>
+                <Text style={styles.emptyText}>
+                  Essayez de modifier vos critères de recherche
+                </Text>
+              </View>
+            )}
+          </View>
+        </ScrollView>
       </View>
-
-      {/* Quick Actions */}
-      <View style={styles.quickActions}>
-        <TouchableOpacity 
-          style={styles.createButton}
-          onPress={() => {
-            if (!isAuthenticated) {
-              router.push('/(auth)/login');
-            } else {
-              router.push('/(tabs)/create');
-            }
-          }}
-        >
-          <LinearGradient
-            colors={[Colors.primary, Colors.secondary] as const}
-            style={styles.createButtonGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
-            <Plus size={20} color="#fff" />
-            <Text style={styles.createButtonText}>{getCreateButtonText()}</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={styles.exploreButton}
-          onPress={() => router.push('/(tabs)/search')}
-        >
-          <Sparkles size={20} color={Colors.primary} />
-          <Text style={styles.exploreButtonText}>Explorer tout</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Listings */}
+    );
+  }
+  
+  // Authenticated user experience
+  const getWelcomeMessage = () => {
+    switch (user.userType) {
+      case 'provider':
+        return `Bonjour ${user.name.split(' ')[0]} 👋`;
+      case 'business':
+        return `Bienvenue ${user.name} 🏢`;
+      case 'client':
+        return `Salut ${user.name.split(' ')[0]} 😊`;
+      default:
+        return `Bonjour ${user.name.split(' ')[0]} 👋`;
+    }
+  };
+  
+  const getSubtitle = () => {
+    switch (user.userType) {
+      case 'provider':
+        return "Gérez vos annonces et développez votre activité";
+      case 'business':
+        return "Proposez vos services et attirez de nouveaux clients";
+      case 'client':
+        return "Trouvez le prestataire parfait pour votre événement";
+      default:
+        return "Trouvez le prestataire parfait pour votre événement";
+    }
+  };
+  
+  const getCreateButtonText = () => {
+    switch (user.userType) {
+      case 'provider':
+        return "✨ Créer une annonce";
+      case 'business':
+        return "🏢 Ajouter un service";
+      case 'client':
+        return "🔍 Rechercher";
+      default:
+        return "✨ Créer une annonce";
+    }
+  };
+  
+  const handleCreatePress = () => {
+    if (user.userType === 'client') {
+      router.push('/(tabs)/search');
+    } else {
+      router.push('/(tabs)/create');
+    }
+  };
+  
+  return (
+    <View style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
+      
       <ScrollView 
         style={styles.content}
-        contentContainerStyle={styles.contentContainer}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.listingsHeader}>
-          <Text style={styles.listingsTitle}>
-            ✨ Annonces récentes
-          </Text>
-          <TouchableOpacity onPress={clearFilters}>
-            <Text style={styles.clearFiltersText}>Tout voir</Text>
-          </TouchableOpacity>
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.headerContent}>
+            <Text style={styles.welcomeText}>{getWelcomeMessage()}</Text>
+            <Text style={styles.subtitleText}>{getSubtitle()}</Text>
+            
+            {user.userType !== 'client' && (
+              <TouchableOpacity 
+                style={styles.createButton}
+                onPress={handleCreatePress}
+                activeOpacity={0.8}
+              >
+                <Plus size={20} color="#fff" />
+                <Text style={styles.createButtonText}>{getCreateButtonText()}</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
-
-        {isLoading && filteredListings.length === 0 ? (
-          <View style={styles.loadingContainer}>
-            <Text style={styles.loadingText}>Chargement des annonces...</Text>
-          </View>
-        ) : filteredListings.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyTitle}>Aucune annonce trouvée</Text>
-            <Text style={styles.emptyText}>
-              Essayez de modifier vos filtres ou créez la première annonce !
-            </Text>
-            <TouchableOpacity 
-              style={styles.emptyButton}
-              onPress={() => {
-                if (!isAuthenticated) {
-                  router.push('/(auth)/login');
-                } else {
-                  router.push('/(tabs)/create');
-                }
-              }}
-            >
-              <Text style={styles.emptyButtonText}>{getCreateButtonText()}</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <View style={styles.listingsGrid}>
-            {filteredListings.map((listing) => (
-              <ListingCard key={listing.id} listing={listing} />
-            ))}
-          </View>
+        
+        {/* Search Bar */}
+        <SearchBar
+          value={searchQuery}
+          onChangeText={handleSearch}
+          onClear={handleClearSearch}
+          onLocationPress={handleLocationPress}
+          placeholder="Rechercher un prestataire..."
+        />
+        
+        {/* Location Permission Request */}
+        {!hasPermission && (
+          <LocationPermissionRequest onRequestPermission={requestPermission} />
         )}
-
-        {/* Bottom spacing */}
-        <View style={styles.bottomSpacing} />
+        
+        {/* Category Filter */}
+        <CategoryFilter
+          selectedCategory={selectedCategory}
+          onSelectCategory={filterByCategory}
+        />
+        
+        {/* Listings */}
+        <View style={styles.listingsContainer}>
+          <View style={styles.listingsHeader}>
+            <Text style={styles.listingsTitle}>
+              {selectedCategory ? 'Résultats filtrés' : 'Annonces récentes'}
+            </Text>
+            <Text style={styles.listingsCount}>
+              {filteredListings.length} résultat{filteredListings.length > 1 ? 's' : ''}
+            </Text>
+          </View>
+          
+          {filteredListings.map((listing) => (
+            <ListingCard
+              key={listing.id}
+              listing={listing}
+            />
+          ))}
+          
+          {filteredListings.length === 0 && !isLoading && (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyTitle}>Aucun résultat</Text>
+              <Text style={styles.emptyText}>
+                Essayez de modifier vos critères de recherche
+              </Text>
+            </View>
+          )}
+        </View>
       </ScrollView>
+      
+      {/* Floating Action Button for Clients */}
+      {user && user.userType === 'client' && (
+        <TouchableOpacity 
+          style={styles.fab}
+          onPress={handleCreatePress}
+          activeOpacity={0.8}
+        >
+          <Plus size={24} color="#fff" />
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -226,100 +322,121 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.backgroundAlt,
   },
-  header: {
-    paddingTop: 60,
-    paddingBottom: 24,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-  },
-  headerContent: {
-    gap: 16,
-  },
-  greetingSection: {
-    gap: 8,
-  },
-  greeting: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#fff',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.9)',
-    fontWeight: '500',
-  },
-  locationContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  locationText: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.9)',
-    fontWeight: '600',
-  },
-  searchSection: {
-    padding: 20,
-    paddingBottom: 16,
-    gap: 16,
-  },
-  quickActions: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-    gap: 12,
-  },
-  createButton: {
-    flex: 1,
-    borderRadius: 16,
-    overflow: 'hidden',
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  createButtonGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    gap: 8,
-  },
-  createButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#fff',
-  },
-  exploreButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#fff',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderRadius: 16,
-    gap: 8,
-    borderWidth: 2,
-    borderColor: Colors.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  exploreButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: Colors.primary,
-  },
   content: {
     flex: 1,
   },
-  contentContainer: {
+  heroSection: {
+    backgroundColor: Colors.primary,
+    paddingTop: 60,
+    paddingBottom: 40,
     paddingHorizontal: 20,
+  },
+  heroContent: {
+    alignItems: 'center',
+  },
+  heroTitle: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 12,
+    lineHeight: 34,
+  },
+  heroSubtitle: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.9)',
+    textAlign: 'center',
+    marginBottom: 32,
+    lineHeight: 22,
+  },
+  heroStats: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    marginBottom: 32,
+  },
+  statItem: {
+    alignItems: 'center',
+  },
+  statNumber: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#fff',
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.8)',
+  },
+  heroActions: {
+    flexDirection: 'row',
+    gap: 16,
+    width: '100%',
+  },
+  primaryButton: {
+    flex: 1,
+    backgroundColor: Colors.secondary,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  primaryButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  secondaryButton: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  secondaryButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  header: {
+    backgroundColor: Colors.primary,
+    paddingTop: 60,
+    paddingBottom: 24,
+    paddingHorizontal: 20,
+  },
+  headerContent: {
+    alignItems: 'flex-start',
+  },
+  welcomeText: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#fff',
+    marginBottom: 8,
+  },
+  subtitleText: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.9)',
+    marginBottom: 20,
+    lineHeight: 22,
+  },
+  createButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    gap: 8,
+  },
+  createButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  listingsContainer: {
+    padding: 16,
   },
   listingsHeader: {
     flexDirection: 'row',
@@ -332,55 +449,39 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: Colors.text,
   },
-  clearFiltersText: {
+  listingsCount: {
     fontSize: 14,
-    color: Colors.primary,
-    fontWeight: '600',
-  },
-  loadingContainer: {
-    padding: 40,
-    alignItems: 'center',
-  },
-  loadingText: {
-    fontSize: 16,
     color: Colors.textLight,
-    fontWeight: '500',
   },
-  emptyContainer: {
-    padding: 40,
+  emptyState: {
     alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    marginVertical: 20,
+    padding: 40,
   },
   emptyTitle: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 18,
+    fontWeight: '600',
     color: Colors.text,
     marginBottom: 8,
   },
   emptyText: {
-    fontSize: 16,
+    fontSize: 14,
     color: Colors.textLight,
     textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 24,
   },
-  emptyButton: {
+  fab: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     backgroundColor: Colors.primary,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-  },
-  emptyButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
-  },
-  listingsGrid: {
-    gap: 16,
-  },
-  bottomSpacing: {
-    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
 });

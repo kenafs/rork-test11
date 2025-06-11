@@ -1,6 +1,4 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Listing } from '@/types';
 import { mockListings } from '@/mocks/listings';
 import { useAuth } from './useAuth';
@@ -9,239 +7,377 @@ interface ListingsState {
   listings: Listing[];
   filteredListings: Listing[];
   isLoading: boolean;
-  searchQuery: string;
   selectedCategory: string | null;
+  searchQuery: string;
+  locationFilter: {
+    latitude: number | null;
+    longitude: number | null;
+    radius: number;
+  };
   
   fetchListings: () => Promise<void>;
   refreshListings: () => Promise<void>;
-  createListing: (listingData: Omit<Listing, 'id' | 'createdAt' | 'updatedAt' | 'status'>) => Promise<Listing>;
+  filterByCategory: (category: string | null) => void;
+  filterBySearch: (query: string) => void;
+  filterByLocation: (latitude: number, longitude: number, radius?: number) => void;
+  clearFilters: () => void;
+  
+  createListing: (listing: Omit<Listing, 'id' | 'createdAt' | 'status' | 'updatedAt'>) => Promise<Listing>;
   updateListing: (id: string, updates: Partial<Listing>) => Promise<boolean>;
   deleteListing: (id: string) => Promise<boolean>;
-  filterBySearch: (query: string) => void;
-  filterByCategory: (category: string | null) => void;
-  clearFilters: () => void;
-  getListingById: (id: string) => Listing | undefined;
-  getUserListings: (userId: string) => Listing[];
-  applyFilters: (listings: Listing[], searchQuery?: string, category?: string | null) => Listing[];
 }
 
-export const useListings = create<ListingsState>()(
-  persist(
-    (set, get) => ({
-      listings: [],
-      filteredListings: [],
-      isLoading: false,
-      searchQuery: '',
-      selectedCategory: null,
+// Category mapping from French to English and vice versa
+const categoryMapping: { [key: string]: string } = {
+  'Tous': 'all',
+  'DJ': 'DJ',
+  'Traiteur': 'Catering',
+  'Photographe': 'Photography',
+  'Lieu': 'Venue',
+  'Décoration': 'Decoration',
+  'Musique': 'Music',
+  'Animation': 'Entertainment',
+  'Fleurs': 'Flowers',
+  'Transport': 'Transport',
+  'Sécurité': 'Security',
+  'Nettoyage': 'Cleaning',
+  'Matériel': 'Equipment',
+  'Personnel': 'Staff',
+  // Reverse mapping
+  'all': 'Tous',
+  'Catering': 'Traiteur',
+  'Photography': 'Photographe',
+  'Venue': 'Lieu',
+  'Decoration': 'Décoration',
+  'Music': 'Musique',
+  'Entertainment': 'Animation',
+  'Flowers': 'Fleurs',
+  'Security': 'Sécurité',
+  'Cleaning': 'Nettoyage',
+  'Equipment': 'Matériel',
+  'Staff': 'Personnel',
+};
+
+export const useListings = create<ListingsState>((set, get) => ({
+  listings: [],
+  filteredListings: [],
+  isLoading: false,
+  selectedCategory: null,
+  searchQuery: '',
+  locationFilter: {
+    latitude: null,
+    longitude: null,
+    radius: 50, // Default radius in km
+  },
+  
+  fetchListings: async () => {
+    set({ isLoading: true });
+    
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Helper function to apply filters
-      applyFilters: (listings: Listing[], searchQuery?: string, category?: string | null) => {
-        const state = get();
-        const query = searchQuery !== undefined ? searchQuery : state.searchQuery;
-        const cat = category !== undefined ? category : state.selectedCategory;
-        
-        let filtered = [...listings];
-        
-        // Apply search filter
-        if (query.trim()) {
-          const lowercaseQuery = query.toLowerCase();
-          filtered = filtered.filter(listing =>
-            listing.title.toLowerCase().includes(lowercaseQuery) ||
-            listing.description.toLowerCase().includes(lowercaseQuery) ||
-            listing.creatorName.toLowerCase().includes(lowercaseQuery) ||
-            (listing.tags && listing.tags.some(tag => 
-              tag.toLowerCase().includes(lowercaseQuery)
-            ))
-          );
-        }
-        
-        // Apply category filter
-        if (cat) {
-          filtered = filtered.filter(listing => listing.category === cat);
-        }
-        
-        // Sort by creation date (newest first)
-        filtered.sort((a, b) => b.createdAt - a.createdAt);
-        
-        return filtered;
-      },
-      
-      fetchListings: async () => {
-        set({ isLoading: true });
-        
-        try {
-          // Simulate API call
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          
-          // Get existing listings from state, or use mock data if empty
-          const existingListings = get().listings;
-          const listingsToUse = existingListings.length > 0 ? existingListings : mockListings;
-          
-          const state = get();
-          const filteredListings = state.applyFilters(listingsToUse);
-          
-          set({ 
-            listings: listingsToUse,
-            filteredListings: filteredListings,
-            isLoading: false 
-          });
-        } catch (error) {
-          console.error('Error fetching listings:', error);
-          set({ isLoading: false });
-        }
-      },
-      
-      refreshListings: async () => {
-        await get().fetchListings();
-      },
-      
-      createListing: async (listingData) => {
-        set({ isLoading: true });
-        
-        try {
-          // Simulate API call
-          await new Promise(resolve => setTimeout(resolve, 1500));
-          
-          const user = useAuth.getState().user;
-          if (!user) throw new Error('User must be logged in to create a listing');
-          
-          const newListing: Listing = {
-            id: `listing-${Date.now()}-${Math.random()}`,
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-            status: 'active',
-            ...listingData,
-          };
-          
-          set(state => {
-            const updatedListings = [newListing, ...state.listings];
-            const filteredListings = state.applyFilters(updatedListings);
-            return {
-              listings: updatedListings,
-              filteredListings: filteredListings,
-              isLoading: false 
-            };
-          });
-          
-          console.log('Listing created successfully:', newListing);
-          return newListing;
-        } catch (error) {
-          console.error('Error creating listing:', error);
-          set({ isLoading: false });
-          throw error;
-        }
-      },
-      
-      updateListing: async (id: string, updates: Partial<Listing>) => {
-        set({ isLoading: true });
-        
-        try {
-          // Simulate API call
-          await new Promise(resolve => setTimeout(resolve, 800));
-          
-          const { listings } = get();
-          const listingIndex = listings.findIndex(l => l.id === id);
-          
-          if (listingIndex === -1) {
-            set({ isLoading: false });
-            return false;
-          }
-          
-          const updatedListings = [...listings];
-          updatedListings[listingIndex] = {
-            ...updatedListings[listingIndex],
-            ...updates,
-            updatedAt: Date.now(),
-          };
-          
-          set(state => {
-            const filteredListings = state.applyFilters(updatedListings);
-            return { 
-              listings: updatedListings,
-              filteredListings: filteredListings,
-              isLoading: false 
-            };
-          });
-          
-          console.log('Listing updated:', updatedListings[listingIndex]);
-          return true;
-        } catch (error) {
-          console.error('Error updating listing:', error);
-          set({ isLoading: false });
-          return false;
-        }
-      },
-      
-      deleteListing: async (id: string) => {
-        set({ isLoading: true });
-        
-        try {
-          // Simulate API call
-          await new Promise(resolve => setTimeout(resolve, 500));
-          
-          const { listings } = get();
-          const updatedListings = listings.filter(l => l.id !== id);
-          
-          set(state => {
-            const filteredListings = state.applyFilters(updatedListings);
-            return { 
-              listings: updatedListings,
-              filteredListings: filteredListings,
-              isLoading: false 
-            };
-          });
-          
-          console.log('Listing deleted:', id);
-          return true;
-        } catch (error) {
-          console.error('Error deleting listing:', error);
-          set({ isLoading: false });
-          return false;
-        }
-      },
-      
-      filterBySearch: (query: string) => {
-        set(state => {
-          const filteredListings = state.applyFilters(state.listings, query, state.selectedCategory);
-          return {
-            searchQuery: query,
-            filteredListings: filteredListings,
-          };
-        });
-      },
-      
-      filterByCategory: (category: string | null) => {
-        set(state => {
-          const filteredListings = state.applyFilters(state.listings, state.searchQuery, category);
-          return {
-            selectedCategory: category,
-            filteredListings: filteredListings,
-          };
-        });
-      },
-      
-      clearFilters: () => {
-        set(state => ({
-          searchQuery: '',
-          selectedCategory: null,
-          filteredListings: state.listings,
-        }));
-      },
-      
-      getListingById: (id: string) => {
-        return get().listings.find(listing => listing.id === id);
-      },
-      
-      getUserListings: (userId: string) => {
-        return get().listings.filter(listing => listing.createdBy === userId);
-      },
-    }),
-    {
-      name: 'listings-storage',
-      storage: createJSONStorage(() => AsyncStorage),
-      partialize: (state) => ({
-        listings: state.listings,
-      }),
+      set({ 
+        listings: mockListings,
+        filteredListings: mockListings,
+        isLoading: false 
+      });
+    } catch (error) {
+      console.error('Error fetching listings:', error);
+      set({ isLoading: false });
     }
-  )
-);
+  },
+
+  refreshListings: async () => {
+    const { fetchListings } = get();
+    await fetchListings();
+  },
+  
+  filterByCategory: (category: string | null) => {
+    set({ selectedCategory: category });
+    
+    const { listings, searchQuery, locationFilter } = get();
+    let filtered = [...listings];
+    
+    // Apply category filter
+    if (category && category !== 'Tous' && category !== 'all') {
+      // Map French category to English for filtering
+      const englishCategory = categoryMapping[category] || category;
+      const frenchCategory = categoryMapping[category] || category;
+      
+      filtered = filtered.filter(listing => {
+        // Check both original category and mapped category
+        return listing.category === category ||
+               listing.category === englishCategory ||
+               listing.category === frenchCategory ||
+               listing.category.toLowerCase() === category.toLowerCase() ||
+               listing.category.toLowerCase() === englishCategory.toLowerCase() ||
+               listing.category.toLowerCase() === frenchCategory.toLowerCase();
+      });
+    }
+    
+    // Keep existing search filter
+    if (searchQuery) {
+      filtered = applySearchFilter(filtered, searchQuery);
+    }
+    
+    // Keep existing location filter
+    if (locationFilter.latitude && locationFilter.longitude) {
+      filtered = applyLocationFilter(
+        filtered, 
+        locationFilter.latitude, 
+        locationFilter.longitude, 
+        locationFilter.radius
+      );
+    }
+    
+    set({ filteredListings: filtered });
+  },
+  
+  filterBySearch: (query: string) => {
+    set({ searchQuery: query });
+    
+    const { listings, selectedCategory, locationFilter } = get();
+    let filtered = [...listings];
+    
+    // Apply search filter
+    if (query) {
+      filtered = applySearchFilter(filtered, query);
+    }
+    
+    // Keep existing category filter
+    if (selectedCategory && selectedCategory !== 'Tous' && selectedCategory !== 'all') {
+      const englishCategory = categoryMapping[selectedCategory] || selectedCategory;
+      const frenchCategory = categoryMapping[selectedCategory] || selectedCategory;
+      
+      filtered = filtered.filter(listing => {
+        return listing.category === selectedCategory ||
+               listing.category === englishCategory ||
+               listing.category === frenchCategory ||
+               listing.category.toLowerCase() === selectedCategory.toLowerCase() ||
+               listing.category.toLowerCase() === englishCategory.toLowerCase() ||
+               listing.category.toLowerCase() === frenchCategory.toLowerCase();
+      });
+    }
+    
+    // Keep existing location filter
+    if (locationFilter.latitude && locationFilter.longitude) {
+      filtered = applyLocationFilter(
+        filtered, 
+        locationFilter.latitude, 
+        locationFilter.longitude, 
+        locationFilter.radius
+      );
+    }
+    
+    set({ filteredListings: filtered });
+  },
+  
+  filterByLocation: (latitude: number, longitude: number, radius: number = 50) => {
+    set({ 
+      locationFilter: {
+        latitude,
+        longitude,
+        radius,
+      } 
+    });
+    
+    const { listings, selectedCategory, searchQuery } = get();
+    let filtered = [...listings];
+    
+    // Apply location filter
+    filtered = applyLocationFilter(filtered, latitude, longitude, radius);
+    
+    // Keep existing category filter
+    if (selectedCategory && selectedCategory !== 'Tous' && selectedCategory !== 'all') {
+      const englishCategory = categoryMapping[selectedCategory] || selectedCategory;
+      const frenchCategory = categoryMapping[selectedCategory] || selectedCategory;
+      
+      filtered = filtered.filter(listing => {
+        return listing.category === selectedCategory ||
+               listing.category === englishCategory ||
+               listing.category === frenchCategory ||
+               listing.category.toLowerCase() === selectedCategory.toLowerCase() ||
+               listing.category.toLowerCase() === englishCategory.toLowerCase() ||
+               listing.category.toLowerCase() === frenchCategory.toLowerCase();
+      });
+    }
+    
+    // Keep existing search filter
+    if (searchQuery) {
+      filtered = applySearchFilter(filtered, searchQuery);
+    }
+    
+    set({ filteredListings: filtered });
+  },
+  
+  clearFilters: () => {
+    set({ 
+      selectedCategory: null,
+      searchQuery: '',
+      locationFilter: {
+        latitude: null,
+        longitude: null,
+        radius: 50,
+      },
+      filteredListings: get().listings,
+    });
+  },
+  
+  createListing: async (listingData) => {
+    set({ isLoading: true });
+    
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const user = useAuth.getState().user;
+      if (!user) throw new Error('User must be logged in to create a listing');
+      
+      const newListing: Listing = {
+        id: `listing-${Date.now()}`,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        status: 'active',
+        ...listingData,
+      };
+      
+      const updatedListings = [...get().listings, newListing];
+      
+      set({ 
+        listings: updatedListings,
+        filteredListings: applyCurrentFilters(updatedListings, get()),
+        isLoading: false 
+      });
+      
+      return newListing;
+    } catch (error) {
+      console.error('Error creating listing:', error);
+      set({ isLoading: false });
+      throw error;
+    }
+  },
+  
+  updateListing: async (id: string, updates: Partial<Listing>) => {
+    set({ isLoading: true });
+    
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const { listings } = get();
+      const listingIndex = listings.findIndex(l => l.id === id);
+      
+      if (listingIndex === -1) {
+        set({ isLoading: false });
+        return false;
+      }
+      
+      const updatedListings = [...listings];
+      updatedListings[listingIndex] = {
+        ...updatedListings[listingIndex],
+        ...updates,
+        updatedAt: Date.now(),
+      };
+      
+      set({ 
+        listings: updatedListings,
+        filteredListings: applyCurrentFilters(updatedListings, get()),
+        isLoading: false 
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error updating listing:', error);
+      set({ isLoading: false });
+      return false;
+    }
+  },
+  
+  deleteListing: async (id: string) => {
+    set({ isLoading: true });
+    
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const { listings } = get();
+      const updatedListings = listings.filter(l => l.id !== id);
+      
+      set({ 
+        listings: updatedListings,
+        filteredListings: applyCurrentFilters(updatedListings, get()),
+        isLoading: false 
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error deleting listing:', error);
+      set({ isLoading: false });
+      return false;
+    }
+  },
+}));
+
+// Helper functions
+function applySearchFilter(listings: Listing[], query: string): Listing[] {
+  const lowerQuery = query.toLowerCase();
+  return listings.filter(listing => 
+    listing.title.toLowerCase().includes(lowerQuery) ||
+    listing.description.toLowerCase().includes(lowerQuery) ||
+    (listing.tags && listing.tags.some(tag => tag.toLowerCase().includes(lowerQuery)))
+  );
+}
+
+function applyLocationFilter(
+  listings: Listing[], 
+  latitude: number, 
+  longitude: number, 
+  radiusInKm: number = 50
+): Listing[] {
+  return listings.filter(listing => {
+    // Simple distance calculation (not accounting for Earth's curvature)
+    const distance = Math.sqrt(
+      Math.pow(listing.location.latitude - latitude, 2) + 
+      Math.pow(listing.location.longitude - longitude, 2)
+    ) * 111; // Rough conversion to kilometers
+    return distance <= radiusInKm;
+  });
+}
+
+function applyCurrentFilters(listings: Listing[], state: ListingsState): Listing[] {
+  let filtered = [...listings];
+  
+  // Apply category filter - fix null check
+  if (state.selectedCategory && state.selectedCategory !== 'Tous' && state.selectedCategory !== 'all') {
+    const selectedCategory = state.selectedCategory; // Non-null assertion
+    const englishCategory = categoryMapping[selectedCategory] || selectedCategory;
+    const frenchCategory = categoryMapping[selectedCategory] || selectedCategory;
+    
+    filtered = filtered.filter(listing => {
+      return listing.category === selectedCategory ||
+             listing.category === englishCategory ||
+             listing.category === frenchCategory ||
+             listing.category.toLowerCase() === selectedCategory.toLowerCase() ||
+             listing.category.toLowerCase() === englishCategory.toLowerCase() ||
+             listing.category.toLowerCase() === frenchCategory.toLowerCase();
+    });
+  }
+  
+  // Apply search filter
+  if (state.searchQuery) {
+    filtered = applySearchFilter(filtered, state.searchQuery);
+  }
+  
+  // Apply location filter
+  if (state.locationFilter.latitude && state.locationFilter.longitude) {
+    filtered = applyLocationFilter(
+      filtered, 
+      state.locationFilter.latitude, 
+      state.locationFilter.longitude, 
+      state.locationFilter.radius
+    );
+  }
+  
+  return filtered;
+}

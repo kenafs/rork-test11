@@ -1,20 +1,26 @@
 import React from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
 import { listingCategories } from '@/constants/categories';
 import Colors from '@/constants/colors';
 
 interface CategoryFilterProps {
-  onCategorySelect?: (category: string | null) => void;
-  selectedCategory?: string | null;
+  selectedCategory: string | null;
+  onSelectCategory: (category: string | null) => void;
 }
 
-export default function CategoryFilter({ onCategorySelect, selectedCategory }: CategoryFilterProps) {
+export default function CategoryFilter({ selectedCategory, onSelectCategory }: CategoryFilterProps) {
+  const router = useRouter();
   
   const handleCategoryPress = (category: any) => {
-    const categoryId = category.id === 'all' ? null : category.name;
-    if (onCategorySelect) {
-      onCategorySelect(categoryId);
-    }
+    const categoryId = category.id === 'all' ? null : category.id;
+    onSelectCategory(categoryId);
+    
+    // Navigate to search with category filter
+    router.push({
+      pathname: '/(tabs)/search',
+      params: { category: category.id }
+    });
   };
   
   // Safety check for listingCategories with fallback
@@ -40,7 +46,7 @@ export default function CategoryFilter({ onCategorySelect, selectedCategory }: C
           key={category.id}
           style={[
             styles.categoryButton,
-            selectedCategory === category.name && styles.selectedCategory,
+            selectedCategory === category.id && styles.selectedCategory,
           ]}
           onPress={() => handleCategoryPress(category)}
           activeOpacity={0.7}
@@ -48,7 +54,7 @@ export default function CategoryFilter({ onCategorySelect, selectedCategory }: C
           <Text
             style={[
               styles.categoryText,
-              selectedCategory === category.name && styles.selectedCategoryText,
+              selectedCategory === category.id && styles.selectedCategoryText,
             ]}
           >
             {category.name}
@@ -61,6 +67,7 @@ export default function CategoryFilter({ onCategorySelect, selectedCategory }: C
 
 const styles = StyleSheet.create({
   container: {
+    paddingHorizontal: 16,
     paddingVertical: 12,
     gap: 8,
   },
@@ -68,22 +75,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.backgroundAlt,
     marginRight: 8,
-    borderWidth: 1,
-    borderColor: Colors.border,
   },
   selectedCategory: {
     backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
   },
   categoryText: {
     fontSize: 14,
     fontWeight: '500',
-    color: Colors.text,
+    color: Colors.textLight,
   },
   selectedCategoryText: {
     color: '#fff',
-    fontWeight: '600',
   },
 });
