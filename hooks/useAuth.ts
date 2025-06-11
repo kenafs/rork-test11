@@ -109,13 +109,14 @@ export const useAuth = create<AuthState>()(
       },
       
       loginWithDemo: async (demoAccount: DemoAccount) => {
+        console.log('Starting demo login with account:', demoAccount);
         set({ isLoading: true });
         
         try {
           // Simulate API call
           await new Promise(resolve => setTimeout(resolve, 800));
           
-          const user: User = {
+          const baseUser: User = {
             id: `demo-${demoAccount.userType}-${Date.now()}`,
             name: demoAccount.name,
             email: demoAccount.email,
@@ -126,32 +127,52 @@ export const useAuth = create<AuthState>()(
             reviewCount: demoAccount.reviewCount,
             createdAt: Date.now(),
             city: demoAccount.city,
-            website: demoAccount.website,
-            instagram: demoAccount.instagram,
             location: {
               latitude: 48.8566,
               longitude: 2.3522,
               city: demoAccount.city,
             },
           };
+
+          // Add optional fields if they exist
+          if (demoAccount.website) {
+            (baseUser as any).website = demoAccount.website;
+          }
+          if (demoAccount.instagram) {
+            (baseUser as any).instagram = demoAccount.instagram;
+          }
           
           // Add type-specific properties
-          if (demoAccount.userType === 'provider' && demoAccount.services) {
-            (user as any).services = demoAccount.services;
-            (user as any).priceRange = demoAccount.priceRange;
-            (user as any).availability = demoAccount.availability;
+          if (demoAccount.userType === 'provider') {
+            if (demoAccount.services) {
+              (baseUser as any).services = demoAccount.services;
+            }
+            if (demoAccount.priceRange) {
+              (baseUser as any).priceRange = demoAccount.priceRange;
+            }
+            if (demoAccount.availability) {
+              (baseUser as any).availability = demoAccount.availability;
+            }
           }
           
           if (demoAccount.userType === 'business') {
-            (user as any).venueType = demoAccount.venueType;
-            (user as any).capacity = demoAccount.capacity;
-            (user as any).amenities = demoAccount.amenities;
-            (user as any).address = demoAccount.address;
+            if (demoAccount.venueType) {
+              (baseUser as any).venueType = demoAccount.venueType;
+            }
+            if (demoAccount.capacity) {
+              (baseUser as any).capacity = demoAccount.capacity;
+            }
+            if (demoAccount.amenities) {
+              (baseUser as any).amenities = demoAccount.amenities;
+            }
+            if (demoAccount.address) {
+              (baseUser as any).address = demoAccount.address;
+            }
           }
           
-          console.log('Demo login successful for user:', user);
+          console.log('Demo login successful for user:', baseUser);
           set({ 
-            user, 
+            user: baseUser, 
             isAuthenticated: true, 
             isLoading: false 
           });

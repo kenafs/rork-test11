@@ -9,7 +9,7 @@ interface QuotesState {
   isLoading: boolean;
   
   fetchQuotes: () => Promise<void>;
-  createQuote: (quoteData: Omit<Quote, 'id' | 'createdAt' | 'updatedAt' | 'currency'>) => Promise<Quote>;
+  createQuote: (quoteData: Omit<Quote, 'id' | 'createdAt' | 'updatedAt' | 'currency' | 'total'>) => Promise<Quote>;
   updateQuote: (id: string, updates: Partial<Quote>) => Promise<boolean>;
   deleteQuote: (id: string) => Promise<boolean>;
   acceptQuote: (id: string) => Promise<boolean>;
@@ -65,6 +65,7 @@ export const useQuotes = create<QuotesState>()(
             createdAt: Date.now(),
             updatedAt: Date.now(),
             currency: 'EUR',
+            total: quoteData.totalAmount, // Set total equal to totalAmount
             ...quoteData,
           };
           

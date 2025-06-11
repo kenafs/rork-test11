@@ -9,7 +9,7 @@ import { trpc, trpcClient } from "@/lib/trpc";
 import Colors from "@/constants/colors";
 
 export const unstable_settings = {
-  initialRouteName: "(tabs)",
+  initialRouteName: "index",
 };
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -62,6 +62,7 @@ function RootLayoutNav() {
             },
           }}
         >
+          <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen 
             name="(auth)/login" 
@@ -75,6 +76,13 @@ function RootLayoutNav() {
             options={{ 
               title: "Inscription",
               headerShown: false,
+            }} 
+          />
+          <Stack.Screen 
+            name="(auth)/demo" 
+            options={{ 
+              title: "Comptes démo",
+              headerShown: true,
             }} 
           />
           <Stack.Screen 

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Alert, Platform } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, Stack } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { demoAccounts } from '@/mocks/users';
 import Colors from '@/constants/colors';
@@ -28,8 +28,10 @@ export default function LandingScreen() {
           onPress: async () => {
             const clientDemo = demoAccounts.find(acc => acc.userType === 'client');
             if (clientDemo) {
+              console.log('Attempting client demo login with:', clientDemo);
               try {
                 const success = await loginWithDemo(clientDemo);
+                console.log('Client demo login result:', success);
                 if (success) {
                   router.replace('/(tabs)');
                 } else {
@@ -39,6 +41,8 @@ export default function LandingScreen() {
                 console.error('Demo login error:', error);
                 Alert.alert("Erreur", "Une erreur s'est produite lors de la connexion démo.");
               }
+            } else {
+              Alert.alert("Erreur", "Compte démo client non trouvé.");
             }
           }
         },
@@ -47,8 +51,10 @@ export default function LandingScreen() {
           onPress: async () => {
             const providerDemo = demoAccounts.find(acc => acc.userType === 'provider');
             if (providerDemo) {
+              console.log('Attempting provider demo login with:', providerDemo);
               try {
                 const success = await loginWithDemo(providerDemo);
+                console.log('Provider demo login result:', success);
                 if (success) {
                   router.replace('/(tabs)');
                 } else {
@@ -58,6 +64,8 @@ export default function LandingScreen() {
                 console.error('Demo login error:', error);
                 Alert.alert("Erreur", "Une erreur s'est produite lors de la connexion démo.");
               }
+            } else {
+              Alert.alert("Erreur", "Compte démo prestataire non trouvé.");
             }
           }
         },
@@ -66,8 +74,10 @@ export default function LandingScreen() {
           onPress: async () => {
             const businessDemo = demoAccounts.find(acc => acc.userType === 'business');
             if (businessDemo) {
+              console.log('Attempting business demo login with:', businessDemo);
               try {
                 const success = await loginWithDemo(businessDemo);
+                console.log('Business demo login result:', success);
                 if (success) {
                   router.replace('/(tabs)');
                 } else {
@@ -77,6 +87,8 @@ export default function LandingScreen() {
                 console.error('Demo login error:', error);
                 Alert.alert("Erreur", "Une erreur s'est produite lors de la connexion démo.");
               }
+            } else {
+              Alert.alert("Erreur", "Compte démo établissement non trouvé.");
             }
           }
         },
@@ -90,76 +102,83 @@ export default function LandingScreen() {
   }
 
   return (
-    <LinearGradient
-      colors={[Colors.primary, Colors.secondary]}
-      style={styles.container}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-    >
-      <View style={styles.content}>
-        {/* Logo/Icon */}
-        <View style={styles.logoContainer}>
-          <View style={styles.logoCircle}>
-            <Sparkles size={48} color="#fff" />
+    <View style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
+      
+      <LinearGradient
+        colors={[Colors.primary, Colors.secondary]}
+        style={styles.gradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        <View style={styles.content}>
+          {/* Logo/Icon */}
+          <View style={styles.logoContainer}>
+            <View style={styles.logoCircle}>
+              <Sparkles size={48} color="#fff" />
+            </View>
+          </View>
+
+          {/* Title */}
+          <Text style={styles.title}>EventApp</Text>
+          
+          {/* Subtitle */}
+          <Text style={styles.subtitle}>
+            La plateforme qui connecte clients, prestataires et établissements pour vos événements
+          </Text>
+
+          {/* Features */}
+          <View style={styles.featuresContainer}>
+            <View style={styles.feature}>
+              <Users size={24} color="rgba(255, 255, 255, 0.9)" />
+              <Text style={styles.featureText}>Mise en relation simplifiée</Text>
+            </View>
+            <View style={styles.feature}>
+              <Star size={24} color="rgba(255, 255, 255, 0.9)" />
+              <Text style={styles.featureText}>Prestataires vérifiés</Text>
+            </View>
+          </View>
+
+          {/* Buttons */}
+          <View style={styles.buttonsContainer}>
+            <TouchableOpacity
+              style={styles.primaryButton}
+              onPress={() => router.push('/(auth)/login')}
+              disabled={isLoading}
+            >
+              <Text style={styles.primaryButtonText}>Se connecter</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.secondaryButton}
+              onPress={() => router.push('/(auth)/register')}
+              disabled={isLoading}
+            >
+              <Text style={styles.secondaryButtonText}>Créer un compte</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.demoButton}
+              onPress={handleDemoLogin}
+              disabled={isLoading}
+            >
+              <Sparkles size={20} color="rgba(255, 255, 255, 0.9)" style={{ marginRight: 8 }} />
+              <Text style={styles.demoButtonText}>
+                {isLoading ? 'Connexion...' : 'Essayer avec un compte démo'}
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
-
-        {/* Title */}
-        <Text style={styles.title}>EventApp</Text>
-        
-        {/* Subtitle */}
-        <Text style={styles.subtitle}>
-          La plateforme qui connecte clients, prestataires et établissements pour vos événements
-        </Text>
-
-        {/* Features */}
-        <View style={styles.featuresContainer}>
-          <View style={styles.feature}>
-            <Users size={24} color="rgba(255, 255, 255, 0.9)" />
-            <Text style={styles.featureText}>Mise en relation simplifiée</Text>
-          </View>
-          <View style={styles.feature}>
-            <Star size={24} color="rgba(255, 255, 255, 0.9)" />
-            <Text style={styles.featureText}>Prestataires vérifiés</Text>
-          </View>
-        </View>
-
-        {/* Buttons */}
-        <View style={styles.buttonsContainer}>
-          <TouchableOpacity
-            style={styles.primaryButton}
-            onPress={() => router.push('/(auth)/login')}
-            disabled={isLoading}
-          >
-            <Text style={styles.primaryButtonText}>Se connecter</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.secondaryButton}
-            onPress={() => router.push('/(auth)/register')}
-            disabled={isLoading}
-          >
-            <Text style={styles.secondaryButtonText}>Créer un compte</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.demoButton}
-            onPress={handleDemoLogin}
-            disabled={isLoading}
-          >
-            <Sparkles size={20} color="rgba(255, 255, 255, 0.9)" style={{ marginRight: 8 }} />
-            <Text style={styles.demoButtonText}>
-              {isLoading ? 'Connexion...' : 'Essayer avec un compte démo'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </LinearGradient>
+      </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  gradient: {
     flex: 1,
   },
   content: {

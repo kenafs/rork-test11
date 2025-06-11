@@ -220,7 +220,6 @@ export const demoAccounts: DemoAccount[] = [
     email: 'thomas.demo@eventapp.com',
     profileImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop',
     description: 'Photographe professionnel spécialisé dans les mariages et événements d\'entreprise. Plus de 10 ans d\'expérience.',
-    specialties: 'Photographie, Vidéographie, Retouche',
     website: 'https://thomas-photo.fr',
     instagram: '@thomas_photo_pro',
     city: 'Marseille',
