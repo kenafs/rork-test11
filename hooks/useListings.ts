@@ -34,6 +34,38 @@ export const useListings = create<ListingsState>()(
       searchQuery: '',
       selectedCategory: null,
       
+      // Helper function to apply filters
+      applyFilters: (listings: Listing[], searchQuery?: string, category?: string | null) => {
+        const state = get();
+        const query = searchQuery !== undefined ? searchQuery : state.searchQuery;
+        const cat = category !== undefined ? category : state.selectedCategory;
+        
+        let filtered = [...listings];
+        
+        // Apply search filter
+        if (query.trim()) {
+          const lowercaseQuery = query.toLowerCase();
+          filtered = filtered.filter(listing =>
+            listing.title.toLowerCase().includes(lowercaseQuery) ||
+            listing.description.toLowerCase().includes(lowercaseQuery) ||
+            listing.creatorName.toLowerCase().includes(lowercaseQuery) ||
+            (listing.tags && listing.tags.some(tag => 
+              tag.toLowerCase().includes(lowercaseQuery)
+            ))
+          );
+        }
+        
+        // Apply category filter
+        if (cat) {
+          filtered = filtered.filter(listing => listing.category === cat);
+        }
+        
+        // Sort by creation date (newest first)
+        filtered.sort((a, b) => b.createdAt - a.createdAt);
+        
+        return filtered;
+      },
+      
       fetchListings: async () => {
         set({ isLoading: true });
         
@@ -195,38 +227,6 @@ export const useListings = create<ListingsState>()(
       
       getUserListings: (userId: string) => {
         return get().listings.filter(listing => listing.createdBy === userId);
-      },
-      
-      // Helper function to apply filters
-      applyFilters: (listings: Listing[], searchQuery?: string, category?: string | null) => {
-        const state = get();
-        const query = searchQuery !== undefined ? searchQuery : state.searchQuery;
-        const cat = category !== undefined ? category : state.selectedCategory;
-        
-        let filtered = [...listings];
-        
-        // Apply search filter
-        if (query.trim()) {
-          const lowercaseQuery = query.toLowerCase();
-          filtered = filtered.filter(listing =>
-            listing.title.toLowerCase().includes(lowercaseQuery) ||
-            listing.description.toLowerCase().includes(lowercaseQuery) ||
-            listing.creatorName.toLowerCase().includes(lowercaseQuery) ||
-            (listing.tags && listing.tags.some(tag => 
-              tag.toLowerCase().includes(lowercaseQuery)
-            ))
-          );
-        }
-        
-        // Apply category filter
-        if (cat) {
-          filtered = filtered.filter(listing => listing.category === cat);
-        }
-        
-        // Sort by creation date (newest first)
-        filtered.sort((a, b) => b.createdAt - a.createdAt);
-        
-        return filtered;
       },
     }),
     {

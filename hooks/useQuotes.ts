@@ -1,21 +1,21 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Quote, QuoteItem } from '@/types';
-import { useAuth } from './useAuth';
+import { Quote } from '@/types';
 
 interface QuotesState {
   quotes: Quote[];
   isLoading: boolean;
   
   fetchQuotes: () => Promise<void>;
-  createQuote: (quoteData: Omit<Quote, 'id' | 'createdAt' | 'updatedAt' | 'currency'>) => Promise<Quote>;
+  createQuote: (quoteData: Omit<Quote, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Quote>;
   updateQuote: (id: string, updates: Partial<Quote>) => Promise<boolean>;
   deleteQuote: (id: string) => Promise<boolean>;
-  acceptQuote: (id: string) => Promise<boolean>;
-  rejectQuote: (id: string) => Promise<boolean>;
+  getQuoteById: (id: string) => Quote | undefined;
   getQuotesByUser: (userId: string) => Quote[];
   getQuotesForUser: (userId: string) => Quote[];
+  acceptQuote: (id: string) => Promise<boolean>;
+  rejectQuote: (id: string) => Promise<boolean>;
 }
 
 export const useQuotes = create<QuotesState>()(
@@ -30,12 +30,6 @@ export const useQuotes = create<QuotesState>()(
         try {
           // Simulate API call
           await new Promise(resolve => setTimeout(resolve, 500));
-          
-          const user = useAuth.getState().user;
-          if (!user) {
-            set({ isLoading: false });
-            return;
-          }
           
           // Get existing quotes from state
           const existingQuotes = get().quotes;
@@ -55,10 +49,7 @@ export const useQuotes = create<QuotesState>()(
         
         try {
           // Simulate API call
-          await new Promise(resolve => setTimeout(resolve, 800));
-          
-          const user = useAuth.getState().user;
-          if (!user) throw new Error('User must be logged in to create a quote');
+          await new Promise(resolve => setTimeout(resolve, 1000));
           
           const newQuote: Quote = {
             id: `quote-${Date.now()}-${Math.random()}`,
@@ -66,14 +57,15 @@ export const useQuotes = create<QuotesState>()(
             updatedAt: Date.now(),
             currency: 'EUR',
             ...quoteData,
+            total: quoteData.totalAmount, // Add backward compatibility
           };
           
           set(state => ({
-            quotes: [...state.quotes, newQuote],
+            quotes: [newQuote, ...state.quotes],
             isLoading: false 
           }));
           
-          console.log('Devis créé avec succès:', newQuote);
+          console.log('Quote created successfully:', newQuote);
           return newQuote;
         } catch (error) {
           console.error('Error creating quote:', error);
@@ -102,6 +94,7 @@ export const useQuotes = create<QuotesState>()(
             ...updatedQuotes[quoteIndex],
             ...updates,
             updatedAt: Date.now(),
+            total: updates.totalAmount || updatedQuotes[quoteIndex].totalAmount, // Update backward compatibility
           };
           
           set({ 
@@ -109,7 +102,7 @@ export const useQuotes = create<QuotesState>()(
             isLoading: false 
           });
           
-          console.log('Devis mis à jour:', updatedQuotes[quoteIndex]);
+          console.log('Quote updated:', updatedQuotes[quoteIndex]);
           return true;
         } catch (error) {
           console.error('Error updating quote:', error);
@@ -123,7 +116,7 @@ export const useQuotes = create<QuotesState>()(
         
         try {
           // Simulate API call
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await new Promise(resolve => setTimeout(resolve, 300));
           
           const { quotes } = get();
           const updatedQuotes = quotes.filter(q => q.id !== id);
@@ -133,7 +126,7 @@ export const useQuotes = create<QuotesState>()(
             isLoading: false 
           });
           
-          console.log('Devis supprimé:', id);
+          console.log('Quote deleted:', id);
           return true;
         } catch (error) {
           console.error('Error deleting quote:', error);
@@ -142,30 +135,24 @@ export const useQuotes = create<QuotesState>()(
         }
       },
       
-      acceptQuote: async (id: string) => {
-        const result = await get().updateQuote(id, { status: 'accepted' });
-        if (result) {
-          console.log('Devis accepté:', id);
-        }
-        return result;
-      },
-      
-      rejectQuote: async (id: string) => {
-        const result = await get().updateQuote(id, { status: 'rejected' });
-        if (result) {
-          console.log('Devis rejeté:', id);
-        }
-        return result;
+      getQuoteById: (id: string) => {
+        return get().quotes.find(quote => quote.id === id);
       },
       
       getQuotesByUser: (userId: string) => {
-        // Get quotes created by this user (provider)
         return get().quotes.filter(quote => quote.providerId === userId);
       },
       
       getQuotesForUser: (userId: string) => {
-        // Get quotes sent to this user (client)
         return get().quotes.filter(quote => quote.clientId === userId);
+      },
+      
+      acceptQuote: async (id: string) => {
+        return await get().updateQuote(id, { status: 'accepted' });
+      },
+      
+      rejectQuote: async (id: string) => {
+        return await get().updateQuote(id, { status: 'rejected' });
       },
     }),
     {

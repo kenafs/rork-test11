@@ -245,7 +245,7 @@ export default function ProfileScreen() {
                   <Text style={styles.statusText}>{getStatusText(quote.status)}</Text>
                 </View>
               </View>
-              <Text style={styles.quoteTotal}>{quote.totalAmount}€</Text>
+              <Text style={styles.quoteTotal}>{quote.totalAmount || quote.total || 0}€</Text>
               <Text style={styles.quoteDate}>
                 {new Date(quote.createdAt).toLocaleDateString('fr-FR')}
               </Text>
