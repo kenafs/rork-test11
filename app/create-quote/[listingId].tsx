@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuotes } from '@/hooks/useQuotes';
@@ -15,8 +15,8 @@ export default function CreateQuoteScreen() {
   const { listingId } = useLocalSearchParams<{ listingId: string }>();
   const router = useRouter();
   const { user } = useAuth();
-  const { createQuote, isLoading } = useQuotes();
-  const { addContact } = useMessages();
+  const { createQuote, sendQuote, isLoading } = useQuotes();
+  const { addContact, sendMessage, getConversationByParticipant, createConversation } = useMessages();
   
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -106,7 +106,7 @@ export default function CreateQuoteScreen() {
   };
   
   // Calculate total amount
-  const totalAmount = items.reduce((sum, item) => sum + item.totalPrice, 0);
+  const totalAmount = items.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
   
   // Handle submit
   const handleSubmit = async () => {
@@ -136,27 +136,48 @@ export default function CreateQuoteScreen() {
         description,
         items,
         totalAmount,
-        status: 'draft',
+        status: 'pending', // Set to pending instead of draft
         validUntil,
       });
       
       console.log('Quote created successfully:', quote);
       
-      // Add quote message to conversation if it's a conversation quote
-      if (conversationParticipant && addContact) {
-        addContact({
-          participantId: conversationParticipant.id,
-          participantName: conversationParticipant.name,
-          participantImage: conversationParticipant.profileImage,
-          participantType: conversationParticipant.userType === 'provider' ? 'provider' : 
-                          conversationParticipant.userType === 'business' ? 'business' : 'client',
-          lastMessage: `📋 Devis envoyé: ${title} - ${totalAmount.toFixed(2)}€`,
-          unread: 0,
-          timestamp: Date.now(),
-        });
+      // Send the quote immediately
+      await sendQuote(quote.id);
+      
+      // Send quote message to conversation
+      if (conversationParticipant) {
+        try {
+          // Get or create conversation
+          let conversation = getConversationByParticipant(conversationParticipant.id);
+          if (!conversation) {
+            const conversationId = await createConversation(conversationParticipant.id);
+            conversation = getConversationByParticipant(conversationParticipant.id);
+          }
+          
+          if (conversation) {
+            // Send quote message
+            const quoteMessage = `📋 Devis envoyé: ${title}\n💰 Montant: ${totalAmount.toFixed(2)}€\n📅 Valide jusqu'au: ${new Date(validUntil).toLocaleDateString('fr-FR')}`;
+            await sendMessage(conversation.id, quoteMessage, conversationParticipant.id);
+          }
+          
+          // Update contact
+          addContact({
+            participantId: conversationParticipant.id,
+            participantName: conversationParticipant.name,
+            participantImage: conversationParticipant.profileImage,
+            participantType: conversationParticipant.userType === 'provider' ? 'provider' : 
+                            conversationParticipant.userType === 'business' ? 'business' : 'client',
+            lastMessage: `📋 Devis envoyé: ${title} - ${totalAmount.toFixed(2)}€`,
+            unread: 0,
+            timestamp: Date.now(),
+          });
+        } catch (messageError) {
+          console.error('Error sending quote message:', messageError);
+        }
       }
       
-      Alert.alert('Succès', 'Devis créé avec succès', [
+      Alert.alert('Succès', 'Devis créé et envoyé avec succès', [
         { 
           text: 'Voir les devis', 
           onPress: () => router.replace('/(tabs)/profile') 
@@ -181,158 +202,164 @@ export default function CreateQuoteScreen() {
         headerTitleStyle: { fontWeight: '700' }
       }} />
       
-      <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
-        <View style={styles.header}>
-          <View style={styles.headerIcon}>
-            <FileText size={32} color={Colors.primary} />
-          </View>
-          <Text style={styles.title}>💰 Créer un devis</Text>
-          {listing && (
-            <Text style={styles.subtitle}>Pour: {listing.title}</Text>
-          )}
-          {conversationParticipant && (
-            <Text style={styles.subtitle}>Pour: {conversationParticipant.name}</Text>
-          )}
-        </View>
-        
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📝 Informations générales</Text>
-          
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Titre du devis *</Text>
-            <TextInput
-              style={styles.input}
-              value={title}
-              onChangeText={setTitle}
-              placeholder="Ex: Prestation DJ pour mariage"
-              placeholderTextColor={Colors.textLight}
-            />
+      <KeyboardAvoidingView 
+        style={styles.keyboardContainer}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      >
+        <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
+          <View style={styles.header}>
+            <View style={styles.headerIcon}>
+              <FileText size={32} color={Colors.primary} />
+            </View>
+            <Text style={styles.title}>💰 Créer un devis</Text>
+            {listing && (
+              <Text style={styles.subtitle}>Pour: {listing.title}</Text>
+            )}
+            {conversationParticipant && (
+              <Text style={styles.subtitle}>Pour: {conversationParticipant.name}</Text>
+            )}
           </View>
           
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Description *</Text>
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              value={description}
-              onChangeText={setDescription}
-              placeholder="Décrivez votre prestation en détail..."
-              multiline
-              numberOfLines={4}
-              textAlignVertical="top"
-              placeholderTextColor={Colors.textLight}
-            />
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>📝 Informations générales</Text>
+            
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Titre du devis *</Text>
+              <TextInput
+                style={styles.input}
+                value={title}
+                onChangeText={setTitle}
+                placeholder="Ex: Prestation DJ pour mariage"
+                placeholderTextColor={Colors.textLight}
+              />
+            </View>
+            
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Description *</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                value={description}
+                onChangeText={setDescription}
+                placeholder="Décrivez votre prestation en détail..."
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+                placeholderTextColor={Colors.textLight}
+              />
+            </View>
+            
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Validité (jours)</Text>
+              <TextInput
+                style={styles.input}
+                value={validDays}
+                onChangeText={setValidDays}
+                placeholder="30"
+                keyboardType="numeric"
+                placeholderTextColor={Colors.textLight}
+              />
+            </View>
           </View>
           
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Validité (jours)</Text>
-            <TextInput
-              style={styles.input}
-              value={validDays}
-              onChangeText={setValidDays}
-              placeholder="30"
-              keyboardType="numeric"
-              placeholderTextColor={Colors.textLight}
-            />
-          </View>
-        </View>
-        
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>📋 Éléments du devis</Text>
-            <TouchableOpacity style={styles.addButton} onPress={addItem}>
-              <Plus size={20} color="#fff" />
-            </TouchableOpacity>
-          </View>
-          
-          {items.map((item, index) => (
-            <View key={item.id} style={styles.itemCard}>
-              <View style={styles.itemHeader}>
-                <Text style={styles.itemNumber}>Élément {index + 1}</Text>
-                {items.length > 1 && (
-                  <TouchableOpacity
-                    style={styles.removeButton}
-                    onPress={() => removeItem(item.id)}
-                  >
-                    <Trash2 size={16} color={Colors.error} />
-                  </TouchableOpacity>
-                )}
-              </View>
-              
-              <View style={styles.formGroup}>
-                <Text style={styles.label}>Nom *</Text>
-                <TextInput
-                  style={styles.input}
-                  value={item.name}
-                  onChangeText={(value) => updateItem(item.id, 'name', value)}
-                  placeholder="Ex: Animation musicale"
-                  placeholderTextColor={Colors.textLight}
-                />
-              </View>
-              
-              <View style={styles.formGroup}>
-                <Text style={styles.label}>Description</Text>
-                <TextInput
-                  style={styles.input}
-                  value={item.description}
-                  onChangeText={(value) => updateItem(item.id, 'description', value)}
-                  placeholder="Détails optionnels"
-                  placeholderTextColor={Colors.textLight}
-                />
-              </View>
-              
-              <View style={styles.row}>
-                <View style={styles.halfWidth}>
-                  <Text style={styles.label}>Quantité *</Text>
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>📋 Éléments du devis</Text>
+              <TouchableOpacity style={styles.addButton} onPress={addItem}>
+                <Plus size={20} color="#fff" />
+              </TouchableOpacity>
+            </View>
+            
+            {items.map((item, index) => (
+              <View key={item.id} style={styles.itemCard}>
+                <View style={styles.itemHeader}>
+                  <Text style={styles.itemNumber}>Élément {index + 1}</Text>
+                  {items.length > 1 && (
+                    <TouchableOpacity
+                      style={styles.removeButton}
+                      onPress={() => removeItem(item.id)}
+                    >
+                      <Trash2 size={16} color={Colors.error} />
+                    </TouchableOpacity>
+                  )}
+                </View>
+                
+                <View style={styles.formGroup}>
+                  <Text style={styles.label}>Nom *</Text>
                   <TextInput
                     style={styles.input}
-                    value={item.quantity.toString()}
-                    onChangeText={(value) => updateItem(item.id, 'quantity', parseInt(value) || 1)}
-                    keyboardType="numeric"
+                    value={item.name}
+                    onChangeText={(value) => updateItem(item.id, 'name', value)}
+                    placeholder="Ex: Animation musicale"
                     placeholderTextColor={Colors.textLight}
                   />
                 </View>
                 
-                <View style={styles.halfWidth}>
-                  <Text style={styles.label}>Prix unitaire (€) *</Text>
+                <View style={styles.formGroup}>
+                  <Text style={styles.label}>Description</Text>
                   <TextInput
                     style={styles.input}
-                    value={item.unitPrice.toString()}
-                    onChangeText={(value) => updateItem(item.id, 'unitPrice', parseFloat(value) || 0)}
-                    keyboardType="numeric"
+                    value={item.description}
+                    onChangeText={(value) => updateItem(item.id, 'description', value)}
+                    placeholder="Détails optionnels"
                     placeholderTextColor={Colors.textLight}
                   />
                 </View>
+                
+                <View style={styles.row}>
+                  <View style={styles.halfWidth}>
+                    <Text style={styles.label}>Quantité *</Text>
+                    <TextInput
+                      style={styles.input}
+                      value={item.quantity.toString()}
+                      onChangeText={(value) => updateItem(item.id, 'quantity', parseInt(value) || 1)}
+                      keyboardType="numeric"
+                      placeholderTextColor={Colors.textLight}
+                    />
+                  </View>
+                  
+                  <View style={styles.halfWidth}>
+                    <Text style={styles.label}>Prix unitaire (€) *</Text>
+                    <TextInput
+                      style={styles.input}
+                      value={item.unitPrice.toString()}
+                      onChangeText={(value) => updateItem(item.id, 'unitPrice', parseFloat(value) || 0)}
+                      keyboardType="numeric"
+                      placeholderTextColor={Colors.textLight}
+                    />
+                  </View>
+                </View>
+                
+                <View style={styles.totalRow}>
+                  <Text style={styles.totalLabel}>Total:</Text>
+                  <Text style={styles.totalValue}>{(item.totalPrice || 0).toFixed(2)}€</Text>
+                </View>
               </View>
-              
-              <View style={styles.totalRow}>
-                <Text style={styles.totalLabel}>Total:</Text>
-                <Text style={styles.totalValue}>{item.totalPrice.toFixed(2)}€</Text>
-              </View>
-            </View>
-          ))}
-        </View>
-        
-        <View style={styles.summaryCard}>
-          <View style={styles.summaryRow}>
-            <Calculator size={24} color={Colors.primary} />
-            <Text style={styles.summaryTitle}>Total du devis</Text>
+            ))}
           </View>
-          <Text style={styles.summaryAmount}>{totalAmount.toFixed(2)}€</Text>
-          <Text style={styles.summaryNote}>
-            Valide pendant {validDays} jours
-          </Text>
+          
+          <View style={styles.summaryCard}>
+            <View style={styles.summaryRow}>
+              <Calculator size={24} color={Colors.primary} />
+              <Text style={styles.summaryTitle}>Total du devis</Text>
+            </View>
+            <Text style={styles.summaryAmount}>{totalAmount.toFixed(2)}€</Text>
+            <Text style={styles.summaryNote}>
+              Valide pendant {validDays} jours
+            </Text>
+          </View>
+        </ScrollView>
+        
+        <View style={styles.footer}>
+          <Button
+            title="📤 Envoyer le devis"
+            onPress={handleSubmit}
+            loading={isLoading}
+            fullWidth
+            style={styles.submitButton}
+          />
         </View>
-      </ScrollView>
-      
-      <View style={styles.footer}>
-        <Button
-          title="📤 Envoyer le devis"
-          onPress={handleSubmit}
-          loading={isLoading}
-          fullWidth
-          style={styles.submitButton}
-        />
-      </View>
+      </KeyboardAvoidingView>
     </View>
   );
 }
@@ -341,6 +368,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.backgroundAlt,
+  },
+  keyboardContainer: {
+    flex: 1,
   },
   header: {
     backgroundColor: '#fff',
@@ -371,7 +401,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 120,
+    paddingBottom: 20, // Reduced padding since submit button is fixed
   },
   section: {
     marginBottom: 32,
@@ -509,13 +539,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   footer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
     backgroundColor: '#fff',
     padding: 20,
-    paddingBottom: 34,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
   },

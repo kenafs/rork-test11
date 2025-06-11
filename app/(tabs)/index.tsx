@@ -5,18 +5,19 @@ import { useAuth } from '@/hooks/useAuth';
 import { useListings } from '@/hooks/useListings';
 import { useLocation } from '@/hooks/useLocation';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useFavorites } from '@/hooks/useFavorites';
 import Colors from '@/constants/colors';
 import SearchBar from '@/components/SearchBar';
 import CategoryFilter from '@/components/CategoryFilter';
 import ListingCard from '@/components/ListingCard';
 import LocationPermissionRequest from '@/components/LocationPermissionRequest';
-import { Plus, MapPin, Star, Users, Calendar, Heart, TrendingUp } from 'lucide-react-native';
+import { Plus, MapPin, Star, Users, Calendar, Heart, TrendingUp, Sparkles } from 'lucide-react-native';
 
 export default function HomeScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const { 
-    filteredListings, 
+    filteredListings = [], 
     isLoading, 
     fetchListings, 
     refreshListings,
@@ -37,6 +38,7 @@ export default function HomeScreen() {
     hasPermission
   } = useLocation();
   const { t } = useLanguage();
+  const { favorites } = useFavorites();
   
   const [refreshing, setRefreshing] = useState(false);
   
@@ -82,6 +84,7 @@ export default function HomeScreen() {
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
           }
           showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
         >
           {/* Hero Section */}
           <View style={styles.heroSection}>
@@ -237,6 +240,7 @@ export default function HomeScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
       >
         {/* Header */}
         <View style={styles.header}>
@@ -244,22 +248,27 @@ export default function HomeScreen() {
             <Text style={styles.welcomeText}>{getWelcomeMessage()}</Text>
             <Text style={styles.subtitleText}>{getSubtitle()}</Text>
             
-            {/* Stats Row */}
+            {/* Enhanced Stats Row */}
             <View style={styles.statsRow}>
               <View style={styles.statCard}>
-                <Heart size={16} color={Colors.secondary} />
-                <Text style={styles.statCardNumber}>24</Text>
+                <Heart size={16} color="#FF6B6B" />
+                <Text style={styles.statCardNumber}>{favorites.length}</Text>
                 <Text style={styles.statCardLabel}>Favoris</Text>
               </View>
               <View style={styles.statCard}>
                 <Star size={16} color="#FFD700" />
-                <Text style={styles.statCardNumber}>4.8</Text>
+                <Text style={styles.statCardNumber}>{user.rating?.toFixed(1) || '4.8'}</Text>
                 <Text style={styles.statCardLabel}>Note</Text>
               </View>
               <View style={styles.statCard}>
                 <TrendingUp size={16} color="#10B981" />
                 <Text style={styles.statCardNumber}>{safeFilteredListings.length}</Text>
                 <Text style={styles.statCardLabel}>Offres</Text>
+              </View>
+              <View style={styles.statCard}>
+                <Sparkles size={16} color="#8B5CF6" />
+                <Text style={styles.statCardNumber}>12</Text>
+                <Text style={styles.statCardLabel}>En ligne</Text>
               </View>
             </View>
             
@@ -346,6 +355,9 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 120, // Add padding to prevent content being hidden behind tab bar
   },
   heroSection: {
     backgroundColor: Colors.primary,
@@ -445,7 +457,7 @@ const styles = StyleSheet.create({
   },
   statsRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 8,
     marginBottom: 20,
     width: '100%',
   },
@@ -459,14 +471,14 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   statCardNumber: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
     color: '#fff',
     marginTop: 4,
     marginBottom: 2,
   },
   statCardLabel: {
-    fontSize: 11,
+    fontSize: 10,
     color: 'rgba(255, 255, 255, 0.8)',
     fontWeight: '500',
   },
@@ -519,7 +531,7 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    bottom: 20,
+    bottom: 100, // Position above tab bar
     right: 20,
     width: 56,
     height: 56,

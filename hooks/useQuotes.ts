@@ -14,6 +14,7 @@ interface QuotesState {
   deleteQuote: (id: string) => Promise<boolean>;
   acceptQuote: (id: string) => Promise<boolean>;
   rejectQuote: (id: string) => Promise<boolean>;
+  sendQuote: (id: string) => Promise<boolean>;
   getQuotesByUser: (userId: string) => Quote[];
   getQuotesForUser: (userId: string) => Quote[];
 }
@@ -57,7 +58,7 @@ export const useQuotes = create<QuotesState>()(
           const user = useAuth.getState().user;
           if (!user) throw new Error('User must be logged in to create a quote');
           
-          const subtotal = quoteData.items.reduce((sum, item) => sum + item.total, 0);
+          const subtotal = quoteData.items.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
           const tax = subtotal * 0.2;
           const totalAmount = subtotal + tax;
           
@@ -142,6 +143,14 @@ export const useQuotes = create<QuotesState>()(
           set({ isLoading: false });
           return false;
         }
+      },
+      
+      sendQuote: async (id: string) => {
+        const result = await get().updateQuote(id, { status: 'pending' });
+        if (result) {
+          console.log('Devis envoyé:', id);
+        }
+        return result;
       },
       
       acceptQuote: async (id: string) => {

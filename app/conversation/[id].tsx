@@ -387,7 +387,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'flex-end',
     gap: 12,
-    paddingBottom: Platform.OS === 'ios' ? 34 : 16,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
   },
   inputWrapper: {
     flex: 1,
@@ -398,6 +400,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     maxHeight: 100,
+    minHeight: 44,
   },
   textInput: {
     flex: 1,
@@ -405,6 +408,7 @@ const styles = StyleSheet.create({
     color: Colors.text,
     paddingVertical: 8,
     maxHeight: 80,
+    minHeight: 20,
   },
   attachButton: {
     padding: 8,

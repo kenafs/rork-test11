@@ -36,36 +36,41 @@ export default function CategoryFilter({ selectedCategory, onSelectCategory }: C
       ];
   
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.container}
-    >
-      {categories.map((category) => (
-        <TouchableOpacity
-          key={category.id}
-          style={[
-            styles.categoryButton,
-            selectedCategory === category.id && styles.selectedCategory,
-          ]}
-          onPress={() => handleCategoryPress(category)}
-          activeOpacity={0.7}
-        >
-          <Text
+    <View style={styles.wrapper}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.container}
+      >
+        {categories.map((category) => (
+          <TouchableOpacity
+            key={category.id}
             style={[
-              styles.categoryText,
-              selectedCategory === category.id && styles.selectedCategoryText,
+              styles.categoryButton,
+              selectedCategory === category.id && styles.selectedCategory,
             ]}
+            onPress={() => handleCategoryPress(category)}
+            activeOpacity={0.7}
           >
-            {category.name}
-          </Text>
-        </TouchableOpacity>
-      ))}
-    </ScrollView>
+            <Text
+              style={[
+                styles.categoryText,
+                selectedCategory === category.id && styles.selectedCategoryText,
+              ]}
+            >
+              {category.name}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  wrapper: {
+    backgroundColor: '#fff',
+  },
   container: {
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -77,9 +82,12 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: Colors.backgroundAlt,
     marginRight: 8,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   selectedCategory: {
     backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
   },
   categoryText: {
     fontSize: 14,
@@ -88,5 +96,6 @@ const styles = StyleSheet.create({
   },
   selectedCategoryText: {
     color: '#fff',
+    fontWeight: '600',
   },
 });

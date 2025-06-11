@@ -51,8 +51,8 @@ export default function SettingsScreen() {
             try {
               console.log("Starting logout from settings...");
               await logout();
-              console.log("Logout completed, redirecting to home...");
-              // Force navigation to home
+              console.log("Logout completed successfully");
+              // Force navigation to home after logout
               router.dismissAll();
               router.replace("/(tabs)");
             } catch (error) {
@@ -282,7 +282,7 @@ export default function SettingsScreen() {
         headerTitleStyle: { fontWeight: "700" }
       }} />
       
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         <View style={styles.userSection}>
           <View style={styles.userInfo}>
             <View style={styles.avatar}>
@@ -360,6 +360,9 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 120, // Add padding to prevent content being hidden behind tab bar
   },
   userSection: {
     backgroundColor: "#fff",

@@ -48,8 +48,8 @@ export default function ProfileScreen() {
             try {
               console.log('Starting logout from profile...');
               await logout();
-              console.log('Logout completed, redirecting...');
-              // Force navigation to home
+              console.log('Logout completed successfully');
+              // Force navigation to home after logout
               router.dismissAll();
               router.replace('/(tabs)');
             } catch (error) {
@@ -253,6 +253,7 @@ export default function ProfileScreen() {
       case 'accepted': return '#10B981';
       case 'rejected': return '#EF4444';
       case 'pending': return '#F59E0B';
+      case 'draft': return '#6B7280';
       default: return Colors.textLight;
     }
   };
@@ -262,6 +263,7 @@ export default function ProfileScreen() {
       case 'accepted': return 'Accepté';
       case 'rejected': return 'Refusé';
       case 'pending': return 'En attente';
+      case 'draft': return 'Brouillon';
       default: return status;
     }
   };
@@ -278,7 +280,7 @@ export default function ProfileScreen() {
   };
   
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
       <View style={styles.header}>
         <View style={styles.profileImageContainer}>
           {user.profileImage ? (
@@ -441,6 +443,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.backgroundAlt,
+  },
+  scrollContent: {
+    paddingBottom: 120, // Add padding to prevent content being hidden behind tab bar
   },
   header: {
     backgroundColor: '#fff',

@@ -13,7 +13,7 @@ export default function SearchScreen() {
   const { category: initialCategory } = useLocalSearchParams<{ category?: string }>();
   const { 
     listings, 
-    filteredListings, 
+    filteredListings = [], 
     isLoading, 
     fetchListings, 
     filterByCategory, 
@@ -80,6 +80,9 @@ export default function SearchScreen() {
     }
   };
   
+  // Ensure filteredListings is always an array
+  const safeFilteredListings = Array.isArray(filteredListings) ? filteredListings : [];
+  
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -92,10 +95,12 @@ export default function SearchScreen() {
         />
       </View>
       
-      <CategoryFilter
-        selectedCategory={selectedCategory}
-        onSelectCategory={handleCategorySelect}
-      />
+      <View style={styles.categorySection}>
+        <CategoryFilter
+          selectedCategory={selectedCategory}
+          onSelectCategory={handleCategorySelect}
+        />
+      </View>
       
       {city && (
         <View style={styles.locationContainer}>
@@ -113,7 +118,7 @@ export default function SearchScreen() {
       )}
       
       <FlatList
-        data={filteredListings}
+        data={safeFilteredListings}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <ListingCard listing={item} />}
         contentContainerStyle={styles.listContent}
@@ -144,10 +149,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
+    paddingBottom: 8,
+  },
+  categorySection: {
+    backgroundColor: '#fff',
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
   },
   listContent: {
     padding: 20,
     paddingTop: 8,
+    paddingBottom: 120, // Add padding to prevent content being hidden behind tab bar
   },
   locationContainer: {
     flexDirection: 'row',
@@ -155,6 +168,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 8,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
   },
   locationText: {
     fontSize: 14,
