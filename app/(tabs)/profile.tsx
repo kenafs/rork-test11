@@ -207,7 +207,7 @@ export default function ProfileScreen() {
     );
   };
 
-  // Render quotes section (only for providers and clients)
+  // Render quotes section (only for providers and clients, NOT for business)
   const renderQuotesSection = () => {
     if (user.userType === 'business') return null; // No quotes for business accounts
     
@@ -426,7 +426,7 @@ export default function ProfileScreen() {
         </View>
       )}
       
-      {/* Quotes section - only for providers and clients */}
+      {/* Quotes section - only for providers and clients, NOT for business */}
       {renderQuotesSection()}
       
       {/* Settings and logout */}
