@@ -146,7 +146,7 @@ export const useMessages = create<MessagesState>()(
             };
           });
           
-          // Update contact info
+          // Update contact info to ensure it appears in conversation list
           const allUsers = [...mockProviders, ...mockVenues];
           const receiverUser = allUsers.find(u => u.id === receiverId);
           
@@ -215,7 +215,7 @@ export const useMessages = create<MessagesState>()(
             await get().sendMessage(conversationId, initialMessage, participantId);
           }
           
-          // Add contact info
+          // Add contact info to ensure it appears in conversation list
           const allUsers = [...mockProviders, ...mockVenues];
           const participantUser = allUsers.find(u => u.id === participantId);
           

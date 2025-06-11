@@ -53,6 +53,51 @@ const demoAccounts: DemoAccount[] = [
     capacity: 200,
     amenities: ['Jardins', 'Parking', 'Cuisine équipée', 'Terrasse', 'Salon de réception', 'Hébergement'],
   },
+  // Additional Provider Demo Account
+  {
+    userType: 'provider',
+    name: 'Camille Rousseau - Photographe',
+    email: 'camille@photo-events.fr',
+    profileImage: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&auto=format&fit=crop',
+    description: 'Photographe spécialisée dans les événements. Mariages, baptêmes, anniversaires, événements d\'entreprise. Style naturel et authentique.',
+    specialties: 'Photographie, Reportage, Portrait',
+    website: 'photo-events-camille.fr',
+    instagram: '@camille_photo_events',
+    city: 'Marseille',
+    rating: 4.8,
+    reviewCount: 92,
+    services: ['Photographie', 'Reportage', 'Portrait', 'Retouche'],
+    priceRange: { min: 300, max: 1200 },
+    availability: ['Journée', 'Soir', 'Week-end'],
+  },
+  // Additional Business Demo Account
+  {
+    userType: 'business',
+    name: 'Villa Bella Vista',
+    email: 'contact@villa-bellavista.com',
+    profileImage: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&auto=format&fit=crop',
+    description: 'Villa moderne avec vue panoramique sur la mer. Idéale pour mariages, anniversaires et événements privés. Piscine, terrasse et jardin.',
+    address: '25 Corniche des Palmiers, 06400 Cannes',
+    website: 'villa-bellavista.com',
+    instagram: '@villa_bellavista',
+    city: 'Cannes',
+    rating: 4.9,
+    reviewCount: 67,
+    venueType: 'Villa',
+    capacity: 120,
+    amenities: ['Piscine', 'Vue mer', 'Terrasse', 'Jardin', 'Parking', 'Cuisine équipée'],
+  },
+  // Additional Client Demo Account
+  {
+    userType: 'client',
+    name: 'Thomas Leroy',
+    email: 'thomas.leroy@demo.com',
+    profileImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop',
+    description: 'Responsable événementiel en entreprise. Organise régulièrement des séminaires, team building et soirées d\'entreprise.',
+    city: 'Toulouse',
+    rating: 4.6,
+    reviewCount: 28,
+  },
 ];
 
 export default function DemoScreen() {
@@ -137,7 +182,7 @@ export default function DemoScreen() {
               key={index}
               style={[
                 styles.accountCard,
-                selectedAccount?.userType === account.userType && styles.selectedCard
+                selectedAccount?.email === account.email && styles.selectedCard
               ]}
               onPress={() => setSelectedAccount(account)}
             >
@@ -153,9 +198,9 @@ export default function DemoScreen() {
                 </View>
                 <View style={[
                   styles.radioButton,
-                  selectedAccount?.userType === account.userType && styles.radioButtonSelected
+                  selectedAccount?.email === account.email && styles.radioButtonSelected
                 ]}>
-                  {selectedAccount?.userType === account.userType && (
+                  {selectedAccount?.email === account.email && (
                     <View style={styles.radioButtonInner} />
                   )}
                 </View>

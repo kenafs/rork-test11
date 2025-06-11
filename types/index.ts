@@ -122,6 +122,7 @@ export interface Quote {
   title: string;
   description: string;
   price?: number;
+  total: number;
   totalAmount: number;
   currency: string;
   validUntil: number;

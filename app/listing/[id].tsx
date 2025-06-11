@@ -80,7 +80,7 @@ export default function ListingDetailScreen() {
     Alert.alert('Partager', 'Fonctionnalité de partage à implémenter');
   };
   
-  // Handle contact
+  // Handle contact - simplified without initial message
   const handleContact = async () => {
     if (!isAuthenticated) {
       Alert.alert(

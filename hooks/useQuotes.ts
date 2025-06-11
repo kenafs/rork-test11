@@ -65,6 +65,7 @@ export const useQuotes = create<QuotesState>()(
             createdAt: Date.now(),
             updatedAt: Date.now(),
             currency: 'EUR',
+            total: quoteData.totalAmount || quoteData.total || 0,
             ...quoteData,
           };
           
