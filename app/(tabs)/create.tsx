@@ -78,7 +78,7 @@ export default function CreateListingScreen() {
       }
     } catch (error) {
       console.error('Error picking image:', error);
-      Alert.alert('Erreur', 'Impossible de sélectionner l\'image');
+      Alert.alert('Erreur', "Impossible de sélectionner l'image");
     }
   };
   
@@ -158,7 +158,7 @@ export default function CreateListingScreen() {
         'Votre annonce a été publiée avec succès.', 
         [
           { 
-            text: 'Voir l\'annonce', 
+            text: "Voir l'annonce", 
             onPress: () => {
               // Reset form
               setTitle('');

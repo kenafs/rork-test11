@@ -51,7 +51,7 @@ export default function CreateQuoteScreen() {
     if (!listing) {
       Alert.alert(
         'Annonce introuvable',
-        'L\'annonce pour laquelle vous souhaitez créer un devis n\'existe pas.',
+        "L'annonce pour laquelle vous souhaitez créer un devis n'existe pas.",
         [{ text: 'OK', onPress: () => router.back() }]
       );
       return;

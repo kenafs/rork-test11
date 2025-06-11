@@ -77,9 +77,12 @@ export const useListings = create<ListingsState>()(
           const existingListings = get().listings;
           const listingsToUse = existingListings.length > 0 ? existingListings : mockListings;
           
+          const state = get();
+          const filteredListings = state.applyFilters(listingsToUse);
+          
           set({ 
             listings: listingsToUse,
-            filteredListings: listingsToUse,
+            filteredListings: filteredListings,
             isLoading: false 
           });
         } catch (error) {
@@ -112,9 +115,10 @@ export const useListings = create<ListingsState>()(
           
           set(state => {
             const updatedListings = [newListing, ...state.listings];
+            const filteredListings = state.applyFilters(updatedListings);
             return {
               listings: updatedListings,
-              filteredListings: state.applyFilters(updatedListings),
+              filteredListings: filteredListings,
               isLoading: false 
             };
           });
@@ -150,11 +154,14 @@ export const useListings = create<ListingsState>()(
             updatedAt: Date.now(),
           };
           
-          set(state => ({ 
-            listings: updatedListings,
-            filteredListings: state.applyFilters(updatedListings),
-            isLoading: false 
-          }));
+          set(state => {
+            const filteredListings = state.applyFilters(updatedListings);
+            return { 
+              listings: updatedListings,
+              filteredListings: filteredListings,
+              isLoading: false 
+            };
+          });
           
           console.log('Listing updated:', updatedListings[listingIndex]);
           return true;
@@ -175,11 +182,14 @@ export const useListings = create<ListingsState>()(
           const { listings } = get();
           const updatedListings = listings.filter(l => l.id !== id);
           
-          set(state => ({ 
-            listings: updatedListings,
-            filteredListings: state.applyFilters(updatedListings),
-            isLoading: false 
-          }));
+          set(state => {
+            const filteredListings = state.applyFilters(updatedListings);
+            return { 
+              listings: updatedListings,
+              filteredListings: filteredListings,
+              isLoading: false 
+            };
+          });
           
           console.log('Listing deleted:', id);
           return true;
@@ -191,17 +201,23 @@ export const useListings = create<ListingsState>()(
       },
       
       filterBySearch: (query: string) => {
-        set(state => ({
-          searchQuery: query,
-          filteredListings: state.applyFilters(state.listings, query, state.selectedCategory),
-        }));
+        set(state => {
+          const filteredListings = state.applyFilters(state.listings, query, state.selectedCategory);
+          return {
+            searchQuery: query,
+            filteredListings: filteredListings,
+          };
+        });
       },
       
       filterByCategory: (category: string | null) => {
-        set(state => ({
-          selectedCategory: category,
-          filteredListings: state.applyFilters(state.listings, state.searchQuery, category),
-        }));
+        set(state => {
+          const filteredListings = state.applyFilters(state.listings, state.searchQuery, category);
+          return {
+            selectedCategory: category,
+            filteredListings: filteredListings,
+          };
+        });
       },
       
       clearFilters: () => {
