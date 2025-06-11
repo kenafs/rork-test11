@@ -306,10 +306,10 @@ export const useAuth = create<AuthState>()(
           
           // Clear persisted storage
           try {
-            await AsyncStorage.clear();
-            console.log('All storage cleared successfully');
+            await AsyncStorage.removeItem('auth-storage');
+            console.log('Auth storage cleared successfully');
           } catch (storageError) {
-            console.error('Error clearing storage:', storageError);
+            console.error('Error clearing auth storage:', storageError);
           }
           
           console.log('User logged out successfully');

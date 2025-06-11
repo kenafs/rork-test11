@@ -1,11 +1,11 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import Colors from '@/constants/colors';
 import Button from '@/components/Button';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Sparkles, Users, Calendar, Star } from 'lucide-react-native';
+import { Sparkles, Users, Calendar, MessageCircle, Star, ArrowRight } from 'lucide-react-native';
 
 export default function LandingScreen() {
   const router = useRouter();
@@ -18,192 +18,325 @@ export default function LandingScreen() {
     }
   }, [isAuthenticated]);
 
-  const handleGetStarted = () => {
-    router.push('/(auth)/register');
-  };
-
-  const handleLogin = () => {
-    router.push('/(auth)/login');
-  };
-
-  const handleDemo = () => {
-    router.push('/(auth)/demo');
-  };
+  const features = [
+    {
+      icon: Users,
+      title: 'Trouvez des prestataires',
+      description: 'DJ, photographes, traiteurs... Tous les professionnels pour vos événements'
+    },
+    {
+      icon: Calendar,
+      title: 'Organisez vos événements',
+      description: 'Mariages, anniversaires, soirées d\'entreprise... Planifiez facilement'
+    },
+    {
+      icon: MessageCircle,
+      title: 'Communiquez directement',
+      description: 'Échangez avec les prestataires et recevez des devis personnalisés'
+    },
+    {
+      icon: Star,
+      title: 'Avis vérifiés',
+      description: 'Consultez les avis clients pour faire le meilleur choix'
+    }
+  ];
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      {/* Hero Section */}
       <LinearGradient
         colors={[Colors.primary, Colors.secondary] as const}
-        style={styles.gradient}
+        style={styles.heroSection}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
-        <ScrollView contentContainerStyle={styles.content}>
-          {/* Hero Section */}
-          <View style={styles.heroSection}>
-            <View style={styles.iconContainer}>
-              <Sparkles size={48} color="#fff" />
-            </View>
-            
-            <Text style={styles.title}>EventApp</Text>
-            <Text style={styles.subtitle}>
-              La plateforme qui connecte clients, prestataires et établissements pour vos événements
-            </Text>
+        <View style={styles.heroContent}>
+          <View style={styles.heroIcon}>
+            <Sparkles size={40} color="#fff" />
           </View>
-
-          {/* Features */}
-          <View style={styles.featuresSection}>
-            <View style={styles.feature}>
-              <Users size={32} color="#fff" />
-              <Text style={styles.featureTitle}>Mise en relation</Text>
-              <Text style={styles.featureText}>
-                Trouvez facilement des prestataires et établissements près de chez vous
-              </Text>
-            </View>
-
-            <View style={styles.feature}>
-              <Calendar size={32} color="#fff" />
-              <Text style={styles.featureTitle}>Gestion simplifiée</Text>
-              <Text style={styles.featureText}>
-                Organisez vos événements en toute simplicité avec nos outils
-              </Text>
-            </View>
-
-            <View style={styles.feature}>
-              <Star size={32} color="#fff" />
-              <Text style={styles.featureTitle}>Qualité garantie</Text>
-              <Text style={styles.featureText}>
-                Consultez les avis et notes pour choisir les meilleurs prestataires
-              </Text>
-            </View>
-          </View>
-
-          {/* CTA Section */}
-          <View style={styles.ctaSection}>
+          <Text style={styles.heroTitle}>EventApp</Text>
+          <Text style={styles.heroSubtitle}>
+            La plateforme qui connecte clients, prestataires et établissements pour des événements réussis
+          </Text>
+          
+          <View style={styles.heroButtons}>
             <Button
               title="Commencer"
-              onPress={handleGetStarted}
+              onPress={() => router.push('/(auth)/register')}
               style={styles.primaryButton}
               textStyle={styles.primaryButtonText}
             />
-            
             <Button
-              title="Se connecter"
+              title="Essayer la démo"
               variant="outline"
-              onPress={handleLogin}
-              style={styles.secondaryButton}
-              textStyle={styles.secondaryButtonText}
+              onPress={() => router.push('/(auth)/demo')}
+              style={styles.demoButton}
+              textStyle={styles.demoButtonText}
             />
+          </View>
+        </View>
+      </LinearGradient>
+
+      {/* Features Section */}
+      <View style={styles.featuresSection}>
+        <Text style={styles.sectionTitle}>Pourquoi choisir EventApp ?</Text>
+        
+        {features.map((feature, index) => (
+          <View key={index} style={styles.featureCard}>
+            <View style={styles.featureIcon}>
+              <feature.icon size={24} color={Colors.primary} />
+            </View>
+            <View style={styles.featureContent}>
+              <Text style={styles.featureTitle}>{feature.title}</Text>
+              <Text style={styles.featureDescription}>{feature.description}</Text>
+            </View>
+          </View>
+        ))}
+      </View>
+
+      {/* User Types Section */}
+      <View style={styles.userTypesSection}>
+        <Text style={styles.sectionTitle}>Pour qui ?</Text>
+        
+        <View style={styles.userTypeCard}>
+          <Text style={styles.userTypeTitle}>👤 Clients</Text>
+          <Text style={styles.userTypeDescription}>
+            Trouvez facilement des prestataires et établissements pour vos événements. 
+            Comparez les offres et recevez des devis personnalisés.
+          </Text>
+        </View>
+        
+        <View style={styles.userTypeCard}>
+          <Text style={styles.userTypeTitle}>💼 Prestataires</Text>
+          <Text style={styles.userTypeDescription}>
+            Proposez vos services, créez des devis et développez votre clientèle. 
+            DJ, photographes, traiteurs, animateurs...
+          </Text>
+        </View>
+        
+        <View style={styles.userTypeCard}>
+          <Text style={styles.userTypeTitle}>🏢 Établissements</Text>
+          <Text style={styles.userTypeDescription}>
+            Proposez votre lieu pour des événements. Restaurants, salles de réception, 
+            châteaux, domaines...
+          </Text>
+        </View>
+      </View>
+
+      {/* CTA Section */}
+      <View style={styles.ctaSection}>
+        <LinearGradient
+          colors={[Colors.primary, Colors.secondary] as const}
+          style={styles.ctaGradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        >
+          <Text style={styles.ctaTitle}>Prêt à commencer ?</Text>
+          <Text style={styles.ctaSubtitle}>
+            Rejoignez EventApp et donnez vie à vos événements
+          </Text>
+          
+          <View style={styles.ctaButtons}>
+            <TouchableOpacity
+              style={styles.ctaButton}
+              onPress={() => router.push('/(auth)/register')}
+            >
+              <Text style={styles.ctaButtonText}>Créer un compte</Text>
+              <ArrowRight size={20} color="#fff" />
+            </TouchableOpacity>
             
-            <TouchableOpacity style={styles.demoButton} onPress={handleDemo}>
-              <Text style={styles.demoButtonText}>✨ Essayer avec un compte démo</Text>
+            <TouchableOpacity
+              style={styles.loginLink}
+              onPress={() => router.push('/(auth)/login')}
+            >
+              <Text style={styles.loginLinkText}>Déjà inscrit ? Se connecter</Text>
             </TouchableOpacity>
           </View>
-        </ScrollView>
-      </LinearGradient>
-    </View>
+        </LinearGradient>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  gradient: {
-    flex: 1,
-  },
-  content: {
-    flexGrow: 1,
-    padding: 24,
-    justifyContent: 'center',
+    backgroundColor: '#fff',
   },
   heroSection: {
-    alignItems: 'center',
-    marginBottom: 48,
+    paddingTop: Platform.OS === 'ios' ? 60 : 40,
+    paddingBottom: 60,
+    paddingHorizontal: 20,
   },
-  iconContainer: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
+  heroContent: {
+    alignItems: 'center',
+  },
+  heroIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 24,
   },
-  title: {
-    fontSize: 42,
+  heroTitle: {
+    fontSize: 36,
     fontWeight: '900',
     color: '#fff',
     marginBottom: 16,
     textAlign: 'center',
   },
-  subtitle: {
+  heroSubtitle: {
     fontSize: 18,
     color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
     lineHeight: 26,
-    marginHorizontal: 20,
-  },
-  featuresSection: {
-    marginBottom: 48,
-  },
-  feature: {
-    alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 40,
     paddingHorizontal: 20,
   },
-  featureTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#fff',
-    marginTop: 16,
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  featureText: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
-    textAlign: 'center',
-    lineHeight: 24,
-  },
-  ctaSection: {
+  heroButtons: {
+    width: '100%',
     gap: 16,
   },
   primaryButton: {
     backgroundColor: '#fff',
     borderRadius: 16,
-    paddingVertical: 18,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    paddingVertical: 16,
   },
   primaryButtonText: {
     color: Colors.primary,
     fontSize: 18,
     fontWeight: '700',
   },
-  secondaryButton: {
+  demoButton: {
     borderColor: '#fff',
     borderWidth: 2,
     borderRadius: 16,
-    paddingVertical: 18,
+    paddingVertical: 16,
     backgroundColor: 'transparent',
   },
-  secondaryButtonText: {
+  demoButtonText: {
     color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  featuresSection: {
+    padding: 20,
+    paddingTop: 40,
+  },
+  sectionTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: Colors.text,
+    textAlign: 'center',
+    marginBottom: 32,
+  },
+  featureCard: {
+    flexDirection: 'row',
+    backgroundColor: Colors.backgroundAlt,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    alignItems: 'center',
+  },
+  featureIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  featureContent: {
+    flex: 1,
+  },
+  featureTitle: {
     fontSize: 18,
     fontWeight: '600',
+    color: Colors.text,
+    marginBottom: 4,
   },
-  demoButton: {
+  featureDescription: {
+    fontSize: 14,
+    color: Colors.textLight,
+    lineHeight: 20,
+  },
+  userTypesSection: {
+    padding: 20,
+    backgroundColor: Colors.backgroundAlt,
+  },
+  userTypeCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  userTypeTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: Colors.text,
+    marginBottom: 12,
+  },
+  userTypeDescription: {
+    fontSize: 16,
+    color: Colors.textLight,
+    lineHeight: 24,
+  },
+  ctaSection: {
+    margin: 20,
+    borderRadius: 24,
+    overflow: 'hidden',
+  },
+  ctaGradient: {
+    padding: 32,
     alignItems: 'center',
-    paddingVertical: 16,
-    marginTop: 8,
   },
-  demoButtonText: {
+  ctaTitle: {
+    fontSize: 28,
+    fontWeight: '900',
+    color: '#fff',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  ctaSubtitle: {
     fontSize: 16,
     color: 'rgba(255, 255, 255, 0.9)',
-    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 32,
+    lineHeight: 24,
+  },
+  ctaButtons: {
+    width: '100%',
+    alignItems: 'center',
+  },
+  ctaButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 16,
+    marginBottom: 16,
+    gap: 8,
+  },
+  ctaButtonText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  loginLink: {
+    paddingVertical: 12,
+  },
+  loginLinkText: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.8)',
+    textDecorationLine: 'underline',
   },
 });

@@ -8,7 +8,7 @@ import Button from '@/components/Button';
 import { User, Building, Briefcase } from 'lucide-react-native';
 
 const demoAccounts: DemoAccount[] = [
-  // Client Demo Account
+  // Client Demo Accounts
   {
     userType: 'client',
     name: 'Sophie Martin',
@@ -19,7 +19,28 @@ const demoAccounts: DemoAccount[] = [
     rating: 4.7,
     reviewCount: 15,
   },
-  // Provider Demo Account
+  {
+    userType: 'client',
+    name: 'Thomas Leroy',
+    email: 'thomas.leroy@demo.com',
+    profileImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop',
+    description: 'Responsable événementiel en entreprise. Organise régulièrement des séminaires, team building et soirées d\'entreprise.',
+    city: 'Toulouse',
+    rating: 4.6,
+    reviewCount: 28,
+  },
+  {
+    userType: 'client',
+    name: 'Emma Dubois',
+    email: 'emma.dubois@demo.com',
+    profileImage: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&auto=format&fit=crop',
+    description: 'Future mariée en recherche de prestataires pour son mariage. Passionnée par l\'organisation d\'événements.',
+    city: 'Lyon',
+    rating: 4.8,
+    reviewCount: 12,
+  },
+  
+  // Provider Demo Accounts
   {
     userType: 'provider',
     name: 'Alexandre Dubois - DJ Pro',
@@ -36,24 +57,6 @@ const demoAccounts: DemoAccount[] = [
     priceRange: { min: 400, max: 2000 },
     availability: ['Soir', 'Week-end', 'Jours fériés'],
   },
-  // Business Demo Account
-  {
-    userType: 'business',
-    name: 'Château de Malmaison',
-    email: 'events@chateau-malmaison.fr',
-    profileImage: 'https://images.unsplash.com/photo-1519167758481-83f29c8e8d4b?w=800&auto=format&fit=crop',
-    description: 'Château historique du 18ème siècle proposant ses salons et jardins pour vos événements d\'exception. Mariages, séminaires, réceptions.',
-    address: '1 Avenue du Château, 92500 Rueil-Malmaison',
-    website: 'chateau-malmaison-events.fr',
-    instagram: '@chateau_malmaison_events',
-    city: 'Rueil-Malmaison',
-    rating: 4.8,
-    reviewCount: 89,
-    venueType: 'Château',
-    capacity: 200,
-    amenities: ['Jardins', 'Parking', 'Cuisine équipée', 'Terrasse', 'Salon de réception', 'Hébergement'],
-  },
-  // Additional Provider Demo Account
   {
     userType: 'provider',
     name: 'Camille Rousseau - Photographe',
@@ -70,7 +73,40 @@ const demoAccounts: DemoAccount[] = [
     priceRange: { min: 300, max: 1200 },
     availability: ['Journée', 'Soir', 'Week-end'],
   },
-  // Additional Business Demo Account
+  {
+    userType: 'provider',
+    name: 'Julien Moreau - Traiteur',
+    email: 'julien@traiteur-moreau.fr',
+    profileImage: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&auto=format&fit=crop',
+    description: 'Chef traiteur avec 15 ans d\'expérience. Cuisine française raffinée pour tous vos événements. Service complet avec personnel.',
+    specialties: 'Traiteur, Cuisine française, Service',
+    website: 'traiteur-moreau.fr',
+    instagram: '@traiteur_moreau',
+    city: 'Nice',
+    rating: 4.9,
+    reviewCount: 203,
+    services: ['Traiteur', 'Service', 'Cuisine française', 'Buffet'],
+    priceRange: { min: 25, max: 80 },
+    availability: ['Journée', 'Soir', 'Week-end'],
+  },
+  
+  // Business Demo Accounts
+  {
+    userType: 'business',
+    name: 'Château de Malmaison',
+    email: 'events@chateau-malmaison.fr',
+    profileImage: 'https://images.unsplash.com/photo-1519167758481-83f29c8e8d4b?w=800&auto=format&fit=crop',
+    description: 'Château historique du 18ème siècle proposant ses salons et jardins pour vos événements d\'exception. Mariages, séminaires, réceptions.',
+    address: '1 Avenue du Château, 92500 Rueil-Malmaison',
+    website: 'chateau-malmaison-events.fr',
+    instagram: '@chateau_malmaison_events',
+    city: 'Rueil-Malmaison',
+    rating: 4.8,
+    reviewCount: 89,
+    venueType: 'Château',
+    capacity: 200,
+    amenities: ['Jardins', 'Parking', 'Cuisine équipée', 'Terrasse', 'Salon de réception', 'Hébergement'],
+  },
   {
     userType: 'business',
     name: 'Villa Bella Vista',
@@ -87,16 +123,21 @@ const demoAccounts: DemoAccount[] = [
     capacity: 120,
     amenities: ['Piscine', 'Vue mer', 'Terrasse', 'Jardin', 'Parking', 'Cuisine équipée'],
   },
-  // Additional Client Demo Account
   {
-    userType: 'client',
-    name: 'Thomas Leroy',
-    email: 'thomas.leroy@demo.com',
-    profileImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop',
-    description: 'Responsable événementiel en entreprise. Organise régulièrement des séminaires, team building et soirées d\'entreprise.',
-    city: 'Toulouse',
-    rating: 4.6,
-    reviewCount: 28,
+    userType: 'business',
+    name: 'Domaine des Oliviers',
+    email: 'contact@domaine-oliviers.fr',
+    profileImage: 'https://images.unsplash.com/photo-1464207687429-7505649dae38?w=800&auto=format&fit=crop',
+    description: 'Domaine viticole en Provence avec salle de réception et vignobles. Cadre authentique pour mariages et événements d\'entreprise.',
+    address: '123 Route des Vignes, 84000 Avignon',
+    website: 'domaine-oliviers.fr',
+    instagram: '@domaine_oliviers',
+    city: 'Avignon',
+    rating: 4.7,
+    reviewCount: 134,
+    venueType: 'Domaine viticole',
+    capacity: 150,
+    amenities: ['Vignobles', 'Salle de réception', 'Terrasse', 'Parking', 'Dégustation'],
   },
 ];
 
@@ -159,6 +200,13 @@ export default function DemoScreen() {
     }
   };
 
+  // Group accounts by type
+  const groupedAccounts = {
+    client: demoAccounts.filter(acc => acc.userType === 'client'),
+    provider: demoAccounts.filter(acc => acc.userType === 'provider'),
+    business: demoAccounts.filter(acc => acc.userType === 'business'),
+  };
+
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ 
@@ -176,10 +224,64 @@ export default function DemoScreen() {
           </Text>
         </View>
 
-        <View style={styles.accountsContainer}>
-          {demoAccounts.map((account, index) => (
+        {/* Client Accounts */}
+        <View style={styles.typeSection}>
+          <Text style={styles.typeTitle}>👤 Comptes Client</Text>
+          <Text style={styles.typeDescription}>
+            Recherchez et contactez des prestataires pour vos événements
+          </Text>
+          {groupedAccounts.client.map((account, index) => (
             <TouchableOpacity
-              key={index}
+              key={`client-${index}`}
+              style={[
+                styles.accountCard,
+                selectedAccount?.email === account.email && styles.selectedCard
+              ]}
+              onPress={() => setSelectedAccount(account)}
+            >
+              <View style={styles.accountHeader}>
+                <View style={styles.accountIcon}>
+                  {getAccountIcon(account.userType)}
+                </View>
+                <View style={styles.accountInfo}>
+                  <Text style={styles.accountType}>
+                    {getAccountTypeLabel(account.userType)}
+                  </Text>
+                  <Text style={styles.accountName}>{account.name}</Text>
+                </View>
+                <View style={[
+                  styles.radioButton,
+                  selectedAccount?.email === account.email && styles.radioButtonSelected
+                ]}>
+                  {selectedAccount?.email === account.email && (
+                    <View style={styles.radioButtonInner} />
+                  )}
+                </View>
+              </View>
+              
+              <Text style={styles.accountDescription}>
+                {account.description}
+              </Text>
+              
+              <View style={styles.accountDetails}>
+                <Text style={styles.accountLocation}>📍 {account.city}</Text>
+                <Text style={styles.accountRating}>
+                  ⭐ {account.rating} ({account.reviewCount} avis)
+                </Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Provider Accounts */}
+        <View style={styles.typeSection}>
+          <Text style={styles.typeTitle}>💼 Comptes Prestataire</Text>
+          <Text style={styles.typeDescription}>
+            Proposez vos services et créez des devis pour vos clients
+          </Text>
+          {groupedAccounts.provider.map((account, index) => (
+            <TouchableOpacity
+              key={`provider-${index}`}
               style={[
                 styles.accountCard,
                 selectedAccount?.email === account.email && styles.selectedCard
@@ -217,7 +319,7 @@ export default function DemoScreen() {
                 </Text>
               </View>
               
-              {account.userType === 'provider' && account.services && (
+              {account.services && (
                 <View style={styles.servicesList}>
                   {account.services.slice(0, 3).map((service, serviceIndex) => (
                     <View key={serviceIndex} style={styles.serviceTag}>
@@ -226,8 +328,57 @@ export default function DemoScreen() {
                   ))}
                 </View>
               )}
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Business Accounts */}
+        <View style={styles.typeSection}>
+          <Text style={styles.typeTitle}>🏢 Comptes Établissement</Text>
+          <Text style={styles.typeDescription}>
+            Proposez votre lieu pour des événements et réceptions
+          </Text>
+          {groupedAccounts.business.map((account, index) => (
+            <TouchableOpacity
+              key={`business-${index}`}
+              style={[
+                styles.accountCard,
+                selectedAccount?.email === account.email && styles.selectedCard
+              ]}
+              onPress={() => setSelectedAccount(account)}
+            >
+              <View style={styles.accountHeader}>
+                <View style={styles.accountIcon}>
+                  {getAccountIcon(account.userType)}
+                </View>
+                <View style={styles.accountInfo}>
+                  <Text style={styles.accountType}>
+                    {getAccountTypeLabel(account.userType)}
+                  </Text>
+                  <Text style={styles.accountName}>{account.name}</Text>
+                </View>
+                <View style={[
+                  styles.radioButton,
+                  selectedAccount?.email === account.email && styles.radioButtonSelected
+                ]}>
+                  {selectedAccount?.email === account.email && (
+                    <View style={styles.radioButtonInner} />
+                  )}
+                </View>
+              </View>
               
-              {account.userType === 'business' && account.amenities && (
+              <Text style={styles.accountDescription}>
+                {account.description}
+              </Text>
+              
+              <View style={styles.accountDetails}>
+                <Text style={styles.accountLocation}>📍 {account.city}</Text>
+                <Text style={styles.accountRating}>
+                  ⭐ {account.rating} ({account.reviewCount} avis)
+                </Text>
+              </View>
+              
+              {account.amenities && (
                 <View style={styles.servicesList}>
                   {account.amenities.slice(0, 3).map((amenity, amenityIndex) => (
                     <View key={amenityIndex} style={styles.serviceTag}>
@@ -285,15 +436,27 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 24,
   },
-  accountsContainer: {
-    padding: 20,
-    paddingTop: 0,
-    gap: 16,
+  typeSection: {
+    marginBottom: 32,
+    paddingHorizontal: 20,
+  },
+  typeTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: Colors.text,
+    marginBottom: 8,
+  },
+  typeDescription: {
+    fontSize: 14,
+    color: Colors.textLight,
+    marginBottom: 16,
+    lineHeight: 20,
   },
   accountCard: {
     backgroundColor: '#fff',
     borderRadius: 16,
     padding: 20,
+    marginBottom: 16,
     borderWidth: 2,
     borderColor: Colors.border,
     shadowColor: '#000',
