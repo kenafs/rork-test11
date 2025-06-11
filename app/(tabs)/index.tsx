@@ -1,318 +1,159 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, RefreshControl, Alert } from 'react-native';
+import React, { useEffect } from 'react';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useListings } from '@/hooks/useListings';
 import { useLocation } from '@/hooks/useLocation';
-import { useLanguage } from '@/hooks/useLanguage';
 import Colors from '@/constants/colors';
 import SearchBar from '@/components/SearchBar';
 import CategoryFilter from '@/components/CategoryFilter';
 import ListingCard from '@/components/ListingCard';
 import LocationPermissionRequest from '@/components/LocationPermissionRequest';
-import { Plus, MapPin, Star, Users, Calendar } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { MapPin, Plus, Sparkles } from 'lucide-react-native';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { 
     filteredListings, 
     isLoading, 
     fetchListings, 
     refreshListings,
-    filterByCategory, 
-    filterBySearch, 
-    filterByLocation,
-    selectedCategory,
-    searchQuery 
+    filterBySearch,
+    filterByCategory 
   } = useListings();
   const { 
     latitude, 
     longitude, 
     city, 
-    error, 
-    isLoading: locationLoading, 
-    permissionStatus,
-    requestPermission,
-    hasPermission
+    hasPermission, 
+    requestPermission 
   } = useLocation();
-  const { t } = useLanguage();
-  
-  const [refreshing, setRefreshing] = useState(false);
-  
+
+  // Fetch listings on component mount
   useEffect(() => {
     fetchListings();
   }, []);
-  
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    await refreshListings();
-    setRefreshing(false);
-  };
-  
-  const handleLocationPress = () => {
-    if (!hasPermission) {
-      requestPermission();
-    } else if (latitude && longitude) {
-      filterByLocation(latitude, longitude);
-      Alert.alert('Localisation', `Filtrage par votre position: ${city || 'Position actuelle'}`);
+
+  // Redirect to landing if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.replace('/');
     }
-  };
-  
+  }, [isAuthenticated]);
+
   const handleSearch = (query: string) => {
     filterBySearch(query);
   };
-  
-  const handleClearSearch = () => {
-    filterBySearch('');
+
+  const handleCategoryFilter = (category: string) => {
+    filterByCategory(category);
   };
-  
-  // Landing page for non-authenticated users
-  if (!user) {
-    return (
-      <View style={styles.container}>
-        <Stack.Screen options={{ headerShown: false }} />
-        
-        <ScrollView 
-          style={styles.content}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-          }
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Hero Section */}
-          <View style={styles.heroSection}>
-            <View style={styles.heroContent}>
-              <Text style={styles.heroTitle}>Trouvez le prestataire parfait pour votre événement</Text>
-              <Text style={styles.heroSubtitle}>
-                Connectez-vous avec les meilleurs DJ, traiteurs, photographes et lieux d'événements
-              </Text>
-              
-              <View style={styles.heroStats}>
-                <View style={styles.statItem}>
-                  <Star size={20} color={Colors.secondary} />
-                  <Text style={styles.statNumber}>4.8</Text>
-                  <Text style={styles.statLabel}>Note moyenne</Text>
-                </View>
-                <View style={styles.statItem}>
-                  <Users size={20} color={Colors.secondary} />
-                  <Text style={styles.statNumber}>500+</Text>
-                  <Text style={styles.statLabel}>Prestataires</Text>
-                </View>
-                <View style={styles.statItem}>
-                  <Calendar size={20} color={Colors.secondary} />
-                  <Text style={styles.statNumber}>1000+</Text>
-                  <Text style={styles.statLabel}>Événements</Text>
-                </View>
-              </View>
-              
-              <View style={styles.heroActions}>
-                <TouchableOpacity 
-                  style={styles.primaryButton}
-                  onPress={() => router.push('/(auth)/demo')}
-                >
-                  <Text style={styles.primaryButtonText}>Essayer la démo</Text>
-                </TouchableOpacity>
-                
-                <TouchableOpacity 
-                  style={styles.secondaryButton}
-                  onPress={() => router.push('/(auth)/login')}
-                >
-                  <Text style={styles.secondaryButtonText}>Se connecter</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-          
-          {/* Search Bar */}
-          <SearchBar
-            value={searchQuery}
-            onChangeText={handleSearch}
-            onClear={handleClearSearch}
-            onLocationPress={handleLocationPress}
-            placeholder="Rechercher un prestataire..."
-          />
-          
-          {/* Location Permission Request */}
-          {!hasPermission && (
-            <LocationPermissionRequest onRequestPermission={requestPermission} />
-          )}
-          
-          {/* Category Filter */}
-          <CategoryFilter
-            selectedCategory={selectedCategory}
-            onSelectCategory={filterByCategory}
-          />
-          
-          {/* Listings */}
-          <View style={styles.listingsContainer}>
-            <View style={styles.listingsHeader}>
-              <Text style={styles.listingsTitle}>
-                {selectedCategory ? 'Résultats filtrés' : 'Annonces récentes'}
-              </Text>
-              <Text style={styles.listingsCount}>
-                {filteredListings.length} résultat{filteredListings.length > 1 ? 's' : ''}
-              </Text>
-            </View>
-            
-            {filteredListings.map((listing) => (
-              <ListingCard
-                key={listing.id}
-                listing={listing}
-              />
-            ))}
-            
-            {filteredListings.length === 0 && !isLoading && (
-              <View style={styles.emptyState}>
-                <Text style={styles.emptyTitle}>Aucun résultat</Text>
-                <Text style={styles.emptyText}>
-                  Essayez de modifier vos critères de recherche
-                </Text>
-              </View>
-            )}
-          </View>
-        </ScrollView>
-      </View>
-    );
+
+  const handleRefresh = async () => {
+    await refreshListings();
+  };
+
+  if (!isAuthenticated || !user) {
+    return null; // Will redirect via useEffect
   }
-  
-  // Authenticated user experience
-  const getWelcomeMessage = () => {
-    switch (user.userType) {
-      case 'provider':
-        return `Bonjour ${user.name.split(' ')[0]} 👋`;
-      case 'business':
-        return `Bienvenue ${user.name} 🏢`;
-      case 'client':
-        return `Salut ${user.name.split(' ')[0]} 😊`;
-      default:
-        return `Bonjour ${user.name.split(' ')[0]} 👋`;
-    }
-  };
-  
-  const getSubtitle = () => {
-    switch (user.userType) {
-      case 'provider':
-        return "Gérez vos annonces et développez votre activité";
-      case 'business':
-        return "Proposez vos services et attirez de nouveaux clients";
-      case 'client':
-        return "Trouvez le prestataire parfait pour votre événement";
-      default:
-        return "Trouvez le prestataire parfait pour votre événement";
-    }
-  };
-  
-  const getCreateButtonText = () => {
-    switch (user.userType) {
-      case 'provider':
-        return "✨ Créer une annonce";
-      case 'business':
-        return "🏢 Ajouter un service";
-      case 'client':
-        return "🔍 Rechercher";
-      default:
-        return "✨ Créer une annonce";
-    }
-  };
-  
-  const handleCreatePress = () => {
-    if (user.userType === 'client') {
-      router.push('/(tabs)/search');
-    } else {
-      router.push('/(tabs)/create');
-    }
-  };
-  
+
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
       
-      <ScrollView 
-        style={styles.content}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-        }
-        showsVerticalScrollIndicator={false}
+      {/* Header */}
+      <LinearGradient
+        colors={[Colors.primary, Colors.secondary]}
+        style={styles.header}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerContent}>
-            <Text style={styles.welcomeText}>{getWelcomeMessage()}</Text>
-            <Text style={styles.subtitleText}>{getSubtitle()}</Text>
-            
-            {user.userType !== 'client' && (
-              <TouchableOpacity 
-                style={styles.createButton}
-                onPress={handleCreatePress}
-                activeOpacity={0.8}
-              >
-                <Plus size={20} color="#fff" />
-                <Text style={styles.createButtonText}>{getCreateButtonText()}</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-        
-        {/* Search Bar */}
-        <SearchBar
-          value={searchQuery}
-          onChangeText={handleSearch}
-          onClear={handleClearSearch}
-          onLocationPress={handleLocationPress}
-          placeholder="Rechercher un prestataire..."
-        />
-        
-        {/* Location Permission Request */}
-        {!hasPermission && (
-          <LocationPermissionRequest onRequestPermission={requestPermission} />
-        )}
-        
-        {/* Category Filter */}
-        <CategoryFilter
-          selectedCategory={selectedCategory}
-          onSelectCategory={filterByCategory}
-        />
-        
-        {/* Listings */}
-        <View style={styles.listingsContainer}>
-          <View style={styles.listingsHeader}>
-            <Text style={styles.listingsTitle}>
-              {selectedCategory ? 'Résultats filtrés' : 'Annonces récentes'}
-            </Text>
-            <Text style={styles.listingsCount}>
-              {filteredListings.length} résultat{filteredListings.length > 1 ? 's' : ''}
+        <View style={styles.headerContent}>
+          <View style={styles.welcomeSection}>
+            <Text style={styles.welcomeText}>Bonjour {user.name.split(' ')[0]} !</Text>
+            <Text style={styles.welcomeSubtext}>
+              {user.userType === 'provider' ? 'Gérez vos services' :
+               user.userType === 'business' ? 'Gérez vos offres' : 'Trouvez vos prestataires'}
             </Text>
           </View>
           
-          {filteredListings.map((listing) => (
-            <ListingCard
-              key={listing.id}
-              listing={listing}
-            />
-          ))}
-          
-          {filteredListings.length === 0 && !isLoading && (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyTitle}>Aucun résultat</Text>
-              <Text style={styles.emptyText}>
-                Essayez de modifier vos critères de recherche
-              </Text>
+          {hasPermission && city && (
+            <View style={styles.locationContainer}>
+              <MapPin size={16} color="rgba(255, 255, 255, 0.9)" />
+              <Text style={styles.locationText}>{city}</Text>
             </View>
           )}
         </View>
-      </ScrollView>
-      
-      {/* Floating Action Button for Clients */}
-      {user && user.userType === 'client' && (
-        <TouchableOpacity 
-          style={styles.fab}
-          onPress={handleCreatePress}
-          activeOpacity={0.8}
-        >
-          <Plus size={24} color="#fff" />
-        </TouchableOpacity>
+      </LinearGradient>
+
+      {/* Location Permission Request */}
+      {!hasPermission && (
+        <LocationPermissionRequest onRequestPermission={requestPermission} />
       )}
+
+      {/* Search and Filters */}
+      <View style={styles.searchSection}>
+        <SearchBar onSearch={handleSearch} />
+        <CategoryFilter onCategorySelect={handleCategoryFilter} />
+      </View>
+
+      {/* Quick Actions */}
+      {user.userType !== 'client' && (
+        <View style={styles.quickActions}>
+          <TouchableOpacity
+            style={styles.quickActionButton}
+            onPress={() => router.push('/(tabs)/create')}
+          >
+            <LinearGradient
+              colors={[Colors.primary, Colors.secondary]}
+              style={styles.quickActionGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <Plus size={20} color="#fff" />
+              <Text style={styles.quickActionText}>
+                {user.userType === 'provider' ? 'Créer une annonce' : 'Publier une offre'}
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Listings */}
+      <ScrollView 
+        style={styles.listingsContainer}
+        refreshControl={
+          <RefreshControl refreshing={isLoading} onRefresh={handleRefresh} />
+        }
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.listingsHeader}>
+          <Sparkles size={20} color={Colors.primary} />
+          <Text style={styles.listingsTitle}>
+            {filteredListings.length > 0 
+              ? `${filteredListings.length} annonce${filteredListings.length > 1 ? 's' : ''} trouvée${filteredListings.length > 1 ? 's' : ''}`
+              : 'Aucune annonce trouvée'
+            }
+          </Text>
+        </View>
+
+        {filteredListings.length > 0 ? (
+          filteredListings.map((listing) => (
+            <ListingCard key={listing.id} listing={listing} />
+          ))
+        ) : (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyTitle}>Aucune annonce disponible</Text>
+            <Text style={styles.emptySubtitle}>
+              Essayez de modifier vos filtres ou revenez plus tard
+            </Text>
+          </View>
+        )}
+
+        <View style={styles.bottomSpacing} />
+      </ScrollView>
     </View>
   );
 }
@@ -322,166 +163,110 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.backgroundAlt,
   },
-  content: {
-    flex: 1,
-  },
-  heroSection: {
-    backgroundColor: Colors.primary,
-    paddingTop: 60,
-    paddingBottom: 40,
-    paddingHorizontal: 20,
-  },
-  heroContent: {
-    alignItems: 'center',
-  },
-  heroTitle: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#fff',
-    textAlign: 'center',
-    marginBottom: 12,
-    lineHeight: 34,
-  },
-  heroSubtitle: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.9)',
-    textAlign: 'center',
-    marginBottom: 32,
-    lineHeight: 22,
-  },
-  heroStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
-    marginBottom: 32,
-  },
-  statItem: {
-    alignItems: 'center',
-  },
-  statNumber: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#fff',
-    marginTop: 8,
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.8)',
-  },
-  heroActions: {
-    flexDirection: 'row',
-    gap: 16,
-    width: '100%',
-  },
-  primaryButton: {
-    flex: 1,
-    backgroundColor: Colors.secondary,
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  primaryButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  secondaryButton: {
-    flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-  },
-  secondaryButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
   header: {
-    backgroundColor: Colors.primary,
-    paddingTop: 60,
-    paddingBottom: 24,
+    paddingTop: 50,
+    paddingBottom: 20,
     paddingHorizontal: 20,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
   },
   headerContent: {
-    alignItems: 'flex-start',
-  },
-  welcomeText: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#fff',
-    marginBottom: 8,
-  },
-  subtitleText: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.9)',
-    marginBottom: 20,
-    lineHeight: 22,
-  },
-  createButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 25,
-    gap: 8,
-  },
-  createButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  listingsContainer: {
-    padding: 16,
-  },
-  listingsHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  welcomeSection: {
+    flex: 1,
+  },
+  welcomeText: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#fff',
+    marginBottom: 4,
+  },
+  welcomeSubtext: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontWeight: '500',
+  },
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    gap: 4,
+  },
+  locationText: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontWeight: '600',
+  },
+  searchSection: {
+    padding: 20,
+    paddingBottom: 10,
+  },
+  quickActions: {
+    paddingHorizontal: 20,
+    marginBottom: 10,
+  },
+  quickActionButton: {
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  quickActionGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    gap: 8,
+  },
+  quickActionText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  listingsContainer: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  listingsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 16,
+    gap: 8,
   },
   listingsTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
     color: Colors.text,
   },
-  listingsCount: {
-    fontSize: 14,
-    color: Colors.textLight,
-  },
   emptyState: {
     alignItems: 'center',
-    padding: 40,
+    paddingVertical: 60,
+    paddingHorizontal: 40,
   },
   emptyTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: '700',
     color: Colors.text,
     marginBottom: 8,
-  },
-  emptyText: {
-    fontSize: 14,
-    color: Colors.textLight,
     textAlign: 'center',
   },
-  fab: {
-    position: 'absolute',
-    bottom: 20,
-    right: 20,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: Colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+  emptySubtitle: {
+    fontSize: 16,
+    color: Colors.textLight,
+    textAlign: 'center',
+    lineHeight: 24,
+  },
+  bottomSpacing: {
+    height: 20,
   },
 });
