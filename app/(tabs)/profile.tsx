@@ -54,10 +54,12 @@ export default function ProfileScreen() {
               console.log('Starting logout from profile...');
               await logout();
               console.log('Logout completed, redirecting...');
+              router.dismissAll();
               router.replace('/');
             } catch (error) {
               console.error('Logout error:', error);
               // Force logout even if there's an error
+              router.dismissAll();
               router.replace('/');
             }
           }
@@ -240,7 +242,7 @@ export default function ProfileScreen() {
                   <Text style={styles.statusText}>{getStatusText(quote.status)}</Text>
                 </View>
               </View>
-              <Text style={styles.quoteTotal}>{quote.total}€</Text>
+              <Text style={styles.quoteTotal}>{quote.total.toFixed(2)}€</Text>
               <Text style={styles.quoteDate}>
                 {new Date(quote.createdAt).toLocaleDateString('fr-FR')}
               </Text>

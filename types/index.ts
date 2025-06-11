@@ -14,21 +14,19 @@ export interface User {
   userType: UserType;
   profileImage?: string;
   description?: string;
-  location?: Location;
-  city?: string;
-  rating?: number;
-  reviewCount?: number;
-  createdAt: number;
-  
-  // Social links
   website?: string;
   instagram?: string;
+  rating?: number;
+  reviewCount?: number;
+  location?: Location;
+  city?: string;
+  createdAt: number;
 }
 
 export interface Provider extends User {
   userType: 'provider';
-  services?: string[];
   specialties?: string;
+  services?: string[];
   priceRange?: {
     min: number;
     max: number;
@@ -38,8 +36,8 @@ export interface Provider extends User {
 
 export interface Venue extends User {
   userType: 'business';
-  venueType?: string;
   address?: string;
+  venueType?: string;
   capacity?: number;
   amenities?: string[];
 }
@@ -49,49 +47,64 @@ export interface Client extends User {
 }
 
 export interface DemoAccount {
+  userType: UserType;
   name: string;
   email: string;
-  userType: UserType;
-  profileImage: string;
+  profileImage?: string;
   description?: string;
-  specialties?: string;
-  address?: string;
-  website?: string;
-  instagram?: string;
+  city: string;
   rating: number;
   reviewCount: number;
-  city: string;
+  
+  // Provider specific
+  specialties?: string;
+  website?: string;
+  instagram?: string;
   services?: string[];
-  venueType?: string;
-  capacity?: number;
-  amenities?: string[];
   priceRange?: {
     min: number;
     max: number;
   };
   availability?: string[];
+  
+  // Business specific
+  address?: string;
+  venueType?: string;
+  capacity?: number;
+  amenities?: string[];
 }
 
 export interface Listing {
   id: string;
   title: string;
   description: string;
-  category: string;
-  price?: number;
-  priceType?: 'fixed' | 'hourly' | 'daily' | 'negotiable';
-  images?: string[];
-  location: Location;
-  tags?: string[];
-  createdAt: number;
-  updatedAt: number;
-  status: 'active' | 'inactive' | 'pending';
   createdBy: string;
   creatorType: UserType;
   creatorName: string;
   creatorImage?: string;
   creatorRating?: number;
   creatorReviewCount?: number;
-  date?: number;
+  location: Location;
+  category: string;
+  price?: number;
+  images: string[];
+  tags: string[];
+  createdAt: number;
+  updatedAt: number;
+  featured?: boolean;
+  status?: 'active' | 'inactive' | 'pending';
+}
+
+export interface Review {
+  id: string;
+  userId: string;
+  userName: string;
+  userImage?: string;
+  targetId: string;
+  targetType: 'user' | 'listing';
+  rating: number;
+  comment: string;
+  createdAt: number;
 }
 
 export interface Message {
@@ -111,46 +124,41 @@ export interface Conversation {
   participants: string[];
   lastMessage?: Message;
   createdAt: number;
-  updatedAt?: number;
-}
-
-export interface Quote {
-  id: string;
-  listingId?: string;
-  clientId: string;
-  providerId: string;
-  title: string;
-  description: string;
-  price?: number;
-  total: number;
-  totalAmount: number;
-  currency: string;
-  validUntil: number;
-  status: 'draft' | 'pending' | 'accepted' | 'rejected' | 'expired';
-  createdAt: number;
   updatedAt: number;
-  items?: QuoteItem[];
 }
 
 export interface QuoteItem {
   id: string;
-  name: string;
-  description?: string;
+  description: string;
   quantity: number;
   unitPrice: number;
-  totalPrice: number;
+  total: number;
 }
 
-export interface Review {
+export interface Quote {
   id: string;
+  providerId: string;
+  clientId: string;
   listingId?: string;
-  userId: string;
-  reviewerId: string;
-  reviewerName: string;
-  reviewerImage?: string;
-  rating: number;
-  comment: string;
+  title: string;
+  description: string;
+  items: QuoteItem[];
+  subtotal: number;
+  tax: number;
+  total: number;
+  currency: string;
+  status: 'pending' | 'accepted' | 'rejected' | 'expired';
+  validUntil: number;
   createdAt: number;
+  updatedAt: number;
+  notes?: string;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
 }
 
 export interface SettingItem {
@@ -161,4 +169,10 @@ export interface SettingItem {
   value?: boolean;
   onToggle?: () => void;
   onPress?: () => void;
+}
+
+export interface Language {
+  code: string;
+  name: string;
+  flag: string;
 }

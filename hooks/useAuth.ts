@@ -13,6 +13,7 @@ interface AuthState {
   register: (userData: Partial<User>, password: string, userType: UserType) => Promise<boolean>;
   logout: () => Promise<void>;
   updateProfile: (updates: Partial<User>) => Promise<boolean>;
+  clearAuth: () => void;
 }
 
 // Mock users for demo
@@ -96,6 +97,7 @@ export const useAuth = create<AuthState>()(
           const user = mockUsers.find(u => u.email === email);
           
           if (user && password === 'password') {
+            console.log('Login successful for user:', user.email);
             set({ 
               user, 
               isAuthenticated: true, 
@@ -104,6 +106,7 @@ export const useAuth = create<AuthState>()(
             return true;
           }
           
+          console.log('Login failed for email:', email);
           set({ isLoading: false });
           return false;
         } catch (error) {
@@ -190,6 +193,7 @@ export const useAuth = create<AuthState>()(
             } as Client;
           }
           
+          console.log('Demo login successful for user:', demoUser.name);
           set({ 
             user: demoUser, 
             isAuthenticated: true, 
@@ -280,6 +284,7 @@ export const useAuth = create<AuthState>()(
             } as Client;
           }
           
+          console.log('Registration successful for user:', newUser.email);
           set({ 
             user: newUser, 
             isAuthenticated: true, 
@@ -304,12 +309,15 @@ export const useAuth = create<AuthState>()(
             isLoading: false
           });
           
-          // Clear persisted storage
+          // Clear persisted storage completely
           try {
             await AsyncStorage.removeItem('auth-storage');
-            console.log('Auth storage cleared successfully');
+            await AsyncStorage.removeItem('messages-storage');
+            await AsyncStorage.removeItem('quotes-storage');
+            await AsyncStorage.removeItem('favorites-storage');
+            console.log('All storage cleared successfully');
           } catch (storageError) {
-            console.error('Error clearing auth storage:', storageError);
+            console.error('Error clearing storage:', storageError);
           }
           
           console.log('User logged out successfully');
@@ -324,6 +332,15 @@ export const useAuth = create<AuthState>()(
         }
       },
       
+      clearAuth: () => {
+        console.log('Clearing auth state...');
+        set({ 
+          user: null, 
+          isAuthenticated: false,
+          isLoading: false
+        });
+      },
+      
       updateProfile: async (updates: Partial<User>) => {
         const { user } = get();
         if (!user) return false;
@@ -335,6 +352,7 @@ export const useAuth = create<AuthState>()(
           await new Promise(resolve => setTimeout(resolve, 1000));
           
           const updatedUser = { ...user, ...updates };
+          console.log('Profile updated for user:', updatedUser.email);
           set({ 
             user: updatedUser, 
             isLoading: false 

@@ -9,7 +9,7 @@ interface QuotesState {
   isLoading: boolean;
   
   fetchQuotes: () => Promise<void>;
-  createQuote: (quoteData: Omit<Quote, 'id' | 'createdAt' | 'updatedAt' | 'currency'>) => Promise<Quote>;
+  createQuote: (quoteData: Omit<Quote, 'id' | 'createdAt' | 'updatedAt' | 'currency' | 'subtotal' | 'tax' | 'total'>) => Promise<Quote>;
   updateQuote: (id: string, updates: Partial<Quote>) => Promise<boolean>;
   deleteQuote: (id: string) => Promise<boolean>;
   acceptQuote: (id: string) => Promise<boolean>;
@@ -60,11 +60,19 @@ export const useQuotes = create<QuotesState>()(
           const user = useAuth.getState().user;
           if (!user) throw new Error('User must be logged in to create a quote');
           
+          // Calculate totals
+          const subtotal = quoteData.items.reduce((sum, item) => sum + item.total, 0);
+          const tax = subtotal * 0.2; // 20% tax
+          const total = subtotal + tax;
+          
           const newQuote: Quote = {
             id: `quote-${Date.now()}-${Math.random()}`,
             createdAt: Date.now(),
             updatedAt: Date.now(),
             currency: 'EUR',
+            subtotal,
+            tax,
+            total,
             ...quoteData,
           };
           

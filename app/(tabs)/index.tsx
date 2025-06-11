@@ -16,7 +16,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const { 
-    filteredListings, 
+    filteredListings = [], 
     isLoading, 
     fetchListings, 
     refreshListings,
@@ -151,18 +151,18 @@ export default function HomeScreen() {
                 {selectedCategory ? 'Résultats filtrés' : 'Annonces récentes'}
               </Text>
               <Text style={styles.listingsCount}>
-                {filteredListings.length} résultat{filteredListings.length > 1 ? 's' : ''}
+                {filteredListings?.length || 0} résultat{(filteredListings?.length || 0) > 1 ? 's' : ''}
               </Text>
             </View>
             
-            {filteredListings.map((listing) => (
-              <ListingCard
-                key={listing.id}
-                listing={listing}
-              />
-            ))}
-            
-            {filteredListings.length === 0 && !isLoading && (
+            {filteredListings && filteredListings.length > 0 ? (
+              filteredListings.map((listing) => (
+                <ListingCard
+                  key={listing.id}
+                  listing={listing}
+                />
+              ))
+            ) : (
               <View style={styles.emptyState}>
                 <Text style={styles.emptyTitle}>Aucun résultat</Text>
                 <Text style={styles.emptyText}>
@@ -281,18 +281,18 @@ export default function HomeScreen() {
               {selectedCategory ? 'Résultats filtrés' : 'Annonces récentes'}
             </Text>
             <Text style={styles.listingsCount}>
-              {filteredListings.length} résultat{filteredListings.length > 1 ? 's' : ''}
+              {filteredListings?.length || 0} résultat{(filteredListings?.length || 0) > 1 ? 's' : ''}
             </Text>
           </View>
           
-          {filteredListings.map((listing) => (
-            <ListingCard
-              key={listing.id}
-              listing={listing}
-            />
-          ))}
-          
-          {filteredListings.length === 0 && !isLoading && (
+          {filteredListings && filteredListings.length > 0 ? (
+            filteredListings.map((listing) => (
+              <ListingCard
+                key={listing.id}
+                listing={listing}
+              />
+            ))
+          ) : (
             <View style={styles.emptyState}>
               <Text style={styles.emptyTitle}>Aucun résultat</Text>
               <Text style={styles.emptyText}>

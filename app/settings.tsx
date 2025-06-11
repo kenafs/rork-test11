@@ -49,12 +49,16 @@ export default function SettingsScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              console.log("Bouton déconnexion pressé dans settings");
+              console.log("Starting logout from settings...");
               await logout();
-              console.log("Logout appelé depuis settings, redirection...");
+              console.log("Logout completed, redirecting to home...");
+              // Force navigation to home and reset navigation stack
+              router.dismissAll();
               router.replace("/");
             } catch (error) {
               console.error('Logout error in settings:', error);
+              // Force logout even if there's an error
+              router.dismissAll();
               router.replace("/");
             }
           }
@@ -71,6 +75,7 @@ export default function SettingsScreen() {
         ...LANGUAGES.map(lang => ({
           text: `${lang.flag} ${lang.name}`,
           onPress: () => {
+            console.log("Setting language to:", lang.code);
             setLanguage(lang.code as any);
             Alert.alert("Langue modifiée", `Langue changée vers ${lang.name}`);
           },
@@ -119,34 +124,38 @@ export default function SettingsScreen() {
   };
 
   const handleDarkModeToggle = () => {
+    console.log("Toggling dark mode from:", darkMode, "to:", !darkMode);
     toggleDarkMode();
     Alert.alert(
       "Mode d'affichage", 
-      darkMode ? "Mode clair activé" : "Mode sombre activé"
+      !darkMode ? "Mode sombre activé" : "Mode clair activé"
     );
   };
 
   const handleNotificationsToggle = () => {
+    console.log("Toggling notifications from:", notifications, "to:", !notifications);
     toggleNotifications();
     Alert.alert(
       "Notifications", 
-      notifications ? "Notifications désactivées" : "Notifications activées"
+      !notifications ? "Notifications activées" : "Notifications désactivées"
     );
   };
 
   const handleEmailNotificationsToggle = () => {
+    console.log("Toggling email notifications from:", emailNotifications, "to:", !emailNotifications);
     toggleEmailNotifications();
     Alert.alert(
       "Notifications email", 
-      emailNotifications ? "Emails désactivés" : "Emails activés"
+      !emailNotifications ? "Emails activés" : "Emails désactivés"
     );
   };
 
   const handlePushNotificationsToggle = () => {
+    console.log("Toggling push notifications from:", pushNotifications, "to:", !pushNotifications);
     togglePushNotifications();
     Alert.alert(
       "Notifications push", 
-      pushNotifications ? "Notifications push désactivées" : "Notifications push activées"
+      !pushNotifications ? "Notifications push activées" : "Notifications push désactivées"
     );
   };
   

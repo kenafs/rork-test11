@@ -1,33 +1,36 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Listing, UserType } from '@/types';
+import { Listing } from '@/types';
 import { mockListings } from '@/mocks/listings';
 
 interface ListingsState {
   listings: Listing[];
+  filteredListings: Listing[];
   isLoading: boolean;
+  selectedCategory: string | null;
   searchQuery: string;
-  selectedCategory: string;
   
   fetchListings: () => Promise<void>;
-  createListing: (listingData: Omit<Listing, 'id' | 'createdAt' | 'updatedAt' | 'status'>) => Promise<Listing>;
+  refreshListings: () => Promise<void>;
+  createListing: (listingData: Omit<Listing, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Listing>;
   updateListing: (id: string, updates: Partial<Listing>) => Promise<boolean>;
   deleteListing: (id: string) => Promise<boolean>;
-  searchListings: (query: string) => void;
-  filterByCategory: (category: string) => void;
-  getFilteredListings: () => Listing[];
+  filterByCategory: (category: string | null) => void;
+  filterBySearch: (query: string) => void;
+  filterByLocation: (latitude: number, longitude: number, radius?: number) => void;
+  getListingById: (id: string) => Listing | undefined;
   getUserListings: (userId: string) => Listing[];
-  refreshListings: () => Promise<void>;
 }
 
 export const useListings = create<ListingsState>()(
   persist(
     (set, get) => ({
       listings: [],
+      filteredListings: [],
       isLoading: false,
+      selectedCategory: null,
       searchQuery: '',
-      selectedCategory: 'all',
       
       fetchListings: async () => {
         set({ isLoading: true });
@@ -36,21 +39,23 @@ export const useListings = create<ListingsState>()(
           // Simulate API call
           await new Promise(resolve => setTimeout(resolve, 1000));
           
-          // Merge mock listings with user-created listings
-          const userListings = get().listings.filter(listing => 
-            !mockListings.find(mock => mock.id === listing.id)
-          );
-          
-          const allListings = [...mockListings, ...userListings];
+          // Get existing listings from state and merge with mock data
+          const existingListings = get().listings;
+          const allListings = [...mockListings, ...existingListings.filter(l => !mockListings.find(m => m.id === l.id))];
           
           set({ 
             listings: allListings,
+            filteredListings: allListings,
             isLoading: false 
           });
         } catch (error) {
           console.error('Error fetching listings:', error);
           set({ isLoading: false });
         }
+      },
+      
+      refreshListings: async () => {
+        await get().fetchListings();
       },
       
       createListing: async (listingData) => {
@@ -68,12 +73,14 @@ export const useListings = create<ListingsState>()(
             ...listingData,
           };
           
-          console.log('Creating new listing:', newListing);
-          
-          set(state => ({
-            listings: [...state.listings, newListing],
-            isLoading: false 
-          }));
+          set(state => {
+            const updatedListings = [newListing, ...state.listings];
+            return {
+              listings: updatedListings,
+              filteredListings: updatedListings,
+              isLoading: false
+            };
+          });
           
           console.log('Listing created successfully:', newListing);
           return newListing;
@@ -89,7 +96,7 @@ export const useListings = create<ListingsState>()(
         
         try {
           // Simulate API call
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise(resolve => setTimeout(resolve, 500));
           
           const { listings } = get();
           const listingIndex = listings.findIndex(l => l.id === id);
@@ -108,6 +115,7 @@ export const useListings = create<ListingsState>()(
           
           set({ 
             listings: updatedListings,
+            filteredListings: updatedListings,
             isLoading: false 
           });
           
@@ -132,6 +140,7 @@ export const useListings = create<ListingsState>()(
           
           set({ 
             listings: updatedListings,
+            filteredListings: updatedListings,
             isLoading: false 
           });
           
@@ -144,64 +153,96 @@ export const useListings = create<ListingsState>()(
         }
       },
       
-      searchListings: (query: string) => {
-        set({ searchQuery: query });
-      },
-      
-      filterByCategory: (category: string) => {
-        set({ selectedCategory: category });
-      },
-      
-      getFilteredListings: () => {
-        const { listings, searchQuery, selectedCategory } = get();
+      filterByCategory: (category: string | null) => {
+        const { listings, searchQuery } = get();
+        let filtered = [...listings];
         
-        let filtered = listings.filter(listing => listing.status === 'active');
-        
-        // Filter by category
-        if (selectedCategory && selectedCategory !== 'all') {
-          filtered = filtered.filter(listing => 
-            listing.category.toLowerCase() === selectedCategory.toLowerCase()
-          );
+        if (category && category !== 'all') {
+          filtered = filtered.filter(listing => listing.category === category);
         }
         
-        // Filter by search query
-        if (searchQuery.trim()) {
+        if (searchQuery) {
           const query = searchQuery.toLowerCase();
           filtered = filtered.filter(listing =>
             listing.title.toLowerCase().includes(query) ||
             listing.description.toLowerCase().includes(query) ||
-            listing.category.toLowerCase().includes(query) ||
             listing.creatorName.toLowerCase().includes(query) ||
-            (listing.tags && listing.tags.some(tag => 
-              tag.toLowerCase().includes(query)
-            )) ||
-            (listing.location && listing.location.city.toLowerCase().includes(query))
+            listing.tags.some(tag => tag.toLowerCase().includes(query))
           );
         }
         
-        // Sort by creation date (newest first)
-        return filtered.sort((a, b) => b.createdAt - a.createdAt);
+        set({ 
+          selectedCategory: category,
+          filteredListings: filtered 
+        });
+      },
+      
+      filterBySearch: (query: string) => {
+        const { listings, selectedCategory } = get();
+        let filtered = [...listings];
+        
+        if (selectedCategory && selectedCategory !== 'all') {
+          filtered = filtered.filter(listing => listing.category === selectedCategory);
+        }
+        
+        if (query) {
+          const searchQuery = query.toLowerCase();
+          filtered = filtered.filter(listing =>
+            listing.title.toLowerCase().includes(searchQuery) ||
+            listing.description.toLowerCase().includes(searchQuery) ||
+            listing.creatorName.toLowerCase().includes(searchQuery) ||
+            listing.tags.some(tag => tag.toLowerCase().includes(searchQuery))
+          );
+        }
+        
+        set({ 
+          searchQuery: query,
+          filteredListings: filtered 
+        });
+      },
+      
+      filterByLocation: (latitude: number, longitude: number, radius: number = 50) => {
+        const { listings } = get();
+        
+        // Calculate distance between two points using Haversine formula
+        const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+          const R = 6371; // Earth's radius in kilometers
+          const dLat = (lat2 - lat1) * Math.PI / 180;
+          const dLon = (lon2 - lon1) * Math.PI / 180;
+          const a = 
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+          return R * c;
+        };
+        
+        const filtered = listings.filter(listing => {
+          const distance = calculateDistance(
+            latitude, 
+            longitude, 
+            listing.location.latitude, 
+            listing.location.longitude
+          );
+          return distance <= radius;
+        });
+        
+        set({ filteredListings: filtered });
+      },
+      
+      getListingById: (id: string) => {
+        return get().listings.find(listing => listing.id === id);
       },
       
       getUserListings: (userId: string) => {
-        const { listings } = get();
-        return listings
-          .filter(listing => listing.createdBy === userId)
-          .sort((a, b) => b.createdAt - a.createdAt);
-      },
-      
-      refreshListings: async () => {
-        await get().fetchListings();
+        return get().listings.filter(listing => listing.createdBy === userId);
       },
     }),
     {
       name: 'listings-storage',
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
-        listings: state.listings.filter(listing => 
-          // Only persist user-created listings, not mock data
-          !mockListings.find(mock => mock.id === listing.id)
-        ),
+        listings: state.listings.filter(l => !l.id.startsWith('mock-')), // Don't persist mock data
       }),
     }
   )

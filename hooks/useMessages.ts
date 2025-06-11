@@ -163,6 +163,11 @@ export const useMessages = create<MessagesState>()(
             });
           }
           
+          // Force refresh conversations to show the new message
+          setTimeout(() => {
+            get().refreshConversations();
+          }, 100);
+          
           console.log('Message sent successfully:', newMessage);
         } catch (error) {
           console.error('Error sending message:', error);
@@ -259,6 +264,7 @@ export const useMessages = create<MessagesState>()(
       },
       
       refreshConversations: async () => {
+        console.log('Refreshing conversations...');
         await get().fetchConversations();
       },
       
@@ -286,6 +292,8 @@ export const useMessages = create<MessagesState>()(
           
           // Sort by timestamp (most recent first)
           updatedContacts.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+          
+          console.log('Updated contacts:', updatedContacts.length);
           
           return {
             contacts: updatedContacts,
@@ -359,7 +367,10 @@ export const useMessages = create<MessagesState>()(
         });
         
         // Sort by timestamp (most recent first)
-        return allContacts.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+        const sortedContacts = allContacts.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+        
+        console.log('Getting all conversations:', sortedContacts.length);
+        return sortedContacts;
       },
     }),
     {
