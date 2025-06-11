@@ -36,10 +36,8 @@ export const useListings = create<ListingsState>()(
         set({ isLoading: true });
         
         try {
-          // Simulate API call
           await new Promise(resolve => setTimeout(resolve, 1000));
           
-          // Get existing listings from state and merge with mock data
           const existingListings = get().listings;
           const allListings = [...mockListings, ...existingListings.filter(l => !mockListings.find(m => m.id === l.id))];
           
@@ -48,9 +46,15 @@ export const useListings = create<ListingsState>()(
             filteredListings: allListings,
             isLoading: false 
           });
+          
+          console.log('Listings fetched successfully:', allListings.length);
         } catch (error) {
           console.error('Error fetching listings:', error);
-          set({ isLoading: false });
+          set({ 
+            listings: mockListings,
+            filteredListings: mockListings,
+            isLoading: false 
+          });
         }
       },
       
@@ -62,7 +66,6 @@ export const useListings = create<ListingsState>()(
         set({ isLoading: true });
         
         try {
-          // Simulate API call
           await new Promise(resolve => setTimeout(resolve, 1500));
           
           const newListing: Listing = {
@@ -72,6 +75,8 @@ export const useListings = create<ListingsState>()(
             status: 'active',
             ...listingData,
           };
+          
+          console.log('Creating new listing:', newListing);
           
           set(state => {
             const updatedListings = [newListing, ...state.listings];
@@ -95,7 +100,6 @@ export const useListings = create<ListingsState>()(
         set({ isLoading: true });
         
         try {
-          // Simulate API call
           await new Promise(resolve => setTimeout(resolve, 500));
           
           const { listings } = get();
@@ -132,7 +136,6 @@ export const useListings = create<ListingsState>()(
         set({ isLoading: true });
         
         try {
-          // Simulate API call
           await new Promise(resolve => setTimeout(resolve, 500));
           
           const { listings } = get();
@@ -175,6 +178,8 @@ export const useListings = create<ListingsState>()(
           selectedCategory: category,
           filteredListings: filtered 
         });
+        
+        console.log('Filtered by category:', category, 'Results:', filtered.length);
       },
       
       filterBySearch: (query: string) => {
@@ -199,14 +204,15 @@ export const useListings = create<ListingsState>()(
           searchQuery: query,
           filteredListings: filtered 
         });
+        
+        console.log('Filtered by search:', query, 'Results:', filtered.length);
       },
       
       filterByLocation: (latitude: number, longitude: number, radius: number = 50) => {
         const { listings } = get();
         
-        // Calculate distance between two points using Haversine formula
         const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-          const R = 6371; // Earth's radius in kilometers
+          const R = 6371;
           const dLat = (lat2 - lat1) * Math.PI / 180;
           const dLon = (lon2 - lon1) * Math.PI / 180;
           const a = 
@@ -228,6 +234,7 @@ export const useListings = create<ListingsState>()(
         });
         
         set({ filteredListings: filtered });
+        console.log('Filtered by location, Results:', filtered.length);
       },
       
       getListingById: (id: string) => {
@@ -242,7 +249,7 @@ export const useListings = create<ListingsState>()(
       name: 'listings-storage',
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
-        listings: state.listings.filter(l => !l.id.startsWith('mock-')), // Don't persist mock data
+        listings: state.listings.filter(l => !l.id.startsWith('mock-')),
       }),
     }
   )

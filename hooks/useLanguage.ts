@@ -139,7 +139,8 @@ export const useLanguage = create<LanguageState>()(
       
       t: (key: string) => {
         const { currentLanguage } = get();
-        return translations[currentLanguage][key as keyof typeof translations.fr] || key;
+        const translation = translations[currentLanguage][key as keyof typeof translations.fr];
+        return translation || key;
       },
     }),
     {

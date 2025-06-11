@@ -45,7 +45,6 @@ export const useMessages = create<MessagesState>()(
         set({ isLoading: true });
         
         try {
-          // Simulate API call
           await new Promise(resolve => setTimeout(resolve, 500));
           
           const user = useAuth.getState().user;
@@ -54,13 +53,14 @@ export const useMessages = create<MessagesState>()(
             return;
           }
           
-          // Get existing conversations from state
           const existingConversations = get().conversations;
           
           set({ 
             conversations: existingConversations,
             isLoading: false 
           });
+          
+          console.log('Conversations fetched:', existingConversations.length);
         } catch (error) {
           console.error('Error fetching conversations:', error);
           set({ isLoading: false });
@@ -71,7 +71,6 @@ export const useMessages = create<MessagesState>()(
         set({ isLoading: true });
         
         try {
-          // Simulate API call
           await new Promise(resolve => setTimeout(resolve, 300));
           
           const user = useAuth.getState().user;
@@ -80,7 +79,6 @@ export const useMessages = create<MessagesState>()(
             return;
           }
           
-          // Get existing messages for this conversation
           const existingMessages = get().messages[conversationId] || [];
           
           set(state => ({
@@ -90,6 +88,8 @@ export const useMessages = create<MessagesState>()(
             },
             isLoading: false,
           }));
+          
+          console.log('Messages fetched for conversation:', conversationId, existingMessages.length);
         } catch (error) {
           console.error('Error fetching messages:', error);
           set({ isLoading: false });
@@ -138,7 +138,6 @@ export const useMessages = create<MessagesState>()(
               return conv;
             });
             
-            // Sort conversations by updatedAt (most recent first)
             updatedConversations.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
             
             return {
@@ -163,12 +162,13 @@ export const useMessages = create<MessagesState>()(
             });
           }
           
-          // Force refresh conversations to show the new message
+          console.log('Message sent successfully:', newMessage);
+          
+          // Force refresh to update UI
           setTimeout(() => {
             get().refreshConversations();
           }, 100);
           
-          console.log('Message sent successfully:', newMessage);
         } catch (error) {
           console.error('Error sending message:', error);
           throw error;
@@ -189,7 +189,6 @@ export const useMessages = create<MessagesState>()(
           
           if (existingConversation) {
             console.log('Existing conversation found:', existingConversation.id);
-            // Send initial message if provided
             if (initialMessage) {
               await get().sendMessage(existingConversation.id, initialMessage, participantId);
             }
@@ -258,6 +257,8 @@ export const useMessages = create<MessagesState>()(
               ),
             },
           }));
+          
+          console.log('Messages marked as read for conversation:', conversationId);
         } catch (error) {
           console.error('Error marking messages as read:', error);
         }
@@ -270,12 +271,10 @@ export const useMessages = create<MessagesState>()(
       
       addContact: (contact: MessageContact) => {
         set(state => {
-          // Check if contact already exists
           const existingContactIndex = state.contacts.findIndex(c => c.participantId === contact.participantId);
           
           let updatedContacts;
           if (existingContactIndex >= 0) {
-            // Update existing contact
             updatedContacts = [...state.contacts];
             updatedContacts[existingContactIndex] = {
               ...updatedContacts[existingContactIndex],
@@ -283,14 +282,12 @@ export const useMessages = create<MessagesState>()(
               timestamp: contact.timestamp || Date.now(),
             };
           } else {
-            // Add new contact
             updatedContacts = [
               { ...contact, timestamp: contact.timestamp || Date.now() },
               ...state.contacts
             ];
           }
           
-          // Sort by timestamp (most recent first)
           updatedContacts.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
           
           console.log('Updated contacts:', updatedContacts.length);
@@ -302,7 +299,6 @@ export const useMessages = create<MessagesState>()(
       },
       
       addMessage: (contact: MessageContact) => {
-        // Alias for addContact for backward compatibility
         get().addContact(contact);
       },
       
@@ -320,17 +316,14 @@ export const useMessages = create<MessagesState>()(
         const user = useAuth.getState().user;
         if (!user) return [];
         
-        // Convert conversations to MessageContact format
         const conversationContacts: MessageContact[] = conversations.map(conv => {
           const otherParticipantId = conv.participants.find(p => p !== user.id) || '';
           const conversationMessages = messages[conv.id] || [];
           const lastMessage = conversationMessages[conversationMessages.length - 1];
           
-          // Find participant info from contacts or users
           let existingContact = contacts.find(c => c.participantId === otherParticipantId);
           
           if (!existingContact) {
-            // Try to find user info from mock data
             const allUsers = [...mockProviders, ...mockVenues];
             const participantUser = allUsers.find(u => u.id === otherParticipantId);
             
@@ -358,7 +351,6 @@ export const useMessages = create<MessagesState>()(
           };
         });
         
-        // Merge with standalone contacts and remove duplicates
         const allContacts = [...conversationContacts];
         contacts.forEach(contact => {
           if (!allContacts.find(c => c.participantId === contact.participantId)) {
@@ -366,7 +358,6 @@ export const useMessages = create<MessagesState>()(
           }
         });
         
-        // Sort by timestamp (most recent first)
         const sortedContacts = allContacts.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
         
         console.log('Getting all conversations:', sortedContacts.length);

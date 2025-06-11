@@ -28,27 +28,31 @@ export const useSettings = create<SettingsState>()(
       pushNotifications: true,
       
       toggleDarkMode: () => {
-        const newValue = !get().darkMode;
+        const currentValue = get().darkMode;
+        const newValue = !currentValue;
         set({ darkMode: newValue });
-        console.log('Dark mode toggled to:', newValue);
+        console.log('Dark mode toggled from:', currentValue, 'to:', newValue);
       },
       
       toggleNotifications: () => {
-        const newValue = !get().notifications;
+        const currentValue = get().notifications;
+        const newValue = !currentValue;
         set({ notifications: newValue });
-        console.log('Notifications toggled to:', newValue);
+        console.log('Notifications toggled from:', currentValue, 'to:', newValue);
       },
       
       toggleEmailNotifications: () => {
-        const newValue = !get().emailNotifications;
+        const currentValue = get().emailNotifications;
+        const newValue = !currentValue;
         set({ emailNotifications: newValue });
-        console.log('Email notifications toggled to:', newValue);
+        console.log('Email notifications toggled from:', currentValue, 'to:', newValue);
       },
       
       togglePushNotifications: () => {
-        const newValue = !get().pushNotifications;
+        const currentValue = get().pushNotifications;
+        const newValue = !currentValue;
         set({ pushNotifications: newValue });
-        console.log('Push notifications toggled to:', newValue);
+        console.log('Push notifications toggled from:', currentValue, 'to:', newValue);
       },
       
       setDarkMode: (value: boolean) => {

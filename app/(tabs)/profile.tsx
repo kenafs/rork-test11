@@ -16,22 +16,18 @@ export default function ProfileScreen() {
   const { user, isAuthenticated, logout } = useAuth();
   const { getQuotesByUser, getQuotesForUser } = useQuotes();
   
-  // Get user's listings
   const userListings = user 
     ? mockListings.filter(listing => listing.createdBy === user.id).slice(0, 3)
     : [];
   
-  // Get user's quotes (only for providers)
   const userQuotes = user && user.userType === 'provider' 
     ? getQuotesByUser(user.id).slice(0, 3)
     : [];
   
-  // Get quotes received by user (only for clients)
   const receivedQuotes = user && user.userType === 'client'
     ? getQuotesForUser(user.id).slice(0, 3)
     : [];
   
-  // Format date
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleDateString('fr-FR', {
       year: 'numeric',
@@ -39,7 +35,6 @@ export default function ProfileScreen() {
     });
   };
   
-  // Handle logout
   const handleLogout = () => {
     Alert.alert(
       'Déconnexion',
@@ -58,7 +53,6 @@ export default function ProfileScreen() {
               router.replace('/');
             } catch (error) {
               console.error('Logout error:', error);
-              // Force logout even if there's an error
               router.dismissAll();
               router.replace('/');
             }
@@ -68,7 +62,6 @@ export default function ProfileScreen() {
     );
   };
 
-  // Handle external link
   const handleExternalLink = (url: string) => {
     if (url.startsWith('http')) {
       Linking.openURL(url);
@@ -77,13 +70,11 @@ export default function ProfileScreen() {
     }
   };
 
-  // Handle Instagram link
   const handleInstagramLink = (username: string) => {
     const cleanUsername = username.replace('@', '');
     Linking.openURL(`https://instagram.com/${cleanUsername}`);
   };
   
-  // If not authenticated, show login prompt
   if (!isAuthenticated || !user) {
     return (
       <View style={styles.container}>
@@ -110,7 +101,6 @@ export default function ProfileScreen() {
     );
   }
   
-  // Render provider-specific info
   const renderProviderInfo = (provider: Provider) => (
     <View style={styles.infoSection}>
       <Text style={styles.sectionTitle}>Services proposés</Text>
@@ -142,7 +132,6 @@ export default function ProfileScreen() {
     </View>
   );
   
-  // Render venue-specific info
   const renderVenueInfo = (venue: Venue) => (
     <View style={styles.infoSection}>
       <Text style={styles.sectionTitle}>Informations sur l'établissement</Text>
@@ -173,7 +162,6 @@ export default function ProfileScreen() {
     </View>
   );
 
-  // Render social links
   const renderSocialLinks = () => {
     const hasWebsite = user.website;
     const hasInstagram = user.instagram;
@@ -209,9 +197,8 @@ export default function ProfileScreen() {
     );
   };
 
-  // Render quotes section (only for providers and clients - NOT for business)
   const renderQuotesSection = () => {
-    if (user.userType === 'business') return null; // No quotes for business accounts
+    if (user.userType === 'business') return null;
     
     const quotes = user.userType === 'provider' ? userQuotes : receivedQuotes;
     const sectionTitle = user.userType === 'provider' ? 'Mes devis' : 'Devis reçus';
@@ -258,7 +245,6 @@ export default function ProfileScreen() {
     );
   };
 
-  // Helper functions for quote status
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'accepted': return '#10B981';
@@ -277,7 +263,6 @@ export default function ProfileScreen() {
     }
   };
 
-  // Get appropriate action button text based on user type
   const getCreateButtonText = () => {
     switch (user.userType) {
       case 'provider':
@@ -379,12 +364,10 @@ export default function ProfileScreen() {
         </Text>
       </View>
       
-      {/* Render user type specific information */}
       {user.userType === 'provider' 
         ? renderProviderInfo(user as Provider) 
         : user.userType === 'business' && renderVenueInfo(user as Venue)}
       
-      {/* User's listings - show for all user types */}
       <View style={styles.listingsSection}>
         <View style={styles.listingsHeader}>
           <Text style={styles.sectionTitle}>
@@ -428,10 +411,8 @@ export default function ProfileScreen() {
         )}
       </View>
       
-      {/* Quotes section - only for providers and clients, NOT for business */}
       {renderQuotesSection()}
       
-      {/* Settings and logout */}
       <View style={styles.settingsContainer}>
         <TouchableOpacity 
           style={styles.settingsButton}

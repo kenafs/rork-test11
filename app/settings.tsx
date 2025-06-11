@@ -52,12 +52,10 @@ export default function SettingsScreen() {
               console.log("Starting logout from settings...");
               await logout();
               console.log("Logout completed, redirecting to home...");
-              // Force navigation to home and reset navigation stack
               router.dismissAll();
               router.replace("/");
             } catch (error) {
               console.error('Logout error in settings:', error);
-              // Force logout even if there's an error
               router.dismissAll();
               router.replace("/");
             }

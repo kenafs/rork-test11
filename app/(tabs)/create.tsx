@@ -26,7 +26,6 @@ export default function CreateListingScreen() {
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   
-  // Redirect to login if not authenticated
   React.useEffect(() => {
     if (!isAuthenticated || !user) {
       Alert.alert(
@@ -58,7 +57,6 @@ export default function CreateListingScreen() {
     );
   }
   
-  // Handle image picker
   const pickImage = async () => {
     if (images.length >= 5) {
       Alert.alert('Limite atteinte', 'Vous ne pouvez pas ajouter plus de 5 images.');
@@ -82,14 +80,12 @@ export default function CreateListingScreen() {
     }
   };
   
-  // Remove image
   const removeImage = (index: number) => {
     const newImages = [...images];
     newImages.splice(index, 1);
     setImages(newImages);
   };
   
-  // Add tag
   const addTag = () => {
     if (tagInput.trim() && !tags.includes(tagInput.trim()) && tags.length < 5) {
       setTags([...tags, tagInput.trim()]);
@@ -97,14 +93,12 @@ export default function CreateListingScreen() {
     }
   };
   
-  // Remove tag
   const removeTag = (index: number) => {
     const newTags = [...tags];
     newTags.splice(index, 1);
     setTags(newTags);
   };
   
-  // Handle form submission
   const handleSubmit = async () => {
     if (!title.trim()) {
       Alert.alert('Erreur', 'Veuillez saisir un titre pour votre annonce.');
@@ -159,7 +153,6 @@ export default function CreateListingScreen() {
           { 
             text: 'OK', 
             onPress: () => {
-              // Reset form
               setTitle('');
               setDescription('');
               setCategory('');
@@ -168,7 +161,6 @@ export default function CreateListingScreen() {
               setTags([]);
               setTagInput('');
               
-              // Navigate to home tab
               router.replace('/(tabs)');
             }
           }
@@ -180,7 +172,6 @@ export default function CreateListingScreen() {
     }
   };
 
-  // Get appropriate title and subtitle based on user type
   const getHeaderText = () => {
     switch (user.userType) {
       case 'provider':
@@ -201,7 +192,6 @@ export default function CreateListingScreen() {
     }
   };
 
-  // Get appropriate placeholder text based on user type
   const getPlaceholders = () => {
     switch (user.userType) {
       case 'provider':

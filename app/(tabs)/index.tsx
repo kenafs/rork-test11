@@ -16,7 +16,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const { 
-    filteredListings = [], 
+    filteredListings, 
     isLoading, 
     fetchListings, 
     refreshListings,
@@ -66,6 +66,9 @@ export default function HomeScreen() {
   const handleClearSearch = () => {
     filterBySearch('');
   };
+  
+  // Ensure filteredListings is always an array
+  const safeFilteredListings = filteredListings || [];
   
   // Landing page for non-authenticated users
   if (!user) {
@@ -151,12 +154,12 @@ export default function HomeScreen() {
                 {selectedCategory ? 'Résultats filtrés' : 'Annonces récentes'}
               </Text>
               <Text style={styles.listingsCount}>
-                {filteredListings?.length || 0} résultat{(filteredListings?.length || 0) > 1 ? 's' : ''}
+                {safeFilteredListings.length} résultat{safeFilteredListings.length > 1 ? 's' : ''}
               </Text>
             </View>
             
-            {filteredListings && filteredListings.length > 0 ? (
-              filteredListings.map((listing) => (
+            {safeFilteredListings.length > 0 ? (
+              safeFilteredListings.map((listing) => (
                 <ListingCard
                   key={listing.id}
                   listing={listing}
@@ -281,12 +284,12 @@ export default function HomeScreen() {
               {selectedCategory ? 'Résultats filtrés' : 'Annonces récentes'}
             </Text>
             <Text style={styles.listingsCount}>
-              {filteredListings?.length || 0} résultat{(filteredListings?.length || 0) > 1 ? 's' : ''}
+              {safeFilteredListings.length} résultat{safeFilteredListings.length > 1 ? 's' : ''}
             </Text>
           </View>
           
-          {filteredListings && filteredListings.length > 0 ? (
-            filteredListings.map((listing) => (
+          {safeFilteredListings.length > 0 ? (
+            safeFilteredListings.map((listing) => (
               <ListingCard
                 key={listing.id}
                 listing={listing}

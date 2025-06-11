@@ -28,7 +28,6 @@ export const useQuotes = create<QuotesState>()(
         set({ isLoading: true });
         
         try {
-          // Simulate API call
           await new Promise(resolve => setTimeout(resolve, 500));
           
           const user = useAuth.getState().user;
@@ -37,7 +36,6 @@ export const useQuotes = create<QuotesState>()(
             return;
           }
           
-          // Get existing quotes from state
           const existingQuotes = get().quotes;
           
           set({ 
@@ -54,16 +52,14 @@ export const useQuotes = create<QuotesState>()(
         set({ isLoading: true });
         
         try {
-          // Simulate API call
           await new Promise(resolve => setTimeout(resolve, 800));
           
           const user = useAuth.getState().user;
           if (!user) throw new Error('User must be logged in to create a quote');
           
-          // Calculate totals
           const subtotal = quoteData.items.reduce((sum, item) => sum + item.total, 0);
-          const tax = subtotal * 0.2; // 20% tax
-          const total = subtotal + tax;
+          const tax = subtotal * 0.2;
+          const totalAmount = subtotal + tax;
           
           const newQuote: Quote = {
             id: `quote-${Date.now()}-${Math.random()}`,
@@ -72,7 +68,7 @@ export const useQuotes = create<QuotesState>()(
             currency: 'EUR',
             subtotal,
             tax,
-            total,
+            total: totalAmount,
             ...quoteData,
           };
           
@@ -94,7 +90,6 @@ export const useQuotes = create<QuotesState>()(
         set({ isLoading: true });
         
         try {
-          // Simulate API call
           await new Promise(resolve => setTimeout(resolve, 500));
           
           const { quotes } = get();
@@ -130,7 +125,6 @@ export const useQuotes = create<QuotesState>()(
         set({ isLoading: true });
         
         try {
-          // Simulate API call
           await new Promise(resolve => setTimeout(resolve, 500));
           
           const { quotes } = get();
@@ -167,12 +161,10 @@ export const useQuotes = create<QuotesState>()(
       },
       
       getQuotesByUser: (userId: string) => {
-        // Get quotes created by this user (provider)
         return get().quotes.filter(quote => quote.providerId === userId);
       },
       
       getQuotesForUser: (userId: string) => {
-        // Get quotes sent to this user (client)
         return get().quotes.filter(quote => quote.clientId === userId);
       },
     }),
