@@ -27,7 +27,7 @@ export default function CreateQuoteScreen() {
       description: '',
       quantity: 1,
       unitPrice: 0,
-      totalPrice: 0,
+      total: 0,
     }
   ]);
   const [validDays, setValidDays] = useState('30');
@@ -76,7 +76,7 @@ export default function CreateQuoteScreen() {
       description: '',
       quantity: 1,
       unitPrice: 0,
-      totalPrice: 0,
+      total: 0,
     };
     setItems([...items, newItem]);
   };
@@ -96,7 +96,7 @@ export default function CreateQuoteScreen() {
         
         // Recalculate total price
         if (field === 'quantity' || field === 'unitPrice') {
-          updatedItem.totalPrice = updatedItem.quantity * updatedItem.unitPrice;
+          updatedItem.total = updatedItem.quantity * updatedItem.unitPrice;
         }
         
         return updatedItem;
@@ -106,7 +106,7 @@ export default function CreateQuoteScreen() {
   };
   
   // Calculate total amount
-  const totalAmount = items.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
+  const totalAmount = items.reduce((sum, item) => sum + (item.total || 0), 0);
   
   // Handle submit
   const handleSubmit = async () => {
@@ -135,7 +135,7 @@ export default function CreateQuoteScreen() {
         title,
         description,
         items,
-        status: 'pending', // Set to pending instead of draft
+        status: 'pending',
         validUntil,
       });
       
@@ -333,7 +333,7 @@ export default function CreateQuoteScreen() {
                 
                 <View style={styles.totalRow}>
                   <Text style={styles.totalLabel}>Total:</Text>
-                  <Text style={styles.totalValue}>{(item.totalPrice || 0).toFixed(2)}€</Text>
+                  <Text style={styles.totalValue}>{(item.total || 0).toFixed(2)}€</Text>
                 </View>
               </View>
             ))}
@@ -402,7 +402,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 20, // Reduced padding since we have fixed submit button
+    paddingBottom: 20,
   },
   section: {
     marginBottom: 32,
@@ -545,7 +545,7 @@ const styles = StyleSheet.create({
     paddingBottom: Platform.OS === 'ios' ? 40 : 20,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
-    marginBottom: Platform.OS === 'ios' ? 90 : 75, // Add margin to account for tab bar
+    marginBottom: Platform.OS === 'ios' ? 100 : 85,
   },
   submitButton: {
     backgroundColor: Colors.primary,

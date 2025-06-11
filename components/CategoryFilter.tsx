@@ -13,14 +13,8 @@ export default function CategoryFilter({ selectedCategory, onSelectCategory }: C
   const router = useRouter();
   
   const handleCategoryPress = (category: any) => {
-    const categoryId = category.id === 'all' ? null : category.id;
+    const categoryId = category.id === 'all' ? null : category.name;
     onSelectCategory(categoryId);
-    
-    // Navigate to search with category filter
-    router.push({
-      pathname: '/(tabs)/search',
-      params: { category: category.id }
-    });
   };
   
   // Safety check for listingCategories with fallback
@@ -47,7 +41,7 @@ export default function CategoryFilter({ selectedCategory, onSelectCategory }: C
             key={category.id}
             style={[
               styles.categoryButton,
-              selectedCategory === category.id && styles.selectedCategory,
+              selectedCategory === category.name && styles.selectedCategory,
             ]}
             onPress={() => handleCategoryPress(category)}
             activeOpacity={0.7}
@@ -55,7 +49,7 @@ export default function CategoryFilter({ selectedCategory, onSelectCategory }: C
             <Text
               style={[
                 styles.categoryText,
-                selectedCategory === category.id && styles.selectedCategoryText,
+                selectedCategory === category.name && styles.selectedCategoryText,
               ]}
             >
               {category.name}

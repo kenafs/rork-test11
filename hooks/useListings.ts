@@ -7,20 +7,19 @@ import { mockListings } from '@/mocks/listings';
 interface ListingsState {
   listings: Listing[];
   filteredListings: Listing[];
-  isLoading: boolean;
   selectedCategory: string | null;
-  searchQuery: string;
+  searchQuery: string | null;
+  isLoading: boolean;
   
   fetchListings: () => Promise<void>;
   refreshListings: () => Promise<void>;
-  createListing: (listingData: Omit<Listing, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Listing>;
+  createListing: (listingData: Omit<Listing, 'id' | 'createdAt'>) => Promise<Listing>;
   updateListing: (id: string, updates: Partial<Listing>) => Promise<boolean>;
   deleteListing: (id: string) => Promise<boolean>;
   filterByCategory: (category: string | null) => void;
   filterBySearch: (query: string) => void;
   filterByLocation: (latitude: number, longitude: number, radius?: number) => void;
-  getListingById: (id: string) => Listing | undefined;
-  getUserListings: (userId: string) => Listing[];
+  clearFilters: () => void;
 }
 
 export const useListings = create<ListingsState>()(
@@ -28,58 +27,51 @@ export const useListings = create<ListingsState>()(
     (set, get) => ({
       listings: [],
       filteredListings: [],
-      isLoading: false,
       selectedCategory: null,
-      searchQuery: '',
+      searchQuery: null,
+      isLoading: false,
       
       fetchListings: async () => {
         set({ isLoading: true });
         
         try {
+          // Simulate API call
           await new Promise(resolve => setTimeout(resolve, 1000));
           
-          const existingListings = get().listings;
-          const allListings = [...mockListings, ...existingListings.filter(l => !mockListings.find(m => m.id === l.id))];
+          // Use mock data for now
+          const listings = mockListings;
           
           set({ 
-            listings: allListings,
-            filteredListings: allListings,
+            listings,
+            filteredListings: listings,
             isLoading: false 
           });
-          
-          console.log('Listings fetched successfully:', allListings.length);
         } catch (error) {
           console.error('Error fetching listings:', error);
-          set({ 
-            listings: mockListings,
-            filteredListings: mockListings,
-            isLoading: false 
-          });
+          set({ isLoading: false });
         }
       },
       
       refreshListings: async () => {
-        await get().fetchListings();
+        const { fetchListings } = get();
+        await fetchListings();
       },
       
       createListing: async (listingData) => {
         set({ isLoading: true });
         
         try {
+          // Simulate API call
           await new Promise(resolve => setTimeout(resolve, 1500));
           
           const newListing: Listing = {
+            ...listingData,
             id: `listing-${Date.now()}-${Math.random()}`,
             createdAt: Date.now(),
-            updatedAt: Date.now(),
-            status: 'active',
-            ...listingData,
           };
           
-          console.log('Creating new listing:', newListing);
-          
           set(state => {
-            const updatedListings = [newListing, ...state.listings];
+            const updatedListings = [...state.listings, newListing];
             return {
               listings: updatedListings,
               filteredListings: updatedListings,
@@ -100,30 +92,22 @@ export const useListings = create<ListingsState>()(
         set({ isLoading: true });
         
         try {
-          await new Promise(resolve => setTimeout(resolve, 500));
+          // Simulate API call
+          await new Promise(resolve => setTimeout(resolve, 1000));
           
-          const { listings } = get();
-          const listingIndex = listings.findIndex(l => l.id === id);
-          
-          if (listingIndex === -1) {
-            set({ isLoading: false });
-            return false;
-          }
-          
-          const updatedListings = [...listings];
-          updatedListings[listingIndex] = {
-            ...updatedListings[listingIndex],
-            ...updates,
-            updatedAt: Date.now(),
-          };
-          
-          set({ 
-            listings: updatedListings,
-            filteredListings: updatedListings,
-            isLoading: false 
+          set(state => {
+            const updatedListings = state.listings.map(listing =>
+              listing.id === id ? { ...listing, ...updates } : listing
+            );
+            
+            return {
+              listings: updatedListings,
+              filteredListings: updatedListings,
+              isLoading: false
+            };
           });
           
-          console.log('Listing updated:', updatedListings[listingIndex]);
+          console.log('Listing updated successfully:', id);
           return true;
         } catch (error) {
           console.error('Error updating listing:', error);
@@ -136,18 +120,20 @@ export const useListings = create<ListingsState>()(
         set({ isLoading: true });
         
         try {
+          // Simulate API call
           await new Promise(resolve => setTimeout(resolve, 500));
           
-          const { listings } = get();
-          const updatedListings = listings.filter(l => l.id !== id);
-          
-          set({ 
-            listings: updatedListings,
-            filteredListings: updatedListings,
-            isLoading: false 
+          set(state => {
+            const updatedListings = state.listings.filter(listing => listing.id !== id);
+            
+            return {
+              listings: updatedListings,
+              filteredListings: updatedListings,
+              isLoading: false
+            };
           });
           
-          console.log('Listing deleted:', id);
+          console.log('Listing deleted successfully:', id);
           return true;
         } catch (error) {
           console.error('Error deleting listing:', error);
@@ -158,19 +144,25 @@ export const useListings = create<ListingsState>()(
       
       filterByCategory: (category: string | null) => {
         const { listings, searchQuery } = get();
+        
         let filtered = [...listings];
         
+        // Apply category filter
         if (category && category !== 'all') {
-          filtered = filtered.filter(listing => listing.category === category);
+          filtered = filtered.filter(listing => 
+            listing.category.toLowerCase() === category.toLowerCase()
+          );
         }
         
+        // Apply search filter if exists
         if (searchQuery) {
           const query = searchQuery.toLowerCase();
           filtered = filtered.filter(listing =>
             listing.title.toLowerCase().includes(query) ||
             listing.description.toLowerCase().includes(query) ||
+            listing.category.toLowerCase().includes(query) ||
             listing.creatorName.toLowerCase().includes(query) ||
-            listing.tags.some(tag => tag.toLowerCase().includes(query))
+            (listing.tags && listing.tags.some(tag => tag.toLowerCase().includes(query)))
           );
         }
         
@@ -178,25 +170,29 @@ export const useListings = create<ListingsState>()(
           selectedCategory: category,
           filteredListings: filtered 
         });
-        
-        console.log('Filtered by category:', category, 'Results:', filtered.length);
       },
       
       filterBySearch: (query: string) => {
         const { listings, selectedCategory } = get();
+        
         let filtered = [...listings];
         
+        // Apply category filter if exists
         if (selectedCategory && selectedCategory !== 'all') {
-          filtered = filtered.filter(listing => listing.category === selectedCategory);
+          filtered = filtered.filter(listing => 
+            listing.category.toLowerCase() === selectedCategory.toLowerCase()
+          );
         }
         
-        if (query) {
+        // Apply search filter
+        if (query.trim()) {
           const searchQuery = query.toLowerCase();
           filtered = filtered.filter(listing =>
             listing.title.toLowerCase().includes(searchQuery) ||
             listing.description.toLowerCase().includes(searchQuery) ||
+            listing.category.toLowerCase().includes(searchQuery) ||
             listing.creatorName.toLowerCase().includes(searchQuery) ||
-            listing.tags.some(tag => tag.toLowerCase().includes(searchQuery))
+            (listing.tags && listing.tags.some(tag => tag.toLowerCase().includes(searchQuery)))
           );
         }
         
@@ -204,52 +200,40 @@ export const useListings = create<ListingsState>()(
           searchQuery: query,
           filteredListings: filtered 
         });
-        
-        console.log('Filtered by search:', query, 'Results:', filtered.length);
       },
       
       filterByLocation: (latitude: number, longitude: number, radius: number = 50) => {
         const { listings } = get();
         
-        const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-          const R = 6371;
-          const dLat = (lat2 - lat1) * Math.PI / 180;
-          const dLon = (lon2 - lon1) * Math.PI / 180;
-          const a = 
-            Math.sin(dLat/2) * Math.sin(dLat/2) +
-            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-            Math.sin(dLon/2) * Math.sin(dLon/2);
-          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-          return R * c;
-        };
-        
+        // Simple distance calculation (not precise but good for demo)
         const filtered = listings.filter(listing => {
-          const distance = calculateDistance(
-            latitude, 
-            longitude, 
-            listing.location.latitude, 
-            listing.location.longitude
-          );
+          if (!listing.location) return true;
+          
+          const distance = Math.sqrt(
+            Math.pow(listing.location.latitude - latitude, 2) +
+            Math.pow(listing.location.longitude - longitude, 2)
+          ) * 111; // Rough conversion to km
+          
           return distance <= radius;
         });
         
         set({ filteredListings: filtered });
-        console.log('Filtered by location, Results:', filtered.length);
       },
       
-      getListingById: (id: string) => {
-        return get().listings.find(listing => listing.id === id);
-      },
-      
-      getUserListings: (userId: string) => {
-        return get().listings.filter(listing => listing.createdBy === userId);
+      clearFilters: () => {
+        const { listings } = get();
+        set({ 
+          filteredListings: listings,
+          selectedCategory: null,
+          searchQuery: null 
+        });
       },
     }),
     {
       name: 'listings-storage',
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
-        listings: state.listings.filter(l => !l.id.startsWith('mock-')),
+        listings: state.listings,
       }),
     }
   )

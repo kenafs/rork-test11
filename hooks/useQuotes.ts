@@ -58,7 +58,7 @@ export const useQuotes = create<QuotesState>()(
           const user = useAuth.getState().user;
           if (!user) throw new Error('User must be logged in to create a quote');
           
-          const subtotal = quoteData.items.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
+          const subtotal = quoteData.items.reduce((sum, item) => sum + (item.total || 0), 0);
           const tax = subtotal * 0.2;
           const total = subtotal + tax;
           

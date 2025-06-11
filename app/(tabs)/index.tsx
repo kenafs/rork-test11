@@ -69,7 +69,7 @@ export default function HomeScreen() {
     filterBySearch('');
   };
   
-  // Ensure filteredListings is always an array
+  // Ensure arrays are always defined
   const safeFilteredListings = Array.isArray(filteredListings) ? filteredListings : [];
   const safeFavorites = Array.isArray(favorites) ? favorites : [];
   
@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 140, // Increased padding to prevent content being hidden behind tab bar
+    paddingBottom: 150,
   },
   heroSection: {
     backgroundColor: Colors.primary,
@@ -532,7 +532,7 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    bottom: 120, // Position above tab bar
+    bottom: 120,
     right: 20,
     width: 56,
     height: 56,

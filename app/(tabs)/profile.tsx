@@ -49,13 +49,11 @@ export default function ProfileScreen() {
               console.log('Starting logout from profile...');
               await logout();
               console.log('Logout completed successfully');
-              // Force navigation to home after logout
-              router.dismissAll();
+              // Navigate to home after logout
               router.replace('/(tabs)');
             } catch (error) {
               console.error('Logout error:', error);
               // Force navigation even if logout fails
-              router.dismissAll();
               router.replace('/(tabs)');
             }
           }
@@ -445,7 +443,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.backgroundAlt,
   },
   scrollContent: {
-    paddingBottom: 140, // Increased padding to prevent content being hidden behind tab bar
+    paddingBottom: 150,
   },
   header: {
     backgroundColor: '#fff',

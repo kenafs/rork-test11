@@ -154,14 +154,14 @@ const styles = StyleSheet.create({
   },
   categorySection: {
     backgroundColor: '#fff',
-    paddingBottom: 16, // Increased padding to prevent cut-off
+    paddingBottom: 20,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
   },
   listContent: {
     padding: 20,
     paddingTop: 8,
-    paddingBottom: 140, // Increased padding to prevent content being hidden behind tab bar
+    paddingBottom: 150,
   },
   locationContainer: {
     flexDirection: 'row',

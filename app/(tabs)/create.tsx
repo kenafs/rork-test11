@@ -151,8 +151,25 @@ export default function CreateListingScreen() {
         'Votre annonce a été publiée avec succès.', 
         [
           { 
-            text: 'OK', 
+            text: 'Voir l\'annonce', 
             onPress: () => {
+              // Clear form
+              setTitle('');
+              setDescription('');
+              setCategory('');
+              setPrice('');
+              setImages([]);
+              setTags([]);
+              setTagInput('');
+              
+              // Navigate to the created listing
+              router.replace(`/listing/${newListing.id}`);
+            }
+          },
+          { 
+            text: 'Retour à l\'accueil', 
+            onPress: () => {
+              // Clear form
               setTitle('');
               setDescription('');
               setCategory('');
@@ -478,7 +495,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 20,
-    paddingBottom: 20, // Reduced padding since we have fixed submit button
+    paddingBottom: 20,
   },
   formCard: {
     backgroundColor: '#fff',
@@ -642,12 +659,17 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   submitContainer: {
-    backgroundColor: Colors.backgroundAlt,
+    backgroundColor: '#fff',
     padding: 20,
     paddingBottom: Platform.OS === 'ios' ? 40 : 20,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
-    marginBottom: Platform.OS === 'ios' ? 90 : 75, // Add margin to account for tab bar
+    marginBottom: Platform.OS === 'ios' ? 100 : 85,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 10,
   },
   submitGradient: {
     borderRadius: 20,

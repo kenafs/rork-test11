@@ -46,34 +46,6 @@ export interface Client extends User {
   userType: 'client';
 }
 
-export interface DemoAccount {
-  userType: UserType;
-  name: string;
-  email: string;
-  profileImage?: string;
-  description?: string;
-  city: string;
-  rating: number;
-  reviewCount: number;
-  
-  // Provider specific
-  specialties?: string;
-  website?: string;
-  instagram?: string;
-  services?: string[];
-  priceRange?: {
-    min: number;
-    max: number;
-  };
-  availability?: string[];
-  
-  // Business specific
-  address?: string;
-  venueType?: string;
-  capacity?: number;
-  amenities?: string[];
-}
-
 export interface Listing {
   id: string;
   title: string;
@@ -87,12 +59,10 @@ export interface Listing {
   location: Location;
   category: string;
   price?: number;
-  images: string[];
-  tags: string[];
+  images?: string[];
+  tags?: string[];
+  date?: number;
   createdAt: number;
-  updatedAt: number;
-  featured?: boolean;
-  status?: 'active' | 'inactive' | 'pending';
 }
 
 export interface Review {
@@ -111,20 +81,29 @@ export interface Message {
   id: string;
   conversationId: string;
   senderId: string;
-  receiverId: string;
   content: string;
   timestamp: number;
-  read: boolean;
-  type: 'text' | 'image' | 'quote';
+  type: 'text' | 'quote' | 'image';
   quoteId?: string;
 }
 
 export interface Conversation {
   id: string;
   participants: string[];
-  lastMessage?: Message;
+  lastMessage?: string;
+  lastMessageTime?: number;
+  unreadCount: number;
   createdAt: number;
-  updatedAt: number;
+}
+
+export interface Contact {
+  participantId: string;
+  participantName: string;
+  participantImage?: string;
+  participantType: UserType;
+  lastMessage: string;
+  unread: number;
+  timestamp: number;
 }
 
 export interface QuoteItem {
@@ -133,14 +112,14 @@ export interface QuoteItem {
   description: string;
   quantity: number;
   unitPrice: number;
-  totalPrice: number;
+  total: number;
 }
 
 export interface Quote {
   id: string;
+  listingId?: string;
   providerId: string;
   clientId: string;
-  listingId?: string;
   title: string;
   description: string;
   items: QuoteItem[];
@@ -148,32 +127,32 @@ export interface Quote {
   tax: number;
   total: number;
   currency: string;
-  status: 'pending' | 'accepted' | 'rejected' | 'expired' | 'draft';
+  status: 'draft' | 'pending' | 'accepted' | 'rejected';
   validUntil: number;
   createdAt: number;
   updatedAt: number;
-  notes?: string;
 }
 
-export interface Category {
-  id: string;
+export interface DemoAccount {
+  userType: UserType;
   name: string;
-  icon: string;
-  color: string;
-}
-
-export interface SettingItem {
-  icon: any;
-  title: string;
-  subtitle: string;
-  type: 'switch' | 'navigation';
-  value?: boolean;
-  onToggle?: () => void;
-  onPress?: () => void;
-}
-
-export interface Language {
-  code: string;
-  name: string;
-  flag: string;
+  email: string;
+  profileImage?: string;
+  description?: string;
+  specialties?: string;
+  website?: string;
+  instagram?: string;
+  rating?: number;
+  reviewCount?: number;
+  city: string;
+  services?: string[];
+  priceRange?: {
+    min: number;
+    max: number;
+  };
+  availability?: string[];
+  address?: string;
+  venueType?: string;
+  capacity?: number;
+  amenities?: string[];
 }
