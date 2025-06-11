@@ -3,7 +3,6 @@ import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import Colors from '@/constants/colors';
-import { LinearGradient } from 'expo-linear-gradient';
 
 export default function LandingScreen() {
   const router = useRouter();
@@ -20,18 +19,13 @@ export default function LandingScreen() {
   }
   
   return (
-    <LinearGradient
-      colors={[Colors.primary, Colors.secondary]}
-      style={styles.container}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-    >
+    <View style={styles.container}>
       <View style={styles.content}>
         <View style={styles.logoSection}>
           <Text style={styles.logo}>🎉</Text>
           <Text style={styles.appName}>EventApp</Text>
           <Text style={styles.tagline}>
-            La plateforme qui connecte clients, prestataires et établissements pour vos événements
+            Connectez clients, prestataires et établissements pour vos événements
           </Text>
         </View>
         
@@ -60,13 +54,14 @@ export default function LandingScreen() {
           </TouchableOpacity>
         </View>
       </View>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: Colors.primary,
   },
   content: {
     flex: 1,

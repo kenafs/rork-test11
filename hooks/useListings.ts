@@ -232,7 +232,10 @@ export const useListings = create<ListingsState>((set, get) => ({
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       const user = useAuth.getState().user;
-      if (!user) throw new Error('User must be logged in to create a listing');
+      if (!user) {
+        set({ isLoading: false });
+        throw new Error('User must be logged in to create a listing');
+      }
       
       const newListing: Listing = {
         id: `listing-${Date.now()}`,

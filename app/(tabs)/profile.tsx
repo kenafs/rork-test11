@@ -207,7 +207,7 @@ export default function ProfileScreen() {
     );
   };
 
-  // Render quotes section (only for providers and clients)
+  // Render quotes section (only for providers and clients - NOT for business)
   const renderQuotesSection = () => {
     if (user.userType === 'business') return null; // No quotes for business accounts
     
@@ -283,7 +283,7 @@ export default function ProfileScreen() {
       case 'business':
         return 'Publier une offre';
       default:
-        return 'Créer une annonce';
+        return 'Créer une demande';
     }
   };
   
@@ -331,13 +331,11 @@ export default function ProfileScreen() {
           onPress={() => router.push('/edit-profile')}
           style={styles.actionButton}
         />
-        {user.userType !== 'client' && (
-          <Button 
-            title={getCreateButtonText()}
-            onPress={() => router.push('/(tabs)/create')}
-            style={styles.actionButton}
-          />
-        )}
+        <Button 
+          title={getCreateButtonText()}
+          onPress={() => router.push('/(tabs)/create')}
+          style={styles.actionButton}
+        />
       </View>
       
       <View style={styles.card}>
@@ -384,49 +382,51 @@ export default function ProfileScreen() {
         ? renderProviderInfo(user as Provider) 
         : user.userType === 'business' && renderVenueInfo(user as Venue)}
       
-      {/* User's listings - only show for providers and businesses */}
-      {(user.userType === 'provider' || user.userType === 'business') && (
-        <View style={styles.listingsSection}>
-          <View style={styles.listingsHeader}>
-            <Text style={styles.sectionTitle}>
-              {user.userType === 'provider' ? 'Mes annonces' : 'Mes offres'}
+      {/* User's listings - show for all user types */}
+      <View style={styles.listingsSection}>
+        <View style={styles.listingsHeader}>
+          <Text style={styles.sectionTitle}>
+            {user.userType === 'provider' ? 'Mes annonces' : 
+             user.userType === 'business' ? 'Mes offres' : 'Mes demandes'}
+          </Text>
+          <TouchableOpacity 
+            style={styles.viewAllButton}
+            onPress={() => router.push('/my-listings')}
+          >
+            <Text style={styles.viewAllText}>Voir tout</Text>
+          </TouchableOpacity>
+        </View>
+        
+        {userListings.length > 0 ? (
+          userListings.map(listing => (
+            <ListingCard key={listing.id} listing={listing} />
+          ))
+        ) : (
+          <View style={styles.emptyListings}>
+            <Text style={styles.emptyTitle}>
+              {user.userType === 'provider' ? 'Aucune annonce' : 
+               user.userType === 'business' ? 'Aucune offre' : 'Aucune demande'}
+            </Text>
+            <Text style={styles.emptyText}>
+              {user.userType === 'provider' 
+                ? "Vous n'avez pas encore publié d'annonces."
+                : user.userType === 'business'
+                ? "Vous n'avez pas encore publié d'offres."
+                : "Vous n'avez pas encore publié de demandes."
+              }
             </Text>
             <TouchableOpacity 
-              style={styles.viewAllButton}
-              onPress={() => router.push('/my-listings')}
+              style={styles.createListingButton}
+              onPress={() => router.push('/(tabs)/create')}
             >
-              <Text style={styles.viewAllText}>Voir tout</Text>
+              <Plus size={20} color="#fff" style={{ marginRight: 8 }} />
+              <Text style={styles.createListingText}>{getCreateButtonText()}</Text>
             </TouchableOpacity>
           </View>
-          
-          {userListings.length > 0 ? (
-            userListings.map(listing => (
-              <ListingCard key={listing.id} listing={listing} />
-            ))
-          ) : (
-            <View style={styles.emptyListings}>
-              <Text style={styles.emptyTitle}>
-                {user.userType === 'provider' ? 'Aucune annonce' : 'Aucune offre'}
-              </Text>
-              <Text style={styles.emptyText}>
-                {user.userType === 'provider' 
-                  ? "Vous n'avez pas encore publié d'annonces."
-                  : "Vous n'avez pas encore publié d'offres."
-                }
-              </Text>
-              <TouchableOpacity 
-                style={styles.createListingButton}
-                onPress={() => router.push('/(tabs)/create')}
-              >
-                <Plus size={20} color="#fff" style={{ marginRight: 8 }} />
-                <Text style={styles.createListingText}>{getCreateButtonText()}</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        </View>
-      )}
+        )}
+      </View>
       
-      {/* Quotes section - only for providers and clients */}
+      {/* Quotes section - only for providers and clients, NOT for business */}
       {renderQuotesSection()}
       
       {/* Settings and logout */}

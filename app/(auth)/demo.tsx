@@ -1,235 +1,216 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { DemoAccount } from '@/types';
 import Colors from '@/constants/colors';
 import Button from '@/components/Button';
-import { User, Building2, Users, ArrowRight } from 'lucide-react-native';
+import { User, Building, Briefcase } from 'lucide-react-native';
 
-const demoAccounts: Record<'provider' | 'business' | 'client', DemoAccount> = {
-  provider: {
-    name: 'Marie Martin - DJ Pro',
-    email: 'marie@djpro.com',
-    userType: 'provider',
-    profileImage: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&auto=format&fit=crop',
-    description: 'DJ professionnelle spécialisée dans les événements d\'entreprise et mariages. Plus de 10 ans d\'expérience.',
-    specialties: 'DJ, Animation, Sonorisation',
-    website: 'https://djpro-marie.com',
-    instagram: '@djpro_marie',
-    rating: 4.8,
-    reviewCount: 127,
-    city: 'Paris',
-    services: ['DJ', 'Animation', 'Sonorisation', 'Éclairage'],
-    priceRange: { min: 300, max: 800 },
-    availability: ['Vendredi', 'Samedi', 'Dimanche'],
-  },
-  business: {
-    name: 'Restaurant Le Gourmet',
-    email: 'contact@legourmet.com',
-    userType: 'business',
-    profileImage: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&auto=format&fit=crop',
-    description: 'Restaurant gastronomique avec terrasse, spécialisé dans l\'organisation d\'événements privés et réceptions.',
-    address: '15 Rue de la Paix, 75001 Paris',
-    website: 'https://legourmet-paris.fr',
-    instagram: '@legourmet_paris',
-    rating: 4.6,
-    reviewCount: 89,
-    city: 'Paris',
-    venueType: 'Restaurant',
-    capacity: 120,
-    amenities: ['Terrasse', 'Parking', 'Climatisation', 'Sonorisation'],
-  },
-  client: {
-    name: 'Jean Dupont',
-    email: 'jean@example.com',
+const demoAccounts: DemoAccount[] = [
+  // Client Demo Account
+  {
     userType: 'client',
-    profileImage: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&auto=format&fit=crop',
-    description: 'Organisateur d\'événements passionné, toujours à la recherche des meilleurs prestataires.',
-    rating: 4.5,
-    reviewCount: 23,
+    name: 'Sophie Martin',
+    email: 'sophie.martin@demo.com',
+    profileImage: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&auto=format&fit=crop',
+    description: 'Organisatrice d\'événements privés, toujours à la recherche de nouveaux prestataires de qualité.',
     city: 'Paris',
+    rating: 4.7,
+    reviewCount: 15,
   },
-};
+  // Provider Demo Account
+  {
+    userType: 'provider',
+    name: 'Alexandre Dubois - DJ Pro',
+    email: 'alex.dubois@djpro.com',
+    profileImage: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&auto=format&fit=crop',
+    description: 'DJ professionnel avec 10 ans d\'expérience. Spécialisé dans les mariages, soirées d\'entreprise et événements privés.',
+    specialties: 'DJ, Animation, Sonorisation',
+    website: 'djpro-alexandre.com',
+    instagram: '@djpro_alexandre',
+    city: 'Lyon',
+    rating: 4.9,
+    reviewCount: 156,
+    services: ['DJ', 'Animation', 'Sonorisation', 'Éclairage'],
+    priceRange: { min: 400, max: 2000 },
+    availability: ['Soir', 'Week-end', 'Jours fériés'],
+  },
+  // Business Demo Account
+  {
+    userType: 'business',
+    name: 'Château de Malmaison',
+    email: 'events@chateau-malmaison.fr',
+    profileImage: 'https://images.unsplash.com/photo-1519167758481-83f29c8e8d4b?w=800&auto=format&fit=crop',
+    description: 'Château historique du 18ème siècle proposant ses salons et jardins pour vos événements d\'exception. Mariages, séminaires, réceptions.',
+    address: '1 Avenue du Château, 92500 Rueil-Malmaison',
+    website: 'chateau-malmaison-events.fr',
+    instagram: '@chateau_malmaison_events',
+    city: 'Rueil-Malmaison',
+    rating: 4.8,
+    reviewCount: 89,
+    venueType: 'Château',
+    capacity: 200,
+    amenities: ['Jardins', 'Parking', 'Cuisine équipée', 'Terrasse', 'Salon de réception', 'Hébergement'],
+  },
+];
 
 export default function DemoScreen() {
   const router = useRouter();
   const { loginWithDemo, isLoading } = useAuth();
-  const [selectedType, setSelectedType] = useState<'provider' | 'business' | 'client'>('provider');
-  
+  const [selectedAccount, setSelectedAccount] = useState<DemoAccount | null>(null);
+
   const handleDemoLogin = async () => {
-    const success = await loginWithDemo(demoAccounts[selectedType]);
-    if (success) {
-      router.replace('/(tabs)');
+    if (!selectedAccount) {
+      Alert.alert('Erreur', 'Veuillez sélectionner un compte démo');
+      return;
+    }
+
+    try {
+      const success = await loginWithDemo(selectedAccount);
+      if (success) {
+        Alert.alert(
+          'Connexion réussie',
+          `Bienvenue ${selectedAccount.name} !`,
+          [
+            {
+              text: 'OK',
+              onPress: () => router.replace('/(tabs)')
+            }
+          ]
+        );
+      } else {
+        Alert.alert('Erreur', 'Impossible de se connecter avec ce compte démo');
+      }
+    } catch (error) {
+      console.error('Demo login error:', error);
+      Alert.alert('Erreur', 'Une erreur est survenue lors de la connexion');
     }
   };
-  
-  const accountTypes = [
-    {
-      id: 'provider' as const,
-      title: 'Prestataire',
-      subtitle: 'DJ, Traiteur, Photographe...',
-      description: 'Créez vos annonces et développez votre activité',
-      icon: User,
-      color: Colors.primary,
-      features: ['Créer des annonces', 'Envoyer des devis', 'Gérer les réservations', 'Recevoir des messages']
-    },
-    {
-      id: 'business' as const,
-      title: 'Établissement',
-      subtitle: 'Restaurant, Salle, Hôtel...',
-      description: 'Proposez vos espaces et services',
-      icon: Building2,
-      color: Colors.secondary,
-      features: ['Publier des offres', 'Gérer les réservations', 'Recevoir des demandes', 'Promouvoir votre lieu']
-    },
-    {
-      id: 'client' as const,
-      title: 'Client',
-      subtitle: 'Organisateur d\'événements',
-      description: 'Trouvez les meilleurs prestataires',
-      icon: Users,
-      color: '#10B981',
-      features: ['Rechercher des prestataires', 'Demander des devis', 'Contacter directement', 'Laisser des avis']
-    },
-  ];
-  
-  const selectedAccount = demoAccounts[selectedType];
-  const selectedAccountType = accountTypes.find(type => type.id === selectedType);
-  
+
+  const getAccountIcon = (userType: string) => {
+    switch (userType) {
+      case 'client':
+        return <User size={24} color={Colors.primary} />;
+      case 'provider':
+        return <Briefcase size={24} color={Colors.primary} />;
+      case 'business':
+        return <Building size={24} color={Colors.primary} />;
+      default:
+        return <User size={24} color={Colors.primary} />;
+    }
+  };
+
+  const getAccountTypeLabel = (userType: string) => {
+    switch (userType) {
+      case 'client':
+        return 'Client';
+      case 'provider':
+        return 'Prestataire';
+      case 'business':
+        return 'Établissement';
+      default:
+        return 'Utilisateur';
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ 
-        title: 'Comptes de démonstration',
+        title: "Comptes démo",
         headerStyle: { backgroundColor: Colors.primary },
-        headerTintColor: '#fff',
-        headerTitleStyle: { fontWeight: '700' }
+        headerTintColor: "#fff",
+        headerTitleStyle: { fontWeight: "700" }
       }} />
       
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={styles.title}>Choisissez votre type de compte</Text>
+          <Text style={styles.title}>✨ Essayez EventApp</Text>
           <Text style={styles.subtitle}>
-            Explorez l'application avec un compte de démonstration
+            Choisissez un type de compte pour découvrir toutes les fonctionnalités
           </Text>
         </View>
-        
-        <View style={styles.accountTypes}>
-          {accountTypes.map((type) => (
+
+        <View style={styles.accountsContainer}>
+          {demoAccounts.map((account, index) => (
             <TouchableOpacity
-              key={type.id}
+              key={index}
               style={[
-                styles.accountTypeCard,
-                selectedType === type.id && styles.selectedCard,
-                { borderColor: selectedType === type.id ? type.color : Colors.border }
+                styles.accountCard,
+                selectedAccount?.userType === account.userType && styles.selectedCard
               ]}
-              onPress={() => setSelectedType(type.id)}
-              activeOpacity={0.7}
+              onPress={() => setSelectedAccount(account)}
             >
-              <View style={styles.cardHeader}>
-                <View style={[styles.iconContainer, { backgroundColor: type.color }]}>
-                  <type.icon size={24} color="#fff" />
+              <View style={styles.accountHeader}>
+                <View style={styles.accountIcon}>
+                  {getAccountIcon(account.userType)}
                 </View>
-                <View style={styles.cardInfo}>
-                  <Text style={styles.cardTitle}>{type.title}</Text>
-                  <Text style={styles.cardSubtitle}>{type.subtitle}</Text>
+                <View style={styles.accountInfo}>
+                  <Text style={styles.accountType}>
+                    {getAccountTypeLabel(account.userType)}
+                  </Text>
+                  <Text style={styles.accountName}>{account.name}</Text>
                 </View>
-                {selectedType === type.id && (
-                  <View style={[styles.checkmark, { backgroundColor: type.color }]}>
-                    <Text style={styles.checkmarkText}>✓</Text>
-                  </View>
-                )}
+                <View style={[
+                  styles.radioButton,
+                  selectedAccount?.userType === account.userType && styles.radioButtonSelected
+                ]}>
+                  {selectedAccount?.userType === account.userType && (
+                    <View style={styles.radioButtonInner} />
+                  )}
+                </View>
               </View>
-              <Text style={styles.cardDescription}>{type.description}</Text>
               
-              <View style={styles.featuresContainer}>
-                <Text style={styles.featuresTitle}>Fonctionnalités disponibles:</Text>
-                {type.features.map((feature, index) => (
-                  <View key={index} style={styles.featureItem}>
-                    <Text style={styles.featureBullet}>•</Text>
-                    <Text style={styles.featureText}>{feature}</Text>
-                  </View>
-                ))}
+              <Text style={styles.accountDescription}>
+                {account.description}
+              </Text>
+              
+              <View style={styles.accountDetails}>
+                <Text style={styles.accountLocation}>📍 {account.city}</Text>
+                <Text style={styles.accountRating}>
+                  ⭐ {account.rating} ({account.reviewCount} avis)
+                </Text>
               </View>
+              
+              {account.userType === 'provider' && account.services && (
+                <View style={styles.servicesList}>
+                  {account.services.slice(0, 3).map((service, serviceIndex) => (
+                    <View key={serviceIndex} style={styles.serviceTag}>
+                      <Text style={styles.serviceText}>{service}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+              
+              {account.userType === 'business' && account.amenities && (
+                <View style={styles.servicesList}>
+                  {account.amenities.slice(0, 3).map((amenity, amenityIndex) => (
+                    <View key={amenityIndex} style={styles.serviceTag}>
+                      <Text style={styles.serviceText}>{amenity}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
             </TouchableOpacity>
           ))}
         </View>
-        
-        <View style={styles.previewSection}>
-          <Text style={styles.previewTitle}>Aperçu du compte sélectionné</Text>
-          
-          <View style={styles.previewCard}>
-            <View style={styles.previewHeader}>
-              <Image 
-                source={{ uri: selectedAccount.profileImage }} 
-                style={styles.previewAvatar}
-              />
-              <View style={styles.previewInfo}>
-                <Text style={styles.previewName}>{selectedAccount.name}</Text>
-                <Text style={styles.previewEmail}>{selectedAccount.email}</Text>
-                <View style={styles.previewBadge}>
-                  <Text style={[styles.previewBadgeText, { color: selectedAccountType?.color }]}>
-                    {selectedAccountType?.title}
-                  </Text>
-                </View>
-              </View>
-            </View>
-            
-            {selectedAccount.description && (
-              <Text style={styles.previewDescription}>
-                {selectedAccount.description}
-              </Text>
-            )}
-            
-            <View style={styles.previewStats}>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>⭐ {selectedAccount.rating}</Text>
-                <Text style={styles.statLabel}>Note</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>{selectedAccount.reviewCount}</Text>
-                <Text style={styles.statLabel}>Avis</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>📍 {selectedAccount.city}</Text>
-                <Text style={styles.statLabel}>Ville</Text>
-              </View>
-            </View>
-            
-            {/* Additional info based on account type */}
-            {selectedType === 'provider' && 'specialties' in selectedAccount && (
-              <View style={styles.additionalInfo}>
-                <Text style={styles.additionalInfoLabel}>Spécialités:</Text>
-                <Text style={styles.additionalInfoValue}>{selectedAccount.specialties}</Text>
-              </View>
-            )}
-            
-            {selectedType === 'business' && 'address' in selectedAccount && (
-              <View style={styles.additionalInfo}>
-                <Text style={styles.additionalInfoLabel}>Adresse:</Text>
-                <Text style={styles.additionalInfoValue}>{selectedAccount.address}</Text>
-              </View>
-            )}
-          </View>
-        </View>
-        
-        <View style={styles.actions}>
-          <Button
-            title={`Se connecter en tant que ${selectedAccountType?.title}`}
-            onPress={handleDemoLogin}
-            loading={isLoading}
-            style={[styles.demoButton, { backgroundColor: selectedAccountType?.color }]}
-            icon={<ArrowRight size={20} color="#fff" />}
-          />
-          
-          <TouchableOpacity 
-            style={styles.backButton}
-            onPress={() => router.back()}
-          >
-            <Text style={styles.backButtonText}>Retour</Text>
-          </TouchableOpacity>
-        </View>
       </ScrollView>
+
+      <View style={styles.bottomContainer}>
+        <Button
+          title={isLoading ? "Connexion..." : "Se connecter avec ce compte"}
+          onPress={handleDemoLogin}
+          disabled={!selectedAccount || isLoading}
+          fullWidth
+        />
+        
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
+          <Text style={styles.backButtonText}>Retour</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -247,209 +228,132 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontSize: 24,
-    fontWeight: '800',
+    fontSize: 28,
+    fontWeight: '900',
     color: Colors.text,
+    marginBottom: 12,
     textAlign: 'center',
-    marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
     color: Colors.textLight,
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: 24,
   },
-  accountTypes: {
+  accountsContainer: {
     padding: 20,
+    paddingTop: 0,
     gap: 16,
   },
-  accountTypeCard: {
+  accountCard: {
     backgroundColor: '#fff',
     borderRadius: 16,
     padding: 20,
     borderWidth: 2,
     borderColor: Colors.border,
-  },
-  selectedCard: {
-    borderWidth: 2,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  cardInfo: {
-    flex: 1,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: Colors.text,
-    marginBottom: 4,
-  },
-  cardSubtitle: {
-    fontSize: 14,
-    color: Colors.textLight,
-  },
-  checkmark: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  checkmarkText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  cardDescription: {
-    fontSize: 14,
-    color: Colors.text,
-    lineHeight: 20,
-    marginBottom: 16,
-  },
-  featuresContainer: {
-    backgroundColor: Colors.backgroundAlt,
-    borderRadius: 12,
-    padding: 16,
-  },
-  featuresTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: Colors.text,
-    marginBottom: 8,
-  },
-  featureItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  featureBullet: {
-    fontSize: 16,
-    color: Colors.primary,
-    marginRight: 8,
-    fontWeight: '700',
-  },
-  featureText: {
-    fontSize: 14,
-    color: Colors.text,
-    flex: 1,
-  },
-  previewSection: {
-    padding: 20,
-  },
-  previewTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: Colors.text,
-    marginBottom: 16,
-  },
-  previewCard: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4,
   },
-  previewHeader: {
+  selectedCard: {
+    borderColor: Colors.primary,
+    backgroundColor: 'rgba(99, 102, 241, 0.02)',
+  },
+  accountHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
   },
-  previewAvatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    marginRight: 16,
+  accountIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
   },
-  previewInfo: {
+  accountInfo: {
     flex: 1,
   },
-  previewName: {
+  accountType: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: Colors.primary,
+    textTransform: 'uppercase',
+    marginBottom: 2,
+  },
+  accountName: {
     fontSize: 18,
     fontWeight: '700',
     color: Colors.text,
-    marginBottom: 4,
   },
-  previewEmail: {
-    fontSize: 14,
-    color: Colors.textLight,
-    marginBottom: 8,
-  },
-  previewBadge: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    backgroundColor: Colors.backgroundAlt,
+  radioButton: {
+    width: 24,
+    height: 24,
     borderRadius: 12,
+    borderWidth: 2,
+    borderColor: Colors.border,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  previewBadgeText: {
-    fontSize: 12,
-    fontWeight: '600',
-    textTransform: 'uppercase',
+  radioButtonSelected: {
+    borderColor: Colors.primary,
   },
-  previewDescription: {
+  radioButtonInner: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: Colors.primary,
+  },
+  accountDescription: {
     fontSize: 14,
     color: Colors.text,
     lineHeight: 20,
-    marginBottom: 16,
+    marginBottom: 12,
   },
-  previewStats: {
+  accountDetails: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingTop: 16,
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  accountLocation: {
+    fontSize: 14,
+    color: Colors.textLight,
+  },
+  accountRating: {
+    fontSize: 14,
+    color: Colors.textLight,
+  },
+  servicesList: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  serviceTag: {
+    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  serviceText: {
+    fontSize: 12,
+    color: Colors.primary,
+    fontWeight: '500',
+  },
+  bottomContainer: {
+    padding: 20,
+    paddingBottom: 34,
+    backgroundColor: '#fff',
     borderTopWidth: 1,
     borderTopColor: Colors.border,
-    marginBottom: 16,
-  },
-  statItem: {
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: Colors.text,
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: Colors.textLight,
-  },
-  additionalInfo: {
-    marginTop: 8,
-  },
-  additionalInfoLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: Colors.text,
-    marginBottom: 4,
-  },
-  additionalInfoValue: {
-    fontSize: 14,
-    color: Colors.textLight,
-  },
-  actions: {
-    padding: 20,
-    gap: 16,
-  },
-  demoButton: {
-    borderRadius: 12,
   },
   backButton: {
     alignItems: 'center',
-    paddingVertical: 16,
+    paddingVertical: 12,
+    marginTop: 12,
   },
   backButtonText: {
     fontSize: 16,

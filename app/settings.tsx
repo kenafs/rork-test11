@@ -52,11 +52,9 @@ export default function SettingsScreen() {
               console.log("Bouton déconnexion pressé dans settings");
               await logout();
               console.log("Logout appelé depuis settings, redirection...");
-              // Force navigation to index page
               router.replace("/");
             } catch (error) {
               console.error('Logout error in settings:', error);
-              // Force navigation even if logout fails
               router.replace("/");
             }
           }
