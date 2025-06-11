@@ -402,7 +402,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 120, // Increased padding for submit button
+    paddingBottom: 20, // Reduced padding since we have fixed submit button
   },
   section: {
     marginBottom: 32,
@@ -545,6 +545,7 @@ const styles = StyleSheet.create({
     paddingBottom: Platform.OS === 'ios' ? 40 : 20,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
+    marginBottom: Platform.OS === 'ios' ? 90 : 75, // Add margin to account for tab bar
   },
   submitButton: {
     backgroundColor: Colors.primary,

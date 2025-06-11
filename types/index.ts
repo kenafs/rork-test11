@@ -148,7 +148,7 @@ export interface Quote {
   tax: number;
   total: number;
   currency: string;
-  status: 'pending' | 'accepted' | 'rejected' | 'expired';
+  status: 'pending' | 'accepted' | 'rejected' | 'expired' | 'draft';
   validUntil: number;
   createdAt: number;
   updatedAt: number;

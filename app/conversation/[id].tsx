@@ -390,7 +390,8 @@ const styles = StyleSheet.create({
     paddingBottom: Platform.OS === 'ios' ? 40 : 20,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
-    minHeight: Platform.OS === 'ios' ? 80 : 60, // Ensure minimum height for keyboard
+    minHeight: Platform.OS === 'ios' ? 80 : 60,
+    marginBottom: Platform.OS === 'ios' ? 90 : 75, // Add margin to account for tab bar
   },
   inputWrapper: {
     flex: 1,

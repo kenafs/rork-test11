@@ -71,6 +71,7 @@ export default function HomeScreen() {
   
   // Ensure filteredListings is always an array
   const safeFilteredListings = Array.isArray(filteredListings) ? filteredListings : [];
+  const safeFavorites = Array.isArray(favorites) ? favorites : [];
   
   // Landing page for non-authenticated users
   if (!user) {
@@ -132,7 +133,7 @@ export default function HomeScreen() {
           
           {/* Search Bar */}
           <SearchBar
-            value={searchQuery}
+            value={searchQuery || ''}
             onChangeText={handleSearch}
             onClear={handleClearSearch}
             onLocationPress={handleLocationPress}
@@ -252,7 +253,7 @@ export default function HomeScreen() {
             <View style={styles.statsRow}>
               <View style={styles.statCard}>
                 <Heart size={16} color="#FF6B6B" />
-                <Text style={styles.statCardNumber}>{favorites?.length || 0}</Text>
+                <Text style={styles.statCardNumber}>{safeFavorites.length || 0}</Text>
                 <Text style={styles.statCardLabel}>Favoris</Text>
               </View>
               <View style={styles.statCard}>
@@ -287,7 +288,7 @@ export default function HomeScreen() {
         
         {/* Search Bar */}
         <SearchBar
-          value={searchQuery}
+          value={searchQuery || ''}
           onChangeText={handleSearch}
           onClear={handleClearSearch}
           onLocationPress={handleLocationPress}
@@ -357,7 +358,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 120, // Add padding to prevent content being hidden behind tab bar
+    paddingBottom: 140, // Increased padding to prevent content being hidden behind tab bar
   },
   heroSection: {
     backgroundColor: Colors.primary,
@@ -531,7 +532,7 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    bottom: 100, // Position above tab bar
+    bottom: 120, // Position above tab bar
     right: 20,
     width: 56,
     height: 56,

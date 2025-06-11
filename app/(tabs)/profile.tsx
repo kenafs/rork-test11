@@ -445,7 +445,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.backgroundAlt,
   },
   scrollContent: {
-    paddingBottom: 120, // Add padding to prevent content being hidden behind tab bar
+    paddingBottom: 140, // Increased padding to prevent content being hidden behind tab bar
   },
   header: {
     backgroundColor: '#fff',

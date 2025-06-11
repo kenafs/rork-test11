@@ -311,14 +311,7 @@ export const useAuth = create<AuthState>()(
           
           // Clear persisted storage completely
           try {
-            await AsyncStorage.multiRemove([
-              'auth-storage',
-              'messages-storage', 
-              'quotes-storage',
-              'favorites-storage',
-              'settings-storage',
-              'language-storage'
-            ]);
+            await AsyncStorage.clear();
             console.log('All storage cleared successfully');
           } catch (storageError) {
             console.error('Error clearing storage:', storageError);

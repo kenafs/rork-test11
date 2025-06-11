@@ -49,7 +49,7 @@ export default function SearchScreen() {
   
   // Update local search query when store search query changes
   useEffect(() => {
-    setSearchQuery(storeSearchQuery);
+    setSearchQuery(storeSearchQuery || '');
   }, [storeSearchQuery]);
   
   // Handle search
@@ -154,14 +154,14 @@ const styles = StyleSheet.create({
   },
   categorySection: {
     backgroundColor: '#fff',
-    paddingBottom: 8,
+    paddingBottom: 16, // Increased padding to prevent cut-off
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
   },
   listContent: {
     padding: 20,
     paddingTop: 8,
-    paddingBottom: 120, // Add padding to prevent content being hidden behind tab bar
+    paddingBottom: 140, // Increased padding to prevent content being hidden behind tab bar
   },
   locationContainer: {
     flexDirection: 'row',
