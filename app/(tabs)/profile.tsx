@@ -3,22 +3,23 @@ import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Image, Alert, Lin
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuotes } from '@/hooks/useQuotes';
+import { useListings } from '@/hooks/useListings';
 import { User, Provider, Venue } from '@/types';
 import Colors from '@/constants/colors';
 import Button from '@/components/Button';
 import RatingStars from '@/components/RatingStars';
 import { MapPin, Mail, Phone, Calendar, Edit, Plus, Globe, Instagram, ExternalLink, FileText, LogOut } from 'lucide-react-native';
-import { mockListings } from '@/mocks/listings';
 import ListingCard from '@/components/ListingCard';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuth();
   const { getQuotesByUser, getQuotesForUser } = useQuotes();
+  const { getUserListings } = useListings();
   
   // Get user's listings
   const userListings = user 
-    ? mockListings.filter(listing => listing.createdBy === user.id).slice(0, 3)
+    ? getUserListings(user.id).slice(0, 3)
     : [];
   
   // Get user's quotes (only for providers)

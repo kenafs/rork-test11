@@ -22,6 +22,7 @@ interface ListingsState {
   clearFilters: () => void;
   getListingById: (id: string) => Listing | undefined;
   getUserListings: (userId: string) => Listing[];
+  applyFilters: (listings: Listing[], searchQuery?: string, category?: string | null) => Listing[];
 }
 
 export const useListings = create<ListingsState>()(
@@ -193,7 +194,7 @@ export const useListings = create<ListingsState>()(
         return get().listings.filter(listing => listing.createdBy === userId);
       },
       
-      // Helper function to apply filters (not exposed in interface)
+      // Helper function to apply filters
       applyFilters: (listings: Listing[], searchQuery?: string, category?: string | null) => {
         const state = get();
         const query = searchQuery !== undefined ? searchQuery : state.searchQuery;

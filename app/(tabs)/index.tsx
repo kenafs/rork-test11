@@ -22,7 +22,8 @@ export default function HomeScreen() {
     refreshListings,
     filterBySearch,
     filterByCategory,
-    clearFilters 
+    clearFilters,
+    selectedCategory 
   } = useListings();
   const { city, hasPermission, requestPermission } = useLocation();
   const [refreshing, setRefreshing] = useState(false);
@@ -107,7 +108,10 @@ export default function HomeScreen() {
       {/* Search and Filters */}
       <View style={styles.searchSection}>
         <SearchBar onSearch={handleSearch} />
-        <CategoryFilter onCategorySelect={handleCategoryFilter} />
+        <CategoryFilter 
+          onCategorySelect={handleCategoryFilter} 
+          selectedCategory={selectedCategory}
+        />
       </View>
 
       {/* Quick Actions */}

@@ -4,30 +4,48 @@ import { Search, X, MapPin } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 
 interface SearchBarProps {
+  value?: string;
   onSearch?: (query: string) => void;
+  onChangeText?: (text: string) => void;
+  onClear?: () => void;
   placeholder?: string;
   showLocationButton?: boolean;
   onLocationPress?: () => void;
 }
 
 export default function SearchBar({
+  value: propValue,
   onSearch,
+  onChangeText,
+  onClear,
   placeholder = "Rechercher...",
   showLocationButton = false,
   onLocationPress,
 }: SearchBarProps) {
-  const [value, setValue] = useState('');
+  const [internalValue, setInternalValue] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   
+  const value = propValue !== undefined ? propValue : internalValue;
+  
   const handleChangeText = (text: string) => {
-    setValue(text);
+    if (propValue === undefined) {
+      setInternalValue(text);
+    }
+    if (onChangeText) {
+      onChangeText(text);
+    }
     if (onSearch) {
       onSearch(text);
     }
   };
   
   const handleClear = () => {
-    setValue('');
+    if (propValue === undefined) {
+      setInternalValue('');
+    }
+    if (onClear) {
+      onClear();
+    }
     if (onSearch) {
       onSearch('');
     }

@@ -11,7 +11,7 @@ interface CategoryFilterProps {
 export default function CategoryFilter({ onCategorySelect, selectedCategory }: CategoryFilterProps) {
   
   const handleCategoryPress = (category: any) => {
-    const categoryId = category.id === 'all' ? null : category.id;
+    const categoryId = category.id === 'all' ? null : category.name;
     if (onCategorySelect) {
       onCategorySelect(categoryId);
     }
@@ -40,7 +40,7 @@ export default function CategoryFilter({ onCategorySelect, selectedCategory }: C
           key={category.id}
           style={[
             styles.categoryButton,
-            selectedCategory === category.id && styles.selectedCategory,
+            selectedCategory === category.name && styles.selectedCategory,
           ]}
           onPress={() => handleCategoryPress(category)}
           activeOpacity={0.7}
@@ -48,7 +48,7 @@ export default function CategoryFilter({ onCategorySelect, selectedCategory }: C
           <Text
             style={[
               styles.categoryText,
-              selectedCategory === category.id && styles.selectedCategoryText,
+              selectedCategory === category.name && styles.selectedCategoryText,
             ]}
           >
             {category.name}
