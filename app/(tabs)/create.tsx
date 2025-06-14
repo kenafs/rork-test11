@@ -399,7 +399,7 @@ const styles = StyleSheet.create({
   },
   locationButtonText: {
     fontSize: 16,
-    color: city ? Colors.text : Colors.textLight,
+    color: Colors.text,
   },
   submitContainer: {
     backgroundColor: '#fff',
