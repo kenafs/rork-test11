@@ -36,7 +36,11 @@ export default function HomeScreen() {
     }
   };
 
-  const handleCategoryPress = (category: any) => {
+  const handleClearSearch = () => {
+    filterBySearch('');
+  };
+
+  const handleCategoryPress = (category: { id: string; name: string; icon: string }) => {
     filterByCategory(category.name);
     router.push(`/search?category=${category.name}`);
   };
@@ -79,7 +83,7 @@ export default function HomeScreen() {
         <SearchBar
           value=""
           onChangeText={handleSearch}
-          onClear={() => {}}
+          onClear={handleClearSearch}
           onLocationPress={handleLocationPress}
           placeholder="Rechercher un service, un lieu..."
         />

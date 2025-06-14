@@ -2,14 +2,14 @@ import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Star, Users, MapPin } from 'lucide-react-native';
 import Colors from '@/constants/colors';
+import { Sparkles, Users, Search, Star } from 'lucide-react-native';
 
 export default function WelcomeScreen() {
   const router = useRouter();
 
   const handleGetStarted = () => {
-    router.push('/(auth)/login');
+    router.replace('/(tabs)');
   };
 
   const handleTryDemo = () => {
@@ -18,23 +18,21 @@ export default function WelcomeScreen() {
 
   return (
     <LinearGradient
-      colors={[Colors.primary, '#8B5CF6']}
+      colors={[Colors.primary, Colors.secondary]}
       style={styles.container}
     >
       <View style={styles.content}>
         {/* Logo */}
         <View style={styles.logoContainer}>
-          <View style={styles.logoCircle}>
-            <Star size={32} color="#fff" fill="#fff" />
+          <View style={styles.logoIcon}>
+            <Sparkles size={32} color="#fff" />
           </View>
         </View>
 
         {/* Title */}
         <Text style={styles.title}>EventApp</Text>
         <Text style={styles.subtitle}>
-          La plateforme qui connecte clients,{'\n'}
-          prestataires et établissements pour{'\n'}
-          des événements réussis
+          La plateforme qui connecte clients, prestataires et établissements pour des événements réussis
         </Text>
 
         {/* Action Buttons */}
@@ -53,41 +51,38 @@ export default function WelcomeScreen() {
           <Text style={styles.featuresTitle}>Pourquoi choisir EventApp ?</Text>
           
           <View style={styles.featuresList}>
-            <View style={styles.feature}>
+            <View style={styles.featureItem}>
               <View style={styles.featureIcon}>
                 <Users size={20} color={Colors.primary} />
               </View>
               <View style={styles.featureContent}>
                 <Text style={styles.featureTitle}>Trouvez des prestataires</Text>
                 <Text style={styles.featureText}>
-                  DJ, photographes, traiteurs... Tous les{'\n'}
-                  professionnels pour vos événements
+                  DJ, photographes, traiteurs... Tous les professionnels pour vos événements
                 </Text>
               </View>
             </View>
 
-            <View style={styles.feature}>
+            <View style={styles.featureItem}>
               <View style={styles.featureIcon}>
-                <MapPin size={20} color={Colors.primary} />
+                <Search size={20} color={Colors.primary} />
               </View>
               <View style={styles.featureContent}>
-                <Text style={styles.featureTitle}>Découvrez des lieux</Text>
+                <Text style={styles.featureTitle}>Recherche simplifiée</Text>
                 <Text style={styles.featureText}>
-                  Salles, restaurants, espaces uniques{'\n'}
-                  pour organiser vos événements
+                  Filtrez par catégorie, localisation et budget pour trouver ce qu'il vous faut
                 </Text>
               </View>
             </View>
 
-            <View style={styles.feature}>
+            <View style={styles.featureItem}>
               <View style={styles.featureIcon}>
                 <Star size={20} color={Colors.primary} />
               </View>
               <View style={styles.featureContent}>
-                <Text style={styles.featureTitle}>Gérez vos projets</Text>
+                <Text style={styles.featureTitle}>Avis vérifiés</Text>
                 <Text style={styles.featureText}>
-                  Devis, messages, planning...{'\n'}
-                  Tout en un seul endroit
+                  Consultez les avis clients pour faire le bon choix en toute confiance
                 </Text>
               </View>
             </View>
@@ -106,13 +101,13 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 24,
     paddingTop: Platform.OS === 'ios' ? 80 : 60,
-    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
+    paddingBottom: 40,
   },
   logoContainer: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 32,
   },
-  logoCircle: {
+  logoIcon: {
     width: 80,
     height: 80,
     borderRadius: 40,
@@ -121,7 +116,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontSize: 48,
+    fontSize: 36,
     fontWeight: '700',
     color: '#fff',
     textAlign: 'center',
@@ -132,16 +127,16 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
     lineHeight: 26,
-    marginBottom: 60,
+    marginBottom: 48,
   },
   buttonContainer: {
-    marginBottom: 60,
+    marginBottom: 48,
   },
   primaryButton: {
     backgroundColor: '#fff',
     paddingVertical: 16,
     paddingHorizontal: 32,
-    borderRadius: 25,
+    borderRadius: 16,
     marginBottom: 16,
   },
   primaryButtonText: {
@@ -152,10 +147,10 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     borderWidth: 2,
-    borderColor: '#fff',
-    paddingVertical: 14,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    paddingVertical: 16,
     paddingHorizontal: 32,
-    borderRadius: 25,
+    borderRadius: 16,
   },
   secondaryButtonText: {
     fontSize: 18,
@@ -168,21 +163,21 @@ const styles = StyleSheet.create({
   },
   featuresTitle: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: '600',
     color: '#fff',
-    marginBottom: 32,
+    marginBottom: 24,
   },
   featuresList: {
-    flex: 1,
+    gap: 24,
   },
-  feature: {
+  featureItem: {
     flexDirection: 'row',
-    marginBottom: 32,
+    alignItems: 'flex-start',
   },
   featureIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',

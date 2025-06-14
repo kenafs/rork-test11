@@ -16,6 +16,7 @@ interface ListingsState {
   selectedCategory: string | null;
   searchQuery: string | null;
   isLoading: boolean;
+  listings: Listing[];
   
   fetchListings: () => Promise<void>;
   refreshListings: () => Promise<void>;
@@ -29,7 +30,6 @@ interface ListingsState {
   clearFilters: () => void;
   getAllListings: () => Listing[];
   getUserListings: (userId: string) => Listing[];
-  listings: Listing[];
 }
 
 const getEmptyUserData = (): UserListingsData => ({
@@ -121,13 +121,12 @@ export const useListings = create<ListingsState>()(
             
             updatedUserListings[user.id].userCreatedListings.push(newListing);
             
-            const allListings = get().getAllListings();
-            const updatedAllListings = [...allListings, newListing];
+            const allListings = [...state.listings, newListing];
             
             return {
               userListings: updatedUserListings,
-              filteredListings: updatedAllListings,
-              listings: updatedAllListings,
+              filteredListings: allListings,
+              listings: allListings,
               isLoading: false
             };
           });

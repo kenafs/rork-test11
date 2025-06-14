@@ -82,7 +82,14 @@ export default function ProfileScreen() {
   const handlePaymentSettings = () => {
     Alert.alert(
       'Moyens de paiement',
-      'Gestion des paiements:\n\n• Ajouter une carte bancaire\n• Configurer les virements\n• Historique des transactions\n• Intégration Stripe sécurisée\n\nCette fonctionnalité sera disponible prochainement.',
+      'Gestion des paiements:
+
+• Ajouter une carte bancaire
+• Configurer les virements
+• Historique des transactions
+• Intégration Stripe sécurisée
+
+Cette fonctionnalité sera disponible prochainement.',
       [{ text: 'OK' }]
     );
   };

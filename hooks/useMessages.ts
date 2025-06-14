@@ -70,7 +70,6 @@ export const useMessages = create<MessagesState>()(
             return;
           }
           
-          // Just mark as loaded - conversations are already in state
           set({ isLoading: false });
           
           console.log('Conversations fetched for user:', user.id);
@@ -92,7 +91,6 @@ export const useMessages = create<MessagesState>()(
             return;
           }
           
-          // Messages are already in state
           set({ isLoading: false });
           
           console.log('Messages fetched for conversation:', conversationId);

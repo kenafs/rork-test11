@@ -139,7 +139,7 @@ export default function CreateListingScreen() {
     }
   };
 
-  const handleCategorySelect = (category: any) => {
+  const handleCategorySelect = (category: { id: string; name: string; icon: string }) => {
     setSelectedCategory(category.name);
   };
 
