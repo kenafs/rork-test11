@@ -15,10 +15,14 @@ interface MessageContact {
   timestamp?: number;
 }
 
-interface MessagesState {
+interface UserMessagesData {
   conversations: Conversation[];
   messages: { [conversationId: string]: Message[] };
   contacts: MessageContact[];
+}
+
+interface MessagesState {
+  userMessages: { [userId: string]: UserMessagesData };
   isLoading: boolean;
   
   fetchConversations: () => Promise<void>;
@@ -31,15 +35,28 @@ interface MessagesState {
   addMessage: (contact: MessageContact) => void;
   getConversationByParticipant: (participantId: string) => Conversation | undefined;
   getAllConversations: () => MessageContact[];
+  getCurrentUserData: () => UserMessagesData;
 }
+
+const getEmptyUserData = (): UserMessagesData => ({
+  conversations: [],
+  messages: {},
+  contacts: [],
+});
 
 export const useMessages = create<MessagesState>()(
   persist(
     (set, get) => ({
-      conversations: [],
-      messages: {},
-      contacts: [],
+      userMessages: {},
       isLoading: false,
+      
+      getCurrentUserData: () => {
+        const user = useAuth.getState().user;
+        if (!user) return getEmptyUserData();
+        
+        const { userMessages } = get();
+        return userMessages[user.id] || getEmptyUserData();
+      },
       
       fetchConversations: async () => {
         set({ isLoading: true });
@@ -53,14 +70,10 @@ export const useMessages = create<MessagesState>()(
             return;
           }
           
-          const existingConversations = get().conversations;
+          // Just mark as loaded - conversations are already in state
+          set({ isLoading: false });
           
-          set({ 
-            conversations: existingConversations,
-            isLoading: false 
-          });
-          
-          console.log('Conversations fetched:', existingConversations.length);
+          console.log('Conversations fetched for user:', user.id);
         } catch (error) {
           console.error('Error fetching conversations:', error);
           set({ isLoading: false });
@@ -79,17 +92,10 @@ export const useMessages = create<MessagesState>()(
             return;
           }
           
-          const existingMessages = get().messages[conversationId] || [];
+          // Messages are already in state
+          set({ isLoading: false });
           
-          set(state => ({
-            messages: {
-              ...state.messages,
-              [conversationId]: existingMessages,
-            },
-            isLoading: false,
-          }));
-          
-          console.log('Messages fetched for conversation:', conversationId, existingMessages.length);
+          console.log('Messages fetched for conversation:', conversationId);
         } catch (error) {
           console.error('Error fetching messages:', error);
           set({ isLoading: false });
@@ -114,60 +120,106 @@ export const useMessages = create<MessagesState>()(
             type: 'text',
           };
           
-          // Add message to conversation immediately
-          set(state => ({
-            messages: {
-              ...state.messages,
-              [conversationId]: [
-                ...(state.messages[conversationId] || []),
-                newMessage,
-              ],
-            },
-          }));
-          
-          // Update conversation's last message and move to top
+          // Add message to current user's data
           set(state => {
-            const updatedConversations = state.conversations.map(conv => {
-              if (conv.id === conversationId) {
-                return {
-                  ...conv,
-                  lastMessage: newMessage,
-                  updatedAt: Date.now(),
-                };
-              }
-              return conv;
-            });
+            const updatedUserMessages = { ...state.userMessages };
+            if (!updatedUserMessages[user.id]) {
+              updatedUserMessages[user.id] = getEmptyUserData();
+            }
             
-            updatedConversations.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
-            
-            return {
-              conversations: updatedConversations,
+            updatedUserMessages[user.id] = {
+              ...updatedUserMessages[user.id],
+              messages: {
+                ...updatedUserMessages[user.id].messages,
+                [conversationId]: [
+                  ...(updatedUserMessages[user.id].messages[conversationId] || []),
+                  newMessage,
+                ],
+              },
             };
+            
+            return { userMessages: updatedUserMessages };
           });
           
-          // Update contact info to ensure it appears in conversation list
+          // Update conversation's last message
+          set(state => {
+            const updatedUserMessages = { ...state.userMessages };
+            if (updatedUserMessages[user.id]) {
+              const updatedConversations = updatedUserMessages[user.id].conversations.map(conv => {
+                if (conv.id === conversationId) {
+                  return {
+                    ...conv,
+                    lastMessage: newMessage,
+                    updatedAt: Date.now(),
+                  };
+                }
+                return conv;
+              });
+              
+              updatedConversations.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+              
+              updatedUserMessages[user.id] = {
+                ...updatedUserMessages[user.id],
+                conversations: updatedConversations,
+              };
+            }
+            
+            return { userMessages: updatedUserMessages };
+          });
+          
+          // Also add message to receiver's data if they exist
           const allUsers = [...mockProviders, ...mockVenues];
           const receiverUser = allUsers.find(u => u.id === receiverId);
           
           if (receiverUser) {
-            get().addContact({
-              participantId: receiverId,
-              participantName: receiverUser.name,
-              participantImage: receiverUser.profileImage,
-              participantType: receiverUser.userType === 'provider' ? 'provider' : 
-                             receiverUser.userType === 'business' ? 'business' : 'client',
-              lastMessage: content,
-              unread: 0,
-              timestamp: Date.now(),
+            set(state => {
+              const updatedUserMessages = { ...state.userMessages };
+              if (!updatedUserMessages[receiverId]) {
+                updatedUserMessages[receiverId] = getEmptyUserData();
+              }
+              
+              // Add message to receiver's messages
+              updatedUserMessages[receiverId] = {
+                ...updatedUserMessages[receiverId],
+                messages: {
+                  ...updatedUserMessages[receiverId].messages,
+                  [conversationId]: [
+                    ...(updatedUserMessages[receiverId].messages[conversationId] || []),
+                    newMessage,
+                  ],
+                },
+              };
+              
+              // Update receiver's conversation
+              const receiverConvExists = updatedUserMessages[receiverId].conversations.find(c => c.id === conversationId);
+              if (receiverConvExists) {
+                updatedUserMessages[receiverId].conversations = updatedUserMessages[receiverId].conversations.map(conv => {
+                  if (conv.id === conversationId) {
+                    return {
+                      ...conv,
+                      lastMessage: newMessage,
+                      updatedAt: Date.now(),
+                    };
+                  }
+                  return conv;
+                });
+              } else {
+                // Create conversation for receiver if it doesn't exist
+                const newConversation: Conversation = {
+                  id: conversationId,
+                  participants: [user.id, receiverId],
+                  createdAt: Date.now(),
+                  updatedAt: Date.now(),
+                  lastMessage: newMessage,
+                };
+                updatedUserMessages[receiverId].conversations.unshift(newConversation);
+              }
+              
+              return { userMessages: updatedUserMessages };
             });
           }
           
           console.log('Message sent successfully:', newMessage);
-          
-          // Force refresh to update UI
-          setTimeout(() => {
-            get().refreshConversations();
-          }, 100);
           
         } catch (error) {
           console.error('Error sending message:', error);
@@ -182,8 +234,9 @@ export const useMessages = create<MessagesState>()(
           
           console.log('Creating conversation with participant:', participantId);
           
-          // Check if conversation already exists
-          const existingConversation = get().conversations.find(conv =>
+          // Check if conversation already exists for current user
+          const userData = get().getCurrentUserData();
+          const existingConversation = userData.conversations.find(conv =>
             conv.participants.includes(user.id) && conv.participants.includes(participantId)
           );
           
@@ -206,20 +259,31 @@ export const useMessages = create<MessagesState>()(
           
           console.log('Creating new conversation:', newConversation);
           
-          set(state => ({
-            conversations: [newConversation, ...state.conversations],
-            messages: {
-              ...state.messages,
-              [conversationId]: [],
-            },
-          }));
+          // Add conversation to current user's data
+          set(state => {
+            const updatedUserMessages = { ...state.userMessages };
+            if (!updatedUserMessages[user.id]) {
+              updatedUserMessages[user.id] = getEmptyUserData();
+            }
+            
+            updatedUserMessages[user.id] = {
+              ...updatedUserMessages[user.id],
+              conversations: [newConversation, ...updatedUserMessages[user.id].conversations],
+              messages: {
+                ...updatedUserMessages[user.id].messages,
+                [conversationId]: [],
+              },
+            };
+            
+            return { userMessages: updatedUserMessages };
+          });
           
           // Send initial message if provided
           if (initialMessage) {
             await get().sendMessage(conversationId, initialMessage, participantId);
           }
           
-          // Add contact info to ensure it appears in conversation list
+          // Add contact info
           const allUsers = [...mockProviders, ...mockVenues];
           const participantUser = allUsers.find(u => u.id === participantId);
           
@@ -249,14 +313,16 @@ export const useMessages = create<MessagesState>()(
           const user = useAuth.getState().user;
           if (!user) return;
           
-          set(state => ({
-            messages: {
-              ...state.messages,
-              [conversationId]: (state.messages[conversationId] || []).map(msg =>
+          set(state => {
+            const updatedUserMessages = { ...state.userMessages };
+            if (updatedUserMessages[user.id] && updatedUserMessages[user.id].messages[conversationId]) {
+              updatedUserMessages[user.id].messages[conversationId] = updatedUserMessages[user.id].messages[conversationId].map(msg =>
                 msg.receiverId === user.id ? { ...msg, read: true } : msg
-              ),
-            },
-          }));
+              );
+            }
+            
+            return { userMessages: updatedUserMessages };
+          });
           
           console.log('Messages marked as read for conversation:', conversationId);
         } catch (error) {
@@ -270,12 +336,20 @@ export const useMessages = create<MessagesState>()(
       },
       
       addContact: (contact: MessageContact) => {
+        const user = useAuth.getState().user;
+        if (!user) return;
+        
         set(state => {
-          const existingContactIndex = state.contacts.findIndex(c => c.participantId === contact.participantId);
+          const updatedUserMessages = { ...state.userMessages };
+          if (!updatedUserMessages[user.id]) {
+            updatedUserMessages[user.id] = getEmptyUserData();
+          }
+          
+          const existingContactIndex = updatedUserMessages[user.id].contacts.findIndex(c => c.participantId === contact.participantId);
           
           let updatedContacts;
           if (existingContactIndex >= 0) {
-            updatedContacts = [...state.contacts];
+            updatedContacts = [...updatedUserMessages[user.id].contacts];
             updatedContacts[existingContactIndex] = {
               ...updatedContacts[existingContactIndex],
               lastMessage: contact.lastMessage,
@@ -284,17 +358,20 @@ export const useMessages = create<MessagesState>()(
           } else {
             updatedContacts = [
               { ...contact, timestamp: contact.timestamp || Date.now() },
-              ...state.contacts
+              ...updatedUserMessages[user.id].contacts
             ];
           }
           
           updatedContacts.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
           
-          console.log('Updated contacts:', updatedContacts.length);
-          
-          return {
+          updatedUserMessages[user.id] = {
+            ...updatedUserMessages[user.id],
             contacts: updatedContacts,
           };
+          
+          console.log('Updated contacts for user:', user.id, updatedContacts.length);
+          
+          return { userMessages: updatedUserMessages };
         });
       },
       
@@ -306,15 +383,18 @@ export const useMessages = create<MessagesState>()(
         const user = useAuth.getState().user;
         if (!user) return undefined;
         
-        return get().conversations.find(conv =>
+        const userData = get().getCurrentUserData();
+        return userData.conversations.find(conv =>
           conv.participants.includes(user.id) && conv.participants.includes(participantId)
         );
       },
       
       getAllConversations: () => {
-        const { conversations, messages, contacts } = get();
         const user = useAuth.getState().user;
         if (!user) return [];
+        
+        const userData = get().getCurrentUserData();
+        const { conversations, messages, contacts } = userData;
         
         const conversationContacts: MessageContact[] = conversations.map(conv => {
           const otherParticipantId = conv.participants.find(p => p !== user.id) || '';
@@ -360,7 +440,7 @@ export const useMessages = create<MessagesState>()(
         
         const sortedContacts = allContacts.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
         
-        console.log('Getting all conversations:', sortedContacts.length);
+        console.log('Getting all conversations for user:', user.id, sortedContacts.length);
         return sortedContacts;
       },
     }),
@@ -368,9 +448,7 @@ export const useMessages = create<MessagesState>()(
       name: 'messages-storage',
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
-        conversations: state.conversations,
-        messages: state.messages,
-        contacts: state.contacts,
+        userMessages: state.userMessages,
       }),
     }
   )

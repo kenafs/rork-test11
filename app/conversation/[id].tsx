@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { StyleSheet, View, Text, FlatList, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { StyleSheet, View, Text, FlatList, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Alert, Dimensions } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useMessages } from '@/hooks/useMessages';
 import { mockProviders, mockVenues } from '@/mocks/users';
 import Colors from '@/constants/colors';
-import { Send, Paperclip, Image as ImageIcon } from 'lucide-react-native';
+import { Send, Paperclip } from 'lucide-react-native';
 
 interface Message {
   id: string;
@@ -16,11 +16,13 @@ interface Message {
   quoteId?: string;
 }
 
+const { height: screenHeight } = Dimensions.get('window');
+
 export default function ConversationScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user: currentUser, isAuthenticated } = useAuth();
-  const { messages, sendMessage, getConversationByParticipant, addContact, fetchMessages, createConversation } = useMessages();
+  const { getCurrentUserData, sendMessage, getConversationByParticipant, addContact, fetchMessages, createConversation } = useMessages();
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const flatListRef = useRef<FlatList>(null);
@@ -31,7 +33,8 @@ export default function ConversationScreen() {
   
   // Get or create conversation
   const [conversation, setConversation] = useState(getConversationByParticipant(id || ''));
-  const conversationMessages = conversation ? messages[conversation.id] || [] : [];
+  const userData = getCurrentUserData();
+  const conversationMessages = conversation ? userData.messages[conversation.id] || [] : [];
   
   // Create conversation if it doesn't exist
   useEffect(() => {
@@ -387,11 +390,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'flex-end',
     gap: 12,
-    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
-    minHeight: Platform.OS === 'ios' ? 80 : 60,
-    marginBottom: Platform.OS === 'ios' ? 90 : 75,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
   },
   inputWrapper: {
     flex: 1,

@@ -3,9 +3,14 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Listing } from '@/types';
 import { mockListings } from '@/mocks/listings';
+import { useAuth } from './useAuth';
+
+interface UserListingsData {
+  userCreatedListings: Listing[];
+}
 
 interface ListingsState {
-  listings: Listing[];
+  userListings: { [userId: string]: UserListingsData };
   filteredListings: Listing[];
   selectedCategory: string | null;
   searchQuery: string | null;
@@ -20,16 +25,33 @@ interface ListingsState {
   filterBySearch: (query: string) => void;
   filterByLocation: (latitude: number, longitude: number, radius?: number) => void;
   clearFilters: () => void;
+  getAllListings: () => Listing[];
 }
+
+const getEmptyUserData = (): UserListingsData => ({
+  userCreatedListings: [],
+});
 
 export const useListings = create<ListingsState>()(
   persist(
     (set, get) => ({
-      listings: [],
+      userListings: {},
       filteredListings: [],
       selectedCategory: null,
       searchQuery: null,
       isLoading: false,
+      
+      getAllListings: () => {
+        const { userListings } = get();
+        
+        // Combine all user-created listings with mock listings
+        const allUserListings: Listing[] = [];
+        Object.values(userListings).forEach(userData => {
+          allUserListings.push(...userData.userCreatedListings);
+        });
+        
+        return [...mockListings, ...allUserListings];
+      },
       
       fetchListings: async () => {
         set({ isLoading: true });
@@ -38,17 +60,9 @@ export const useListings = create<ListingsState>()(
           // Simulate API call
           await new Promise(resolve => setTimeout(resolve, 1000));
           
-          // Get existing listings from state and merge with mock data
-          const { listings: existingListings } = get();
-          const userCreatedListings = existingListings.filter(listing => 
-            listing.id.startsWith('listing-') && !mockListings.find(mock => mock.id === listing.id)
-          );
-          
-          // Combine mock listings with user-created listings
-          const allListings = [...mockListings, ...userCreatedListings];
+          const allListings = get().getAllListings();
           
           set({ 
-            listings: allListings,
             filteredListings: allListings,
             isLoading: false 
           });
@@ -64,6 +78,9 @@ export const useListings = create<ListingsState>()(
       },
       
       createListing: async (listingData) => {
+        const user = useAuth.getState().user;
+        if (!user) throw new Error('User must be logged in to create a listing');
+        
         set({ isLoading: true });
         
         try {
@@ -77,10 +94,18 @@ export const useListings = create<ListingsState>()(
           };
           
           set(state => {
-            const updatedListings = [...state.listings, newListing];
+            const updatedUserListings = { ...state.userListings };
+            if (!updatedUserListings[user.id]) {
+              updatedUserListings[user.id] = getEmptyUserData();
+            }
+            
+            updatedUserListings[user.id].userCreatedListings.push(newListing);
+            
+            const allListings = get().getAllListings();
+            
             return {
-              listings: updatedListings,
-              filteredListings: updatedListings,
+              userListings: updatedUserListings,
+              filteredListings: [...allListings, newListing],
               isLoading: false
             };
           });
@@ -95,6 +120,9 @@ export const useListings = create<ListingsState>()(
       },
       
       updateListing: async (id: string, updates: Partial<Listing>) => {
+        const user = useAuth.getState().user;
+        if (!user) return false;
+        
         set({ isLoading: true });
         
         try {
@@ -102,13 +130,19 @@ export const useListings = create<ListingsState>()(
           await new Promise(resolve => setTimeout(resolve, 1000));
           
           set(state => {
-            const updatedListings = state.listings.map(listing =>
-              listing.id === id ? { ...listing, ...updates } : listing
-            );
+            const updatedUserListings = { ...state.userListings };
+            
+            if (updatedUserListings[user.id]) {
+              updatedUserListings[user.id].userCreatedListings = updatedUserListings[user.id].userCreatedListings.map(listing =>
+                listing.id === id ? { ...listing, ...updates } : listing
+              );
+            }
+            
+            const allListings = get().getAllListings();
             
             return {
-              listings: updatedListings,
-              filteredListings: updatedListings,
+              userListings: updatedUserListings,
+              filteredListings: allListings,
               isLoading: false
             };
           });
@@ -123,6 +157,9 @@ export const useListings = create<ListingsState>()(
       },
       
       deleteListing: async (id: string) => {
+        const user = useAuth.getState().user;
+        if (!user) return false;
+        
         set({ isLoading: true });
         
         try {
@@ -130,11 +167,17 @@ export const useListings = create<ListingsState>()(
           await new Promise(resolve => setTimeout(resolve, 500));
           
           set(state => {
-            const updatedListings = state.listings.filter(listing => listing.id !== id);
+            const updatedUserListings = { ...state.userListings };
+            
+            if (updatedUserListings[user.id]) {
+              updatedUserListings[user.id].userCreatedListings = updatedUserListings[user.id].userCreatedListings.filter(listing => listing.id !== id);
+            }
+            
+            const allListings = get().getAllListings();
             
             return {
-              listings: updatedListings,
-              filteredListings: updatedListings,
+              userListings: updatedUserListings,
+              filteredListings: allListings,
               isLoading: false
             };
           });
@@ -149,9 +192,10 @@ export const useListings = create<ListingsState>()(
       },
       
       filterByCategory: (category: string | null) => {
-        const { listings, searchQuery } = get();
+        const { searchQuery } = get();
+        const allListings = get().getAllListings();
         
-        let filtered = [...listings];
+        let filtered = [...allListings];
         
         // Apply category filter
         if (category && category !== 'all') {
@@ -179,9 +223,10 @@ export const useListings = create<ListingsState>()(
       },
       
       filterBySearch: (query: string) => {
-        const { listings, selectedCategory } = get();
+        const { selectedCategory } = get();
+        const allListings = get().getAllListings();
         
-        let filtered = [...listings];
+        let filtered = [...allListings];
         
         // Apply category filter if exists
         if (selectedCategory && selectedCategory !== 'all') {
@@ -209,10 +254,10 @@ export const useListings = create<ListingsState>()(
       },
       
       filterByLocation: (latitude: number, longitude: number, radius: number = 50) => {
-        const { listings } = get();
+        const allListings = get().getAllListings();
         
         // Simple distance calculation (not precise but good for demo)
-        const filtered = listings.filter(listing => {
+        const filtered = allListings.filter(listing => {
           if (!listing.location) return true;
           
           const distance = Math.sqrt(
@@ -227,9 +272,9 @@ export const useListings = create<ListingsState>()(
       },
       
       clearFilters: () => {
-        const { listings } = get();
+        const allListings = get().getAllListings();
         set({ 
-          filteredListings: listings,
+          filteredListings: allListings,
           selectedCategory: null,
           searchQuery: null 
         });
@@ -239,7 +284,7 @@ export const useListings = create<ListingsState>()(
       name: 'listings-storage',
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
-        listings: state.listings,
+        userListings: state.userListings,
       }),
     }
   )

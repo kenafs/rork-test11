@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, TextInput, Alert, Platform, TouchableOpacity, KeyboardAvoidingView } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TextInput, Alert, Platform, TouchableOpacity, KeyboardAvoidingView, Dimensions } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useListings } from '@/hooks/useListings';
@@ -11,6 +11,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
 import { X, Camera, Plus, Sparkles } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+
+const { height: screenHeight } = Dimensions.get('window');
 
 export default function CreateListingScreen() {
   const router = useRouter();
@@ -146,6 +148,15 @@ export default function CreateListingScreen() {
       
       console.log('Listing created successfully:', newListing);
       
+      // Clear form
+      setTitle('');
+      setDescription('');
+      setCategory('');
+      setPrice('');
+      setImages([]);
+      setTags([]);
+      setTagInput('');
+      
       Alert.alert(
         'Succès', 
         'Votre annonce a été publiée avec succès.', 
@@ -153,31 +164,12 @@ export default function CreateListingScreen() {
           { 
             text: 'Voir l\'annonce', 
             onPress: () => {
-              // Clear form
-              setTitle('');
-              setDescription('');
-              setCategory('');
-              setPrice('');
-              setImages([]);
-              setTags([]);
-              setTagInput('');
-              
-              // Navigate to the created listing
               router.push(`/listing/${newListing.id}`);
             }
           },
           { 
             text: 'Retour à l\'accueil', 
             onPress: () => {
-              // Clear form
-              setTitle('');
-              setDescription('');
-              setCategory('');
-              setPrice('');
-              setImages([]);
-              setTags([]);
-              setTagInput('');
-              
               router.push('/(tabs)');
             }
           }
@@ -410,6 +402,9 @@ export default function CreateListingScreen() {
                 </Text>
               </View>
             </View>
+            
+            {/* Extra padding for mobile keyboard */}
+            <View style={styles.extraPadding} />
           </View>
         </ScrollView>
         
@@ -495,7 +490,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: Platform.OS === 'ios' ? 200 : 180, // Extra padding for keyboard
   },
   formCard: {
     backgroundColor: '#fff',
@@ -658,13 +653,19 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     fontWeight: '700',
   },
+  extraPadding: {
+    height: 60, // Extra space for mobile keyboard
+  },
   submitContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     backgroundColor: '#fff',
     padding: 20,
     paddingBottom: Platform.OS === 'ios' ? 40 : 20,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
-    marginBottom: Platform.OS === 'ios' ? 90 : 75,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,
