@@ -1,5 +1,3 @@
-export type UserType = 'client' | 'provider' | 'business';
-
 export interface Location {
   latitude: number;
   longitude: number;
@@ -10,8 +8,8 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  userType: UserType;
   phone?: string;
+  userType: UserType;
   profileImage?: string;
   description?: string;
   website?: string;
@@ -46,6 +44,8 @@ export interface Client extends User {
   userType: 'client';
 }
 
+export type UserType = 'client' | 'provider' | 'business';
+
 export interface Listing {
   id: string;
   title: string;
@@ -56,20 +56,19 @@ export interface Listing {
   creatorImage?: string;
   creatorRating?: number;
   creatorReviewCount?: number;
-  location?: Location;
+  location: Location;
   category: string;
   price?: number;
   images?: string[];
   tags?: string[];
-  date?: number;
   createdAt: number;
 }
 
 export interface Review {
   id: string;
-  reviewerId: string;
-  reviewerName: string;
-  reviewerImage?: string;
+  userId: string;
+  userName: string;
+  userImage?: string;
   targetId: string;
   targetType: 'user' | 'listing';
   rating: number;
@@ -81,25 +80,33 @@ export interface Message {
   id: string;
   conversationId: string;
   senderId: string;
-  receiverId: string;
   content: string;
   timestamp: number;
   read: boolean;
-  type: 'text' | 'image' | 'quote';
-  quoteId?: string;
 }
 
 export interface Conversation {
   id: string;
   participants: string[];
-  lastMessage?: Message;
-  createdAt: number;
-  updatedAt?: number;
+  lastMessage?: string;
+  lastMessageTime?: number;
+  unreadCount: number;
+}
+
+export interface Contact {
+  participantId: string;
+  participantName: string;
+  participantImage?: string;
+  participantType: 'client' | 'provider' | 'business';
+  lastMessage: string;
+  unread: number;
+  timestamp: number;
 }
 
 export interface QuoteItem {
   id: string;
-  description: string;
+  name: string;
+  description?: string;
   quantity: number;
   unitPrice: number;
   total: number;
@@ -117,7 +124,7 @@ export interface Quote {
   tax: number;
   total: number;
   currency: string;
-  status: 'draft' | 'pending' | 'accepted' | 'rejected' | 'expired';
+  status: 'draft' | 'pending' | 'accepted' | 'rejected';
   validUntil: number;
   createdAt: number;
   updatedAt: number;

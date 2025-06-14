@@ -25,6 +25,7 @@ export default function CreateQuoteScreen() {
   const [items, setItems] = useState<QuoteItem[]>([
     {
       id: '1',
+      name: '',
       description: '',
       quantity: 1,
       unitPrice: 0,
@@ -73,6 +74,7 @@ export default function CreateQuoteScreen() {
   const addItem = () => {
     const newItem: QuoteItem = {
       id: Date.now().toString(),
+      name: '',
       description: '',
       quantity: 1,
       unitPrice: 0,
@@ -164,7 +166,8 @@ export default function CreateQuoteScreen() {
               ${quote.items.map((item: QuoteItem) => `
                 <tr>
                   <td>
-                    <strong>${item.description}</strong>
+                    <strong>${item.name}</strong>
+                    ${item.description ? `<br><small>${item.description}</small>` : ''}
                   </td>
                   <td>${item.quantity}</td>
                   <td>${item.unitPrice.toFixed(2)}€</td>
@@ -218,7 +221,7 @@ export default function CreateQuoteScreen() {
       return;
     }
     
-    if (items.some(item => !item.description.trim() || item.unitPrice <= 0)) {
+    if (items.some(item => !item.name.trim() || item.unitPrice <= 0)) {
       Alert.alert('Erreur', 'Veuillez remplir tous les éléments du devis');
       return;
     }
@@ -388,12 +391,23 @@ export default function CreateQuoteScreen() {
                 </View>
                 
                 <View style={styles.formGroup}>
-                  <Text style={styles.label}>Description *</Text>
+                  <Text style={styles.label}>Nom *</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={item.name}
+                    onChangeText={(value) => updateItem(item.id, 'name', value)}
+                    placeholder="Ex: Animation musicale"
+                    placeholderTextColor={Colors.textLight}
+                  />
+                </View>
+                
+                <View style={styles.formGroup}>
+                  <Text style={styles.label}>Description</Text>
                   <TextInput
                     style={styles.input}
                     value={item.description}
                     onChangeText={(value) => updateItem(item.id, 'description', value)}
-                    placeholder="Ex: Animation musicale"
+                    placeholder="Détails optionnels"
                     placeholderTextColor={Colors.textLight}
                   />
                 </View>
@@ -440,9 +454,6 @@ export default function CreateQuoteScreen() {
               Valide pendant {validDays} jours
             </Text>
           </View>
-          
-          {/* Add extra padding at bottom for keyboard */}
-          <View style={styles.bottomPadding} />
         </ScrollView>
         
         <View style={styles.footer}>
@@ -496,7 +507,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 20,
+    paddingBottom: 40,
   },
   section: {
     marginBottom: 32,
@@ -633,15 +644,13 @@ const styles = StyleSheet.create({
     color: Colors.textLight,
     textAlign: 'center',
   },
-  bottomPadding: {
-    height: 120,
-  },
   footer: {
     backgroundColor: '#fff',
     padding: 20,
-    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
+    marginBottom: Platform.OS === 'ios' ? 90 : 75,
   },
   submitButton: {
     backgroundColor: Colors.primary,

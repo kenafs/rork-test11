@@ -5,7 +5,6 @@ import { Image } from 'expo-image';
 import { useAuth } from '@/hooks/useAuth';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useMessages } from '@/hooks/useMessages';
-import { useListings } from '@/hooks/useListings';
 import { mockListings } from '@/mocks/listings';
 import { mockProviders, mockVenues } from '@/mocks/users';
 import Colors from '@/constants/colors';
@@ -20,10 +19,9 @@ export default function ListingDetailScreen() {
   const { isAuthenticated, user } = useAuth();
   const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
   const { createConversation } = useMessages();
-  const { getListingById } = useListings();
   
-  // Find the listing by ID - check both mock listings and user-created listings
-  const listing = getListingById(id || '') || mockListings.find(item => item.id === id);
+  // Find the listing by ID
+  const listing = mockListings.find(item => item.id === id);
   
   if (!listing) {
     return (
@@ -96,38 +94,21 @@ export default function ListingDetailScreen() {
       return;
     }
 
-    if (!user) {
+    if (!user || !creatorUser) {
       Alert.alert('Erreur', 'Impossible de créer la conversation');
       return;
     }
 
-    // Ensure we have proper creator information
-    let creatorInfo = creatorUser;
-    if (!creatorInfo) {
-      // If creator not found in mock users, use listing creator info
-      creatorInfo = {
-        id: listing.createdBy,
-        name: listing.creatorName,
-        email: `${listing.createdBy}@example.com`,
-        userType: listing.creatorType,
-        profileImage: listing.creatorImage,
-        rating: listing.creatorRating,
-        reviewCount: listing.creatorReviewCount,
-        location: listing.location,
-        createdAt: Date.now(),
-      };
-    }
-
     try {
-      console.log('Creating conversation with creator:', creatorInfo.name, creatorInfo.id);
+      console.log('Creating conversation with:', listing.createdBy);
       
       // Create conversation without initial message
-      const conversationId = await createConversation(creatorInfo.id);
+      const conversationId = await createConversation(listing.createdBy);
       
       console.log('Conversation created:', conversationId);
       
       // Navigate to the conversation with the participant ID
-      router.push(`/conversation/${creatorInfo.id}`);
+      router.push(`/conversation/${listing.createdBy}`);
     } catch (error) {
       console.error('Error creating conversation:', error);
       Alert.alert('Erreur', 'Impossible de créer la conversation');
@@ -148,26 +129,9 @@ export default function ListingDetailScreen() {
       return;
     }
     
-    if (!user) {
+    if (!user || !creatorUser) {
       Alert.alert('Erreur', 'Impossible de créer la demande de devis');
       return;
-    }
-
-    // Ensure we have proper creator information
-    let creatorInfo = creatorUser;
-    if (!creatorInfo) {
-      // If creator not found in mock users, use listing creator info
-      creatorInfo = {
-        id: listing.createdBy,
-        name: listing.creatorName,
-        email: `${listing.createdBy}@example.com`,
-        userType: listing.creatorType,
-        profileImage: listing.creatorImage,
-        rating: listing.creatorRating,
-        reviewCount: listing.creatorReviewCount,
-        location: listing.location,
-        createdAt: Date.now(),
-      };
     }
 
     // Only providers can send quotes, clients can request quotes
@@ -180,7 +144,7 @@ export default function ListingDetailScreen() {
         console.log('Requesting quote via message for listing:', listing.id);
         
         const conversationId = await createConversation(
-          creatorInfo.id,
+          listing.createdBy,
           `Bonjour, je souhaiterais recevoir un devis pour votre annonce "${listing.title}". Pourriez-vous me faire une proposition ?`,
           listing.id
         );
@@ -188,7 +152,7 @@ export default function ListingDetailScreen() {
         console.log('Quote request conversation created:', conversationId);
         
         // Navigate to the conversation with the participant ID
-        router.push(`/conversation/${creatorInfo.id}`);
+        router.push(`/conversation/${listing.createdBy}`);
       } catch (error) {
         console.error('Error creating quote request conversation:', error);
         Alert.alert('Erreur', 'Impossible de créer la demande de devis');

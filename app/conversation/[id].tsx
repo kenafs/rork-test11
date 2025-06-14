@@ -20,7 +20,7 @@ export default function ConversationScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user: currentUser, isAuthenticated } = useAuth();
-  const { getCurrentUserData, sendMessage, getConversationByParticipant, addContact, fetchMessages, createConversation } = useMessages();
+  const { messages, sendMessage, getConversationByParticipant, addContact, fetchMessages, createConversation } = useMessages();
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const flatListRef = useRef<FlatList>(null);
@@ -31,8 +31,7 @@ export default function ConversationScreen() {
   
   // Get or create conversation
   const [conversation, setConversation] = useState(getConversationByParticipant(id || ''));
-  const currentUserData = getCurrentUserData();
-  const conversationMessages = conversation ? currentUserData.messages[conversation.id] || [] : [];
+  const conversationMessages = conversation ? messages[conversation.id] || [] : [];
   
   // Create conversation if it doesn't exist
   useEffect(() => {
@@ -388,10 +387,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'flex-end',
     gap: 12,
-    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
-    minHeight: Platform.OS === 'ios' ? 74 : 60,
+    minHeight: Platform.OS === 'ios' ? 80 : 60,
+    marginBottom: Platform.OS === 'ios' ? 90 : 75,
   },
   inputWrapper: {
     flex: 1,
