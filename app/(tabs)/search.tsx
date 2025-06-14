@@ -12,7 +12,7 @@ import Colors from '@/constants/colors';
 export default function SearchScreen() {
   const { category: initialCategory } = useLocalSearchParams<{ category?: string }>();
   const { 
-    listings, 
+    listings = [], 
     filteredListings = [], 
     isLoading, 
     fetchListings, 
@@ -35,7 +35,7 @@ export default function SearchScreen() {
   
   // Fetch listings on mount if not already loaded
   useEffect(() => {
-    if (listings.length === 0) {
+    if (!Array.isArray(listings) || listings.length === 0) {
       fetchListings();
     }
   }, []);

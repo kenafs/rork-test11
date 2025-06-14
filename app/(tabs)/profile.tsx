@@ -1,56 +1,84 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
-import { useRouter, Stack } from 'expo-router';
-import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
-import Colors from '@/constants/colors';
+import { useAuth } from '@/hooks/useAuth';
+import { useListings } from '@/hooks/useListings';
+import { useFavorites } from '@/hooks/useFavorites';
 import RatingStars from '@/components/RatingStars';
 import Button from '@/components/Button';
+import Colors from '@/constants/colors';
 import { 
   User, 
   Settings, 
   Heart, 
+  FileText, 
   MessageCircle, 
   Star, 
   MapPin, 
-  Calendar,
-  ChevronRight,
+  Globe, 
+  Instagram,
   LogOut,
-  CreditCard,
-  Shield,
-  HelpCircle,
-  Bell,
-  Globe
+  ChevronRight,
+  Edit
 } from 'lucide-react-native';
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { user, isAuthenticated, logout, isLoading } = useAuth();
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  
-  const handleLogout = async () => {
+  const { user, logout } = useAuth();
+  const { getUserListings } = useListings();
+  const { favorites } = useFavorites();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  if (!user) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.notLoggedInContainer}>
+          <User size={64} color={Colors.textLight} />
+          <Text style={styles.notLoggedInTitle}>Non connecté</Text>
+          <Text style={styles.notLoggedInText}>
+            Connectez-vous pour accéder à votre profil
+          </Text>
+          <Button
+            title="Se connecter"
+            onPress={() => router.push('/(auth)/login')}
+            style={styles.loginButton}
+          />
+        </View>
+      </View>
+    );
+  }
+
+  const userListings = getUserListings(user.id);
+  const userTypeLabel = user.userType === 'provider' ? 'Prestataire' : 
+                       user.userType === 'business' ? 'Établissement' : 'Client';
+
+  const handleLogout = () => {
     Alert.alert(
       'Déconnexion',
       'Êtes-vous sûr de vouloir vous déconnecter ?',
       [
         { text: 'Annuler', style: 'cancel' },
         { 
-          text: 'Déconnexion', 
+          text: 'Déconnecter', 
           style: 'destructive',
           onPress: async () => {
+            setIsLoggingOut(true);
             try {
               await logout();
-              router.replace('/(tabs)');
+              router.replace('/');
             } catch (error) {
               console.error('Logout error:', error);
               Alert.alert('Erreur', 'Impossible de se déconnecter');
+            } finally {
+              setIsLoggingOut(false);
             }
           }
         }
       ]
     );
   };
-  
+
   const handlePaymentSettings = () => {
     Alert.alert(
       'Moyens de paiement',
@@ -58,111 +86,15 @@ export default function ProfileScreen() {
       [{ text: 'OK' }]
     );
   };
-  
-  if (!isAuthenticated || !user) {
-    return (
-      <View style={styles.container}>
-        <Stack.Screen options={{ title: "Profil" }} />
-        <View style={styles.loginPrompt}>
-          <User size={64} color={Colors.textLight} />
-          <Text style={styles.loginTitle}>Connexion requise</Text>
-          <Text style={styles.loginSubtitle}>
-            Connectez-vous pour accéder à votre profil
-          </Text>
-          <View style={styles.loginButtons}>
-            <Button
-              title="Se connecter"
-              onPress={() => router.push('/(auth)/login')}
-              style={styles.loginButton}
-            />
-            <Button
-              title="Créer un compte"
-              variant="outline"
-              onPress={() => router.push('/(auth)/register')}
-              style={styles.registerButton}
-            />
-          </View>
-        </View>
-      </View>
-    );
-  }
-  
-  const menuItems = [
-    {
-      icon: User,
-      title: 'Modifier le profil',
-      subtitle: 'Informations personnelles',
-      onPress: () => router.push('/edit-profile'),
-    },
-    {
-      icon: CreditCard,
-      title: 'Moyens de paiement',
-      subtitle: 'Cartes et virements',
-      onPress: handlePaymentSettings,
-      highlight: true,
-    },
-    {
-      icon: Heart,
-      title: 'Mes favoris',
-      subtitle: 'Annonces sauvegardées',
-      onPress: () => router.push('/favorites'),
-    },
-    {
-      icon: MessageCircle,
-      title: 'Messages',
-      subtitle: 'Conversations',
-      onPress: () => router.push('/(tabs)/messages'),
-    },
-    {
-      icon: Star,
-      title: 'Mes avis',
-      subtitle: 'Évaluations reçues',
-      onPress: () => router.push('/reviews'),
-    },
-    {
-      icon: Shield,
-      title: 'Confidentialité',
-      subtitle: 'Sécurité et vie privée',
-      onPress: () => router.push('/settings'),
-    },
-    {
-      icon: Bell,
-      title: 'Notifications',
-      subtitle: 'Préférences de notification',
-      onPress: () => router.push('/settings'),
-    },
-    {
-      icon: HelpCircle,
-      title: 'Aide et support',
-      subtitle: 'Centre d\'aide',
-      onPress: () => router.push('/settings'),
-    },
-    {
-      icon: Globe,
-      title: 'Langue',
-      subtitle: 'Français',
-      onPress: () => router.push('/settings'),
-    },
-  ];
-  
+
   return (
-    <View style={styles.container}>
-      <Stack.Screen options={{ 
-        title: "Paramètres",
-        headerStyle: { backgroundColor: Colors.primary },
-        headerTintColor: "#fff",
-        headerTitleStyle: { fontWeight: "700" }
-      }} />
-      
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Profile Header */}
-        <View style={styles.profileHeader}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      {/* Profile Header */}
+      <View style={styles.header}>
+        <View style={styles.profileContainer}>
           <View style={styles.profileImageContainer}>
             {user.profileImage ? (
-              <Image 
-                source={{ uri: user.profileImage }} 
-                style={styles.profileImage}
-              />
+              <Image source={{ uri: user.profileImage }} style={styles.profileImage} />
             ) : (
               <View style={[styles.profileImage, styles.profileImagePlaceholder]}>
                 <Text style={styles.profileImageText}>
@@ -170,122 +102,177 @@ export default function ProfileScreen() {
                 </Text>
               </View>
             )}
+            
+            <TouchableOpacity 
+              style={styles.editImageButton}
+              onPress={() => router.push('/edit-profile')}
+            >
+              <Edit size={16} color="#fff" />
+            </TouchableOpacity>
           </View>
-          
-          <Text style={styles.userName}>{user.name}</Text>
-          <Text style={styles.userEmail}>{user.email}</Text>
-          
-          {user.rating && user.rating > 0 && (
-            <View style={styles.ratingContainer}>
-              <RatingStars rating={user.rating} size="small" />
-              <Text style={styles.reviewCount}>
-                {user.reviewCount || 0} avis
-              </Text>
+
+          <View style={styles.profileInfo}>
+            <Text style={styles.userName}>{user.name}</Text>
+            <View style={styles.userTypeBadge}>
+              <Text style={styles.userTypeText}>{userTypeLabel}</Text>
+            </View>
+            
+            {user.rating && (
+              <View style={styles.ratingContainer}>
+                <RatingStars rating={user.rating} size="small" />
+                <Text style={styles.reviewCount}>
+                  ({user.reviewCount || 0} avis)
+                </Text>
+              </View>
+            )}
+          </View>
+        </View>
+
+        {user.description && (
+          <Text style={styles.description}>{user.description}</Text>
+        )}
+
+        <View style={styles.profileDetails}>
+          {user.city && (
+            <View style={styles.detailItem}>
+              <MapPin size={16} color={Colors.textLight} />
+              <Text style={styles.detailText}>{user.city}</Text>
             </View>
           )}
           
-          <View style={styles.userTypeBadge}>
-            <Text style={styles.userTypeText}>
-              {user.userType === 'provider' ? '💼 Prestataire' : 
-               user.userType === 'business' ? '🏢 Établissement' : 
-               '👤 Client'}
+          {user.website && (
+            <View style={styles.detailItem}>
+              <Globe size={16} color={Colors.textLight} />
+              <Text style={styles.detailText}>{user.website}</Text>
+            </View>
+          )}
+          
+          {user.instagram && (
+            <View style={styles.detailItem}>
+              <Instagram size={16} color={Colors.textLight} />
+              <Text style={styles.detailText}>@{user.instagram}</Text>
+            </View>
+          )}
+        </View>
+      </View>
+
+      {/* Stats */}
+      <View style={styles.statsContainer}>
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>{userListings.length}</Text>
+          <Text style={styles.statLabel}>Annonces</Text>
+        </View>
+        
+        <View style={styles.statDivider} />
+        
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>{favorites.length}</Text>
+          <Text style={styles.statLabel}>Favoris</Text>
+        </View>
+        
+        <View style={styles.statDivider} />
+        
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>{user.reviewCount || 0}</Text>
+          <Text style={styles.statLabel}>Avis</Text>
+        </View>
+      </View>
+
+      {/* Account Section */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Compte</Text>
+        
+        <TouchableOpacity 
+          style={styles.menuItem}
+          onPress={() => router.push('/edit-profile')}
+        >
+          <View style={styles.menuItemLeft}>
+            <User size={20} color={Colors.primary} />
+            <Text style={styles.menuItemText}>Modifier le profil</Text>
+          </View>
+          <ChevronRight size={20} color={Colors.textLight} />
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={styles.menuItem}
+          onPress={() => router.push('/settings')}
+        >
+          <View style={styles.menuItemLeft}>
+            <Settings size={20} color={Colors.primary} />
+            <Text style={styles.menuItemText}>Paramètres</Text>
+          </View>
+          <ChevronRight size={20} color={Colors.textLight} />
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={styles.menuItem}
+          onPress={handlePaymentSettings}
+        >
+          <View style={styles.menuItemLeft}>
+            <Star size={20} color={Colors.primary} />
+            <Text style={styles.menuItemText}>Moyens de paiement</Text>
+          </View>
+          <ChevronRight size={20} color={Colors.textLight} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Activity Section */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Activité</Text>
+        
+        <TouchableOpacity 
+          style={styles.menuItem}
+          onPress={() => router.push('/favorites')}
+        >
+          <View style={styles.menuItemLeft}>
+            <Heart size={20} color={Colors.primary} />
+            <Text style={styles.menuItemText}>Mes favoris</Text>
+          </View>
+          <View style={styles.menuItemRight}>
+            <Text style={styles.badgeText}>{favorites.length}</Text>
+            <ChevronRight size={20} color={Colors.textLight} />
+          </View>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={styles.menuItem}
+          onPress={() => router.push('/quotes')}
+        >
+          <View style={styles.menuItemLeft}>
+            <FileText size={20} color={Colors.primary} />
+            <Text style={styles.menuItemText}>Mes devis</Text>
+          </View>
+          <ChevronRight size={20} color={Colors.textLight} />
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={styles.menuItem}
+          onPress={() => router.push('/reviews')}
+        >
+          <View style={styles.menuItemLeft}>
+            <Star size={20} color={Colors.primary} />
+            <Text style={styles.menuItemText}>Mes avis</Text>
+          </View>
+          <ChevronRight size={20} color={Colors.textLight} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Logout */}
+      <View style={styles.section}>
+        <TouchableOpacity 
+          style={[styles.menuItem, styles.logoutItem]}
+          onPress={handleLogout}
+          disabled={isLoggingOut}
+        >
+          <View style={styles.menuItemLeft}>
+            <LogOut size={20} color="#EF4444" />
+            <Text style={[styles.menuItemText, styles.logoutText]}>
+              {isLoggingOut ? 'Déconnexion...' : 'Déconnexion'}
             </Text>
           </View>
-        </View>
-        
-        {/* Account Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Compte</Text>
-          
-          {menuItems.slice(0, 2).map((item, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[styles.menuItem, item.highlight && styles.highlightMenuItem]}
-              onPress={item.onPress}
-            >
-              <View style={styles.menuItemLeft}>
-                <View style={[styles.menuItemIcon, item.highlight && styles.highlightIcon]}>
-                  <item.icon size={20} color={item.highlight ? "#fff" : Colors.primary} />
-                </View>
-                <View style={styles.menuItemText}>
-                  <Text style={styles.menuItemTitle}>{item.title}</Text>
-                  <Text style={styles.menuItemSubtitle}>{item.subtitle}</Text>
-                </View>
-              </View>
-              <ChevronRight size={20} color={Colors.textLight} />
-            </TouchableOpacity>
-          ))}
-        </View>
-        
-        {/* Activity Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Activité</Text>
-          
-          {menuItems.slice(2, 5).map((item, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.menuItem}
-              onPress={item.onPress}
-            >
-              <View style={styles.menuItemLeft}>
-                <View style={styles.menuItemIcon}>
-                  <item.icon size={20} color={Colors.primary} />
-                </View>
-                <View style={styles.menuItemText}>
-                  <Text style={styles.menuItemTitle}>{item.title}</Text>
-                  <Text style={styles.menuItemSubtitle}>{item.subtitle}</Text>
-                </View>
-              </View>
-              <ChevronRight size={20} color={Colors.textLight} />
-            </TouchableOpacity>
-          ))}
-        </View>
-        
-        {/* Support Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Support</Text>
-          
-          {menuItems.slice(5).map((item, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.menuItem}
-              onPress={item.onPress}
-            >
-              <View style={styles.menuItemLeft}>
-                <View style={styles.menuItemIcon}>
-                  <item.icon size={20} color={Colors.primary} />
-                </View>
-                <View style={styles.menuItemText}>
-                  <Text style={styles.menuItemTitle}>{item.title}</Text>
-                  <Text style={styles.menuItemSubtitle}>{item.subtitle}</Text>
-                </View>
-              </View>
-              <ChevronRight size={20} color={Colors.textLight} />
-            </TouchableOpacity>
-          ))}
-        </View>
-        
-        {/* Logout Button */}
-        <View style={styles.logoutSection}>
-          <TouchableOpacity
-            style={styles.logoutButton}
-            onPress={handleLogout}
-            disabled={isLoading}
-          >
-            <LogOut size={20} color={Colors.error} />
-            <Text style={styles.logoutText}>
-              {isLoading ? 'Déconnexion...' : 'Déconnexion'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-        
-        {/* App Info */}
-        <View style={styles.appInfo}>
-          <Text style={styles.appInfoText}>EventApp v1.0.0</Text>
-          <Text style={styles.appInfoText}>© 2024 EventApp. Tous droits réservés.</Text>
-        </View>
-      </ScrollView>
-    </View>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 }
 
@@ -294,50 +281,20 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.backgroundAlt,
   },
-  content: {
-    flex: 1,
-  },
-  loginPrompt: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 40,
-  },
-  loginTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: Colors.text,
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  loginSubtitle: {
-    fontSize: 16,
-    color: Colors.textLight,
-    textAlign: 'center',
-    marginBottom: 32,
-    lineHeight: 24,
-  },
-  loginButtons: {
-    width: '100%',
-    gap: 12,
-  },
-  loginButton: {
-    backgroundColor: Colors.primary,
-  },
-  registerButton: {
-    borderColor: Colors.primary,
-  },
-  profileHeader: {
+  header: {
     backgroundColor: '#fff',
-    paddingTop: 40,
-    paddingBottom: 32,
-    paddingHorizontal: 24,
-    alignItems: 'center',
+    padding: 20,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
   },
-  profileImageContainer: {
+  profileContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 16,
+  },
+  profileImageContainer: {
+    position: 'relative',
+    marginRight: 16,
   },
   profileImage: {
     width: 80,
@@ -351,122 +308,162 @@ const styles = StyleSheet.create({
   },
   profileImageText: {
     fontSize: 32,
-    fontWeight: '700',
+    fontWeight: '600',
     color: '#fff',
+  },
+  editImageButton: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: Colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  profileInfo: {
+    flex: 1,
   },
   userName: {
     fontSize: 24,
     fontWeight: '700',
     color: Colors.text,
-    marginBottom: 4,
+    marginBottom: 8,
   },
-  userEmail: {
-    fontSize: 16,
-    color: Colors.textLight,
-    marginBottom: 12,
+  userTypeBadge: {
+    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+    marginBottom: 8,
+  },
+  userTypeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: Colors.primary,
   },
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
-    gap: 8,
   },
   reviewCount: {
     fontSize: 14,
     color: Colors.textLight,
+    marginLeft: 8,
   },
-  userTypeBadge: {
-    backgroundColor: 'rgba(99, 102, 241, 0.1)',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+  description: {
+    fontSize: 16,
+    color: Colors.text,
+    lineHeight: 24,
+    marginBottom: 16,
   },
-  userTypeText: {
+  profileDetails: {
+    gap: 8,
+  },
+  detailItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  detailText: {
     fontSize: 14,
-    fontWeight: '600',
-    color: Colors.primary,
+    color: Colors.textLight,
+    marginLeft: 8,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    paddingVertical: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  statItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  statNumber: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: Colors.text,
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 14,
+    color: Colors.textLight,
+  },
+  statDivider: {
+    width: 1,
+    backgroundColor: Colors.border,
+    marginHorizontal: 20,
   },
   section: {
     backgroundColor: '#fff',
-    marginTop: 20,
+    marginTop: 12,
     paddingVertical: 8,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 18,
+    fontWeight: '600',
     color: Colors.text,
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    backgroundColor: Colors.backgroundAlt,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
   },
   menuItem: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 24,
+    alignItems: 'center',
+    paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
   },
-  highlightMenuItem: {
-    backgroundColor: 'rgba(99, 102, 241, 0.05)',
-  },
   menuItemLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
   },
-  menuItemIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(99, 102, 241, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  highlightIcon: {
-    backgroundColor: Colors.primary,
-  },
-  menuItemText: {
-    flex: 1,
-  },
-  menuItemTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.text,
-    marginBottom: 2,
-  },
-  menuItemSubtitle: {
-    fontSize: 14,
-    color: Colors.textLight,
-  },
-  logoutSection: {
-    backgroundColor: '#fff',
-    marginTop: 20,
-    marginBottom: 20,
-  },
-  logoutButton: {
+  menuItemRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    gap: 12,
+  },
+  menuItemText: {
+    fontSize: 16,
+    color: Colors.text,
+    marginLeft: 12,
+  },
+  badgeText: {
+    fontSize: 14,
+    color: Colors.textLight,
+    marginRight: 8,
+  },
+  logoutItem: {
+    borderBottomWidth: 0,
   },
   logoutText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.error,
+    color: '#EF4444',
   },
-  appInfo: {
+  notLoggedInContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 20,
-    paddingBottom: Platform.OS === 'ios' ? 120 : 100,
+    padding: 40,
   },
-  appInfoText: {
-    fontSize: 12,
+  notLoggedInTitle: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: Colors.text,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  notLoggedInText: {
+    fontSize: 16,
     color: Colors.textLight,
-    marginBottom: 4,
+    textAlign: 'center',
+    marginBottom: 32,
+  },
+  loginButton: {
+    paddingHorizontal: 32,
   },
 });

@@ -120,7 +120,7 @@ export const useMessages = create<MessagesState>()(
             type: 'text',
           };
           
-          // Add message to current user's data
+          // Add message to current user's data ONLY
           set(state => {
             const updatedUserMessages = { ...state.userMessages };
             if (!updatedUserMessages[user.id]) {
@@ -141,7 +141,7 @@ export const useMessages = create<MessagesState>()(
             return { userMessages: updatedUserMessages };
           });
           
-          // Update conversation's last message
+          // Update conversation's last message for current user ONLY
           set(state => {
             const updatedUserMessages = { ...state.userMessages };
             if (updatedUserMessages[user.id]) {
@@ -166,59 +166,6 @@ export const useMessages = create<MessagesState>()(
             
             return { userMessages: updatedUserMessages };
           });
-          
-          // Also add message to receiver's data if they exist
-          const allUsers = [...mockProviders, ...mockVenues];
-          const receiverUser = allUsers.find(u => u.id === receiverId);
-          
-          if (receiverUser) {
-            set(state => {
-              const updatedUserMessages = { ...state.userMessages };
-              if (!updatedUserMessages[receiverId]) {
-                updatedUserMessages[receiverId] = getEmptyUserData();
-              }
-              
-              // Add message to receiver's messages
-              updatedUserMessages[receiverId] = {
-                ...updatedUserMessages[receiverId],
-                messages: {
-                  ...updatedUserMessages[receiverId].messages,
-                  [conversationId]: [
-                    ...(updatedUserMessages[receiverId].messages[conversationId] || []),
-                    newMessage,
-                  ],
-                },
-              };
-              
-              // Update receiver's conversation
-              const receiverConvExists = updatedUserMessages[receiverId].conversations.find(c => c.id === conversationId);
-              if (receiverConvExists) {
-                updatedUserMessages[receiverId].conversations = updatedUserMessages[receiverId].conversations.map(conv => {
-                  if (conv.id === conversationId) {
-                    return {
-                      ...conv,
-                      lastMessage: newMessage,
-                      updatedAt: Date.now(),
-                    };
-                  }
-                  return conv;
-                });
-              } else {
-                // Create conversation for receiver if it doesn't exist
-                const newConversation: Conversation = {
-                  id: conversationId,
-                  participants: [user.id, receiverId],
-                  createdAt: Date.now(),
-                  updatedAt: Date.now(),
-                  lastMessage: newMessage,
-                  unreadCount: 0,
-                };
-                updatedUserMessages[receiverId].conversations.unshift(newConversation);
-              }
-              
-              return { userMessages: updatedUserMessages };
-            });
-          }
           
           console.log('Message sent successfully:', newMessage);
           
@@ -261,7 +208,7 @@ export const useMessages = create<MessagesState>()(
           
           console.log('Creating new conversation:', newConversation);
           
-          // Add conversation to current user's data
+          // Add conversation to current user's data ONLY
           set(state => {
             const updatedUserMessages = { ...state.userMessages };
             if (!updatedUserMessages[user.id]) {
@@ -285,7 +232,7 @@ export const useMessages = create<MessagesState>()(
             await get().sendMessage(conversationId, initialMessage, participantId);
           }
           
-          // Add contact info
+          // Add contact info for current user ONLY
           const allUsers = [...mockProviders, ...mockVenues];
           const participantUser = allUsers.find(u => u.id === participantId);
           
