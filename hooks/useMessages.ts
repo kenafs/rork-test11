@@ -156,7 +156,7 @@ export const useMessages = create<MessagesState>()(
                 return conv;
               });
               
-              updatedConversations.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+              updatedConversations.sort((a, b) => b.updatedAt - a.updatedAt);
               
               updatedUserMessages[user.id] = {
                 ...updatedUserMessages[user.id],
@@ -211,6 +211,7 @@ export const useMessages = create<MessagesState>()(
                   createdAt: Date.now(),
                   updatedAt: Date.now(),
                   lastMessage: newMessage,
+                  unreadCount: 0,
                 };
                 updatedUserMessages[receiverId].conversations.unshift(newConversation);
               }
@@ -255,6 +256,7 @@ export const useMessages = create<MessagesState>()(
             participants: [user.id, participantId],
             createdAt: Date.now(),
             updatedAt: Date.now(),
+            unreadCount: 0,
           };
           
           console.log('Creating new conversation:', newConversation);
@@ -416,6 +418,7 @@ export const useMessages = create<MessagesState>()(
                                participantUser.userType === 'business' ? 'business' : 'client',
                 lastMessage: '',
                 unread: 0,
+                timestamp: 0,
               };
             }
           }

@@ -62,6 +62,7 @@ export interface Listing {
   images?: string[];
   tags?: string[];
   createdAt: number;
+  date?: number; // Optional event date
 }
 
 export interface Review {
@@ -80,17 +81,21 @@ export interface Message {
   id: string;
   conversationId: string;
   senderId: string;
+  receiverId: string;
   content: string;
   timestamp: number;
   read: boolean;
+  type?: 'text' | 'quote' | 'system';
 }
 
 export interface Conversation {
   id: string;
   participants: string[];
-  lastMessage?: string;
+  lastMessage?: Message;
   lastMessageTime?: number;
   unreadCount: number;
+  createdAt: number;
+  updatedAt: number;
 }
 
 export interface Contact {
