@@ -66,6 +66,12 @@ export default function SearchScreen() {
     return () => clearTimeout(debounce);
   };
   
+  // Handle clear search
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    filterBySearch('');
+  };
+  
   // Handle category selection
   const handleCategorySelect = (category: string | null) => {
     filterByCategory(category);
@@ -89,7 +95,7 @@ export default function SearchScreen() {
         <SearchBar
           value={searchQuery}
           onChangeText={handleSearch}
-          onClear={() => handleSearch('')}
+          onClear={handleClearSearch}
           onLocationPress={handleLocationFilter}
           placeholder="Rechercher un service, un lieu..."
         />

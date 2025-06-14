@@ -1,3 +1,19 @@
+export const categories = [
+  { id: 'dj', name: 'DJ', icon: '🎧' },
+  { id: 'catering', name: 'Traiteur', icon: '🍽️' },
+  { id: 'photography', name: 'Photographe', icon: '📸' },
+  { id: 'venue', name: 'Lieu', icon: '🏛️' },
+  { id: 'decoration', name: 'Décoration', icon: '🎨' },
+  { id: 'music', name: 'Musique', icon: '🎵' },
+  { id: 'entertainment', name: 'Animation', icon: '🎭' },
+  { id: 'flowers', name: 'Fleurs', icon: '💐' },
+  { id: 'transport', name: 'Transport', icon: '🚗' },
+  { id: 'security', name: 'Sécurité', icon: '🛡️' },
+  { id: 'cleaning', name: 'Nettoyage', icon: '🧹' },
+  { id: 'equipment', name: 'Matériel', icon: '🔧' },
+  { id: 'staff', name: 'Personnel', icon: '👥' },
+];
+
 export const listingCategories = [
   { id: 'all', name: 'Tous' },
   { id: 'dj', name: 'DJ' },
@@ -45,7 +61,7 @@ export const businessCategories = [
 
 // Category mapping for filtering - handles both French and English categories
 export const getCategoryFilter = (selectedCategory: string | null, listingCategory: string): boolean => {
-  if (!selectedCategory || selectedCategory === 'Tous') {
+  if (!selectedCategory || selectedCategory === 'Tous' || selectedCategory === 'all') {
     return true;
   }
   

@@ -25,7 +25,7 @@ const { height: screenHeight } = Dimensions.get('window');
 export default function CreateListingScreen() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
-  const { addListing } = useListings();
+  const { createListing } = useListings();
   const { latitude, longitude, city, requestPermission } = useLocation();
   
   const [title, setTitle] = useState('');
@@ -107,7 +107,7 @@ export default function CreateListingScreen() {
 
       console.log('Creating listing:', newListing);
       
-      const createdListing = await addListing(newListing);
+      const createdListing = await createListing(newListing);
       
       console.log('Listing created successfully:', createdListing);
 
@@ -139,8 +139,8 @@ export default function CreateListingScreen() {
     }
   };
 
-  const handleCategorySelect = (categoryName: string) => {
-    setSelectedCategory(categoryName);
+  const handleCategorySelect = (category: any) => {
+    setSelectedCategory(category.name);
   };
 
   return (
@@ -201,7 +201,7 @@ export default function CreateListingScreen() {
                   styles.categoryChip,
                   selectedCategory === category.name && styles.categoryChipSelected
                 ]}
-                onPress={() => handleCategorySelect(category.name)}
+                onPress={() => handleCategorySelect(category)}
               >
                 <Text style={styles.categoryEmoji}>{category.icon}</Text>
                 <Text style={[
@@ -277,7 +277,7 @@ export default function CreateListingScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Submit Button */}
+        {/* Submit Button - Fixed positioning for mobile */}
         <View style={styles.submitContainer}>
           <Button
             title={isSubmitting ? "Publication..." : "🚀 Publier l'annonce"}
@@ -324,7 +324,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 20,
-    paddingBottom: Platform.OS === 'ios' ? 120 : 100,
+    paddingBottom: Platform.OS === 'ios' ? 140 : 120, // Extra space for submit button
   },
   inputGroup: {
     marginBottom: 24,
@@ -398,9 +398,11 @@ const styles = StyleSheet.create({
   },
   submitContainer: {
     marginTop: 20,
+    paddingBottom: 20,
   },
   submitButton: {
     paddingVertical: 16,
+    minHeight: 56, // Ensure button is large enough for mobile
   },
   notLoggedInContainer: {
     flex: 1,

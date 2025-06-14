@@ -19,10 +19,11 @@ export default function ListingDetailScreen() {
   const { isAuthenticated, user } = useAuth();
   const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
   const { createConversation } = useMessages();
-  const { filteredListings } = useListings();
+  const { getAllListings } = useListings();
   
-  // Find the listing by ID from the listings store
-  const listing = filteredListings.find(item => item.id === id);
+  // Find the listing by ID from all listings
+  const allListings = getAllListings();
+  const listing = allListings.find(item => item.id === id);
   
   if (!listing) {
     return (

@@ -107,7 +107,7 @@ export const useMessages = create<MessagesState>()(
           const user = useAuth.getState().user;
           if (!user) return;
           
-          console.log('Sending message:', { conversationId, content, receiverId });
+          console.log('Sending message:', { conversationId, content, receiverId, senderId: user.id });
           
           const newMessage: Message = {
             id: `msg-${Date.now()}-${Math.random()}`,
@@ -120,7 +120,7 @@ export const useMessages = create<MessagesState>()(
             type: 'text',
           };
           
-          // Add message to current user's data ONLY
+          // Add message to ONLY current user's data
           set(state => {
             const updatedUserMessages = { ...state.userMessages };
             if (!updatedUserMessages[user.id]) {
@@ -141,7 +141,7 @@ export const useMessages = create<MessagesState>()(
             return { userMessages: updatedUserMessages };
           });
           
-          // Update conversation's last message for current user ONLY
+          // Update conversation's last message for ONLY current user
           set(state => {
             const updatedUserMessages = { ...state.userMessages };
             if (updatedUserMessages[user.id]) {
@@ -167,7 +167,7 @@ export const useMessages = create<MessagesState>()(
             return { userMessages: updatedUserMessages };
           });
           
-          console.log('Message sent successfully:', newMessage);
+          console.log('Message sent successfully for user:', user.id, newMessage);
           
         } catch (error) {
           console.error('Error sending message:', error);
@@ -180,9 +180,9 @@ export const useMessages = create<MessagesState>()(
           const user = useAuth.getState().user;
           if (!user) throw new Error('User must be logged in');
           
-          console.log('Creating conversation with participant:', participantId);
+          console.log('Creating conversation with participant:', participantId, 'for user:', user.id);
           
-          // Check if conversation already exists for current user
+          // Check if conversation already exists for ONLY current user
           const userData = get().getCurrentUserData();
           const existingConversation = userData.conversations.find(conv =>
             conv.participants.includes(user.id) && conv.participants.includes(participantId)
@@ -206,9 +206,9 @@ export const useMessages = create<MessagesState>()(
             unreadCount: 0,
           };
           
-          console.log('Creating new conversation:', newConversation);
+          console.log('Creating new conversation for user:', user.id, newConversation);
           
-          // Add conversation to current user's data ONLY
+          // Add conversation to ONLY current user's data
           set(state => {
             const updatedUserMessages = { ...state.userMessages };
             if (!updatedUserMessages[user.id]) {
@@ -232,7 +232,7 @@ export const useMessages = create<MessagesState>()(
             await get().sendMessage(conversationId, initialMessage, participantId);
           }
           
-          // Add contact info for current user ONLY
+          // Add contact info for ONLY current user
           const allUsers = [...mockProviders, ...mockVenues];
           const participantUser = allUsers.find(u => u.id === participantId);
           
@@ -249,7 +249,7 @@ export const useMessages = create<MessagesState>()(
             });
           }
           
-          console.log('New conversation created successfully:', conversationId);
+          console.log('New conversation created successfully for user:', user.id, conversationId);
           return conversationId;
         } catch (error) {
           console.error('Error creating conversation:', error);
@@ -273,7 +273,7 @@ export const useMessages = create<MessagesState>()(
             return { userMessages: updatedUserMessages };
           });
           
-          console.log('Messages marked as read for conversation:', conversationId);
+          console.log('Messages marked as read for conversation:', conversationId, 'user:', user.id);
         } catch (error) {
           console.error('Error marking messages as read:', error);
         }

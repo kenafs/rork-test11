@@ -66,7 +66,7 @@ export default function ProfileScreen() {
             setIsLoggingOut(true);
             try {
               await logout();
-              router.replace('/');
+              router.replace('/(tabs)');
             } catch (error) {
               console.error('Logout error:', error);
               Alert.alert('Erreur', 'Impossible de se déconnecter');

@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Listing } from '@/types';
 import { mockListings } from '@/mocks/listings';
 import { useAuth } from './useAuth';
+import { getCategoryFilter } from '@/constants/categories';
 
 interface UserListingsData {
   userCreatedListings: Listing[];
@@ -18,6 +19,7 @@ interface ListingsState {
   
   fetchListings: () => Promise<void>;
   refreshListings: () => Promise<void>;
+  addListing: (listingData: Omit<Listing, 'id' | 'createdAt'>) => Promise<Listing>;
   createListing: (listingData: Omit<Listing, 'id' | 'createdAt'>) => Promise<Listing>;
   updateListing: (id: string, updates: Partial<Listing>) => Promise<boolean>;
   deleteListing: (id: string) => Promise<boolean>;
@@ -26,6 +28,8 @@ interface ListingsState {
   filterByLocation: (latitude: number, longitude: number, radius?: number) => void;
   clearFilters: () => void;
   getAllListings: () => Listing[];
+  getUserListings: (userId: string) => Listing[];
+  listings: Listing[];
 }
 
 const getEmptyUserData = (): UserListingsData => ({
@@ -40,6 +44,7 @@ export const useListings = create<ListingsState>()(
       selectedCategory: null,
       searchQuery: null,
       isLoading: false,
+      listings: [],
       
       getAllListings: () => {
         const { userListings } = get();
@@ -50,7 +55,17 @@ export const useListings = create<ListingsState>()(
           allUserListings.push(...userData.userCreatedListings);
         });
         
-        return [...mockListings, ...allUserListings];
+        const combined = [...mockListings, ...allUserListings];
+        
+        // Update listings property
+        set({ listings: combined });
+        
+        return combined;
+      },
+      
+      getUserListings: (userId: string) => {
+        const { userListings } = get();
+        return userListings[userId]?.userCreatedListings || [];
       },
       
       fetchListings: async () => {
@@ -64,6 +79,7 @@ export const useListings = create<ListingsState>()(
           
           set({ 
             filteredListings: allListings,
+            listings: allListings,
             isLoading: false 
           });
         } catch (error) {
@@ -75,6 +91,10 @@ export const useListings = create<ListingsState>()(
       refreshListings: async () => {
         const { fetchListings } = get();
         await fetchListings();
+      },
+      
+      addListing: async (listingData) => {
+        return get().createListing(listingData);
       },
       
       createListing: async (listingData) => {
@@ -102,10 +122,12 @@ export const useListings = create<ListingsState>()(
             updatedUserListings[user.id].userCreatedListings.push(newListing);
             
             const allListings = get().getAllListings();
+            const updatedAllListings = [...allListings, newListing];
             
             return {
               userListings: updatedUserListings,
-              filteredListings: [...allListings, newListing],
+              filteredListings: updatedAllListings,
+              listings: updatedAllListings,
               isLoading: false
             };
           });
@@ -143,6 +165,7 @@ export const useListings = create<ListingsState>()(
             return {
               userListings: updatedUserListings,
               filteredListings: allListings,
+              listings: allListings,
               isLoading: false
             };
           });
@@ -178,6 +201,7 @@ export const useListings = create<ListingsState>()(
             return {
               userListings: updatedUserListings,
               filteredListings: allListings,
+              listings: allListings,
               isLoading: false
             };
           });
@@ -198,9 +222,9 @@ export const useListings = create<ListingsState>()(
         let filtered = [...allListings];
         
         // Apply category filter
-        if (category && category !== 'all') {
+        if (category && category !== 'all' && category !== 'Tous') {
           filtered = filtered.filter(listing => 
-            listing.category.toLowerCase() === category.toLowerCase()
+            getCategoryFilter(category, listing.category)
           );
         }
         
@@ -229,9 +253,9 @@ export const useListings = create<ListingsState>()(
         let filtered = [...allListings];
         
         // Apply category filter if exists
-        if (selectedCategory && selectedCategory !== 'all') {
+        if (selectedCategory && selectedCategory !== 'all' && selectedCategory !== 'Tous') {
           filtered = filtered.filter(listing => 
-            listing.category.toLowerCase() === selectedCategory.toLowerCase()
+            getCategoryFilter(selectedCategory, listing.category)
           );
         }
         

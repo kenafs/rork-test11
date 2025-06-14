@@ -36,9 +36,9 @@ export default function HomeScreen() {
     }
   };
 
-  const handleCategoryPress = (category: string) => {
-    filterByCategory(category);
-    router.push(`/search?category=${category}`);
+  const handleCategoryPress = (category: any) => {
+    filterByCategory(category.name);
+    router.push(`/search?category=${category.name}`);
   };
 
   const handleLocationPress = () => {
@@ -79,6 +79,7 @@ export default function HomeScreen() {
         <SearchBar
           value=""
           onChangeText={handleSearch}
+          onClear={() => {}}
           onLocationPress={handleLocationPress}
           placeholder="Rechercher un service, un lieu..."
         />
@@ -102,7 +103,7 @@ export default function HomeScreen() {
             <TouchableOpacity
               key={category.id}
               style={styles.categoryCard}
-              onPress={() => handleCategoryPress(category.name)}
+              onPress={() => handleCategoryPress(category)}
             >
               <View style={styles.categoryIcon}>
                 <Text style={styles.categoryEmoji}>{category.icon}</Text>
