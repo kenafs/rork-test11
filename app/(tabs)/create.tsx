@@ -144,11 +144,7 @@ export default function CreateListingScreen() {
   };
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container} 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-    >
+    <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerContent}>
@@ -160,124 +156,130 @@ export default function CreateListingScreen() {
         </View>
       </View>
 
-      <ScrollView 
-        ref={scrollViewRef}
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
+      <KeyboardAvoidingView 
+        style={styles.keyboardContainer}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
       >
-        {/* Title */}
-        <View style={styles.inputGroup}>
-          <View style={styles.inputHeader}>
-            <FileText size={20} color={Colors.primary} />
-            <Text style={styles.inputLabel}>Titre de l'annonce *</Text>
+        <ScrollView 
+          ref={scrollViewRef}
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Title */}
+          <View style={styles.inputGroup}>
+            <View style={styles.inputHeader}>
+              <FileText size={20} color={Colors.primary} />
+              <Text style={styles.inputLabel}>Titre de l'annonce *</Text>
+            </View>
+            <TextInput
+              style={styles.textInput}
+              value={title}
+              onChangeText={setTitle}
+              placeholder="Ex: DJ professionnel pour soirée d'entreprise"
+              placeholderTextColor={Colors.textLight}
+              maxLength={100}
+            />
           </View>
-          <TextInput
-            style={styles.textInput}
-            value={title}
-            onChangeText={setTitle}
-            placeholder="Ex: DJ professionnel pour soirée d'entreprise"
-            placeholderTextColor={Colors.textLight}
-            maxLength={100}
-          />
-        </View>
 
-        {/* Category Selection */}
-        <View style={styles.inputGroup}>
-          <View style={styles.inputHeader}>
-            <Tag size={20} color={Colors.primary} />
-            <Text style={styles.inputLabel}>Catégorie *</Text>
+          {/* Category Selection */}
+          <View style={styles.inputGroup}>
+            <View style={styles.inputHeader}>
+              <Tag size={20} color={Colors.primary} />
+              <Text style={styles.inputLabel}>Catégorie *</Text>
+            </View>
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.categoriesContainer}
+            >
+              {categories.map((category) => (
+                <TouchableOpacity
+                  key={category.id}
+                  style={[
+                    styles.categoryChip,
+                    selectedCategory === category.name && styles.categoryChipSelected
+                  ]}
+                  onPress={() => handleCategorySelect(category)}
+                >
+                  <Text style={styles.categoryEmoji}>{category.icon}</Text>
+                  <Text style={[
+                    styles.categoryChipText,
+                    selectedCategory === category.name && styles.categoryChipTextSelected
+                  ]}>
+                    {category.name}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
           </View>
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.categoriesContainer}
-          >
-            {categories.map((category) => (
-              <TouchableOpacity
-                key={category.id}
-                style={[
-                  styles.categoryChip,
-                  selectedCategory === category.name && styles.categoryChipSelected
-                ]}
-                onPress={() => handleCategorySelect(category)}
-              >
-                <Text style={styles.categoryEmoji}>{category.icon}</Text>
-                <Text style={[
-                  styles.categoryChipText,
-                  selectedCategory === category.name && styles.categoryChipTextSelected
-                ]}>
-                  {category.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
 
-        {/* Price */}
-        <View style={styles.inputGroup}>
-          <View style={styles.inputHeader}>
-            <DollarSign size={20} color={Colors.primary} />
-            <Text style={styles.inputLabel}>Prix (€)</Text>
+          {/* Price */}
+          <View style={styles.inputGroup}>
+            <View style={styles.inputHeader}>
+              <DollarSign size={20} color={Colors.primary} />
+              <Text style={styles.inputLabel}>Prix (€)</Text>
+            </View>
+            <TextInput
+              style={styles.textInput}
+              value={price}
+              onChangeText={setPrice}
+              placeholder="200"
+              placeholderTextColor={Colors.textLight}
+              keyboardType="numeric"
+            />
           </View>
-          <TextInput
-            style={styles.textInput}
-            value={price}
-            onChangeText={setPrice}
-            placeholder="200"
-            placeholderTextColor={Colors.textLight}
-            keyboardType="numeric"
-          />
-        </View>
 
-        {/* Description */}
-        <View style={styles.inputGroup}>
-          <View style={styles.inputHeader}>
-            <FileText size={20} color={Colors.primary} />
-            <Text style={styles.inputLabel}>Description *</Text>
+          {/* Description */}
+          <View style={styles.inputGroup}>
+            <View style={styles.inputHeader}>
+              <FileText size={20} color={Colors.primary} />
+              <Text style={styles.inputLabel}>Description *</Text>
+            </View>
+            <TextInput
+              style={[styles.textInput, styles.textArea]}
+              value={description}
+              onChangeText={setDescription}
+              placeholder="Décrivez vos services en détail..."
+              placeholderTextColor={Colors.textLight}
+              multiline
+              numberOfLines={4}
+              textAlignVertical="top"
+            />
           </View>
-          <TextInput
-            style={[styles.textInput, styles.textArea]}
-            value={description}
-            onChangeText={setDescription}
-            placeholder="Décrivez vos services en détail..."
-            placeholderTextColor={Colors.textLight}
-            multiline
-            numberOfLines={4}
-            textAlignVertical="top"
-          />
-        </View>
 
-        {/* Tags */}
-        <View style={styles.inputGroup}>
-          <View style={styles.inputHeader}>
-            <Tag size={20} color={Colors.primary} />
-            <Text style={styles.inputLabel}>Mots-clés</Text>
+          {/* Tags */}
+          <View style={styles.inputGroup}>
+            <View style={styles.inputHeader}>
+              <Tag size={20} color={Colors.primary} />
+              <Text style={styles.inputLabel}>Mots-clés</Text>
+            </View>
+            <TextInput
+              style={styles.textInput}
+              value={tags}
+              onChangeText={setTags}
+              placeholder="mariage, anniversaire, entreprise (séparés par des virgules)"
+              placeholderTextColor={Colors.textLight}
+            />
           </View>
-          <TextInput
-            style={styles.textInput}
-            value={tags}
-            onChangeText={setTags}
-            placeholder="mariage, anniversaire, entreprise (séparés par des virgules)"
-            placeholderTextColor={Colors.textLight}
-          />
-        </View>
 
-        {/* Location */}
-        <View style={styles.inputGroup}>
-          <View style={styles.inputHeader}>
-            <MapPin size={20} color={Colors.primary} />
-            <Text style={styles.inputLabel}>Localisation</Text>
+          {/* Location */}
+          <View style={styles.inputGroup}>
+            <View style={styles.inputHeader}>
+              <MapPin size={20} color={Colors.primary} />
+              <Text style={styles.inputLabel}>Localisation</Text>
+            </View>
+            <TouchableOpacity style={styles.locationButton} onPress={requestPermission}>
+              <Text style={styles.locationButtonText}>
+                {city ? `📍 ${city}` : '📍 Définir ma localisation'}
+              </Text>
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity style={styles.locationButton} onPress={requestPermission}>
-            <Text style={styles.locationButtonText}>
-              {city ? `📍 ${city}` : '📍 Définir ma localisation'}
-            </Text>
-          </TouchableOpacity>
-        </View>
+        </ScrollView>
 
-        {/* Submit Button - Fixed positioning for mobile */}
+        {/* Submit Button - Fixed at bottom */}
         <View style={styles.submitContainer}>
           <Button
             title={isSubmitting ? "Publication..." : "🚀 Publier l'annonce"}
@@ -287,8 +289,8 @@ export default function CreateListingScreen() {
             style={styles.submitButton}
           />
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 
@@ -319,12 +321,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'rgba(255, 255, 255, 0.8)',
   },
+  keyboardContainer: {
+    flex: 1,
+  },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     padding: 20,
-    paddingBottom: Platform.OS === 'ios' ? 140 : 120, // Extra space for submit button
+    paddingBottom: 20,
   },
   inputGroup: {
     marginBottom: 24,
@@ -397,12 +402,21 @@ const styles = StyleSheet.create({
     color: city ? Colors.text : Colors.textLight,
   },
   submitContainer: {
-    marginTop: 20,
-    paddingBottom: 20,
+    backgroundColor: '#fff',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 16,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 10,
   },
   submitButton: {
     paddingVertical: 16,
-    minHeight: 56, // Ensure button is large enough for mobile
+    minHeight: 56,
   },
   notLoggedInContainer: {
     flex: 1,

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Text, FlatList, TouchableOpacity, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
@@ -22,6 +22,7 @@ export default function HomeScreen() {
     filterBySearch,
   } = useListings();
   const { city, requestPermission } = useLocation();
+  const [searchValue, setSearchValue] = useState('');
 
   useEffect(() => {
     if (!Array.isArray(listings) || listings.length === 0) {
@@ -30,6 +31,7 @@ export default function HomeScreen() {
   }, []);
 
   const handleSearch = (text: string) => {
+    setSearchValue(text);
     filterBySearch(text);
     if (text.trim()) {
       router.push('/search');
@@ -37,6 +39,7 @@ export default function HomeScreen() {
   };
 
   const handleClearSearch = () => {
+    setSearchValue('');
     filterBySearch('');
   };
 
@@ -81,7 +84,7 @@ export default function HomeScreen() {
       {/* Search Bar */}
       <View style={styles.searchContainer}>
         <SearchBar
-          value=""
+          value={searchValue}
           onChangeText={handleSearch}
           onClear={handleClearSearch}
           onLocationPress={handleLocationPress}

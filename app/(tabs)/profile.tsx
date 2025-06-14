@@ -20,7 +20,8 @@ import {
   Instagram,
   LogOut,
   ChevronRight,
-  Edit
+  Edit,
+  CreditCard
 } from 'lucide-react-native';
 
 export default function ProfileScreen() {
@@ -82,14 +83,7 @@ export default function ProfileScreen() {
   const handlePaymentSettings = () => {
     Alert.alert(
       'Moyens de paiement',
-      'Gestion des paiements:
-
-• Ajouter une carte bancaire
-• Configurer les virements
-• Historique des transactions
-• Intégration Stripe sécurisée
-
-Cette fonctionnalité sera disponible prochainement.',
+      "Gestion des paiements:\n\n• Ajouter une carte bancaire\n• Configurer les virements\n• Historique des transactions\n• Intégration Stripe sécurisée\n\nCette fonctionnalité sera disponible prochainement.",
       [{ text: 'OK' }]
     );
   };
@@ -216,7 +210,7 @@ Cette fonctionnalité sera disponible prochainement.',
           onPress={handlePaymentSettings}
         >
           <View style={styles.menuItemLeft}>
-            <Star size={20} color={Colors.primary} />
+            <CreditCard size={20} color={Colors.primary} />
             <Text style={styles.menuItemText}>Moyens de paiement</Text>
           </View>
           <ChevronRight size={20} color={Colors.textLight} />
