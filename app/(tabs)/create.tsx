@@ -163,7 +163,7 @@ export default function CreateListingScreen() {
               setTagInput('');
               
               // Navigate to the created listing
-              router.replace(`/listing/${newListing.id}`);
+              router.push(`/listing/${newListing.id}`);
             }
           },
           { 
@@ -178,7 +178,7 @@ export default function CreateListingScreen() {
               setTags([]);
               setTagInput('');
               
-              router.replace('/(tabs)');
+              router.push('/(tabs)');
             }
           }
         ]
@@ -495,7 +495,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 20,
-    paddingBottom: 20,
+    paddingBottom: 40,
   },
   formCard: {
     backgroundColor: '#fff',
@@ -664,7 +664,7 @@ const styles = StyleSheet.create({
     paddingBottom: Platform.OS === 'ios' ? 40 : 20,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
-    marginBottom: Platform.OS === 'ios' ? 100 : 85,
+    marginBottom: Platform.OS === 'ios' ? 90 : 75,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,

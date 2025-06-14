@@ -391,7 +391,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: Colors.border,
     minHeight: Platform.OS === 'ios' ? 80 : 60,
-    marginBottom: Platform.OS === 'ios' ? 100 : 85,
+    marginBottom: Platform.OS === 'ios' ? 90 : 75,
   },
   inputWrapper: {
     flex: 1,

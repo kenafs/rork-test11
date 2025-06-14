@@ -13,7 +13,7 @@ import ListingCard from '@/components/ListingCard';
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout, isLoading } = useAuth();
   const { getQuotesByUser, getQuotesForUser } = useQuotes();
   
   const userListings = user 
@@ -428,9 +428,12 @@ export default function ProfileScreen() {
         <TouchableOpacity 
           style={styles.logoutButton}
           onPress={handleLogout}
+          disabled={isLoading}
         >
           <LogOut size={20} color={Colors.error} style={styles.settingsIcon} />
-          <Text style={styles.logoutText}>Déconnexion</Text>
+          <Text style={styles.logoutText}>
+            {isLoading ? 'Déconnexion...' : 'Déconnexion'}
+          </Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -443,7 +446,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.backgroundAlt,
   },
   scrollContent: {
-    paddingBottom: 150,
+    paddingBottom: 120,
   },
   header: {
     backgroundColor: '#fff',

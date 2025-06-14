@@ -301,8 +301,12 @@ export const useAuth = create<AuthState>()(
       logout: async () => {
         try {
           console.log('Starting logout process...');
+          set({ isLoading: true });
           
-          // Clear all auth data immediately
+          // Simulate API call
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
+          // Clear all auth data
           set({ 
             user: null, 
             isAuthenticated: false,

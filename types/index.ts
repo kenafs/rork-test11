@@ -1,5 +1,3 @@
-export type UserType = 'client' | 'provider' | 'business';
-
 export interface Location {
   latitude: number;
   longitude: number;
@@ -46,6 +44,8 @@ export interface Client extends User {
   userType: 'client';
 }
 
+export type UserType = 'client' | 'provider' | 'business';
+
 export interface Listing {
   id: string;
   title: string;
@@ -61,7 +61,6 @@ export interface Listing {
   price?: number;
   images?: string[];
   tags?: string[];
-  date?: number;
   createdAt: number;
 }
 
@@ -83,8 +82,7 @@ export interface Message {
   senderId: string;
   content: string;
   timestamp: number;
-  type: 'text' | 'quote' | 'image';
-  quoteId?: string;
+  read: boolean;
 }
 
 export interface Conversation {
@@ -93,14 +91,13 @@ export interface Conversation {
   lastMessage?: string;
   lastMessageTime?: number;
   unreadCount: number;
-  createdAt: number;
 }
 
 export interface Contact {
   participantId: string;
   participantName: string;
   participantImage?: string;
-  participantType: UserType;
+  participantType: 'client' | 'provider' | 'business';
   lastMessage: string;
   unread: number;
   timestamp: number;
@@ -109,7 +106,7 @@ export interface Contact {
 export interface QuoteItem {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   quantity: number;
   unitPrice: number;
   total: number;

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, Share } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuotes } from '@/hooks/useQuotes';
@@ -9,7 +9,9 @@ import { mockProviders, mockVenues } from '@/mocks/users';
 import { QuoteItem } from '@/types';
 import Colors from '@/constants/colors';
 import Button from '@/components/Button';
-import { Plus, Trash2, Calculator, Send, FileText } from 'lucide-react-native';
+import { Plus, Trash2, Calculator, Send, FileText, Download } from 'lucide-react-native';
+import * as Print from 'expo-print';
+import * as Sharing from 'expo-sharing';
 
 export default function CreateQuoteScreen() {
   const { listingId } = useLocalSearchParams<{ listingId: string }>();
@@ -108,6 +110,105 @@ export default function CreateQuoteScreen() {
   // Calculate total amount
   const totalAmount = items.reduce((sum, item) => sum + (item.total || 0), 0);
   
+  // Generate PDF
+  const generatePDF = async (quote: any) => {
+    try {
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Devis ${quote.id}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            .header { text-align: center; margin-bottom: 30px; }
+            .company { color: #6366f1; font-size: 24px; font-weight: bold; }
+            .quote-title { font-size: 20px; margin: 20px 0; }
+            .info-section { margin: 20px 0; }
+            .info-row { margin: 5px 0; }
+            .items-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+            .items-table th, .items-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            .items-table th { background-color: #f2f2f2; }
+            .total-section { margin-top: 20px; text-align: right; }
+            .total-row { margin: 5px 0; }
+            .total-final { font-size: 18px; font-weight: bold; color: #6366f1; }
+            .footer { margin-top: 40px; text-align: center; color: #666; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="company">EventApp</div>
+            <h1 class="quote-title">Devis #${quote.id.slice(-6)}</h1>
+          </div>
+          
+          <div class="info-section">
+            <div class="info-row"><strong>Prestataire:</strong> ${user.name}</div>
+            <div class="info-row"><strong>Email:</strong> ${user.email}</div>
+            <div class="info-row"><strong>Date:</strong> ${new Date().toLocaleDateString('fr-FR')}</div>
+            <div class="info-row"><strong>Valide jusqu'au:</strong> ${new Date(quote.validUntil).toLocaleDateString('fr-FR')}</div>
+          </div>
+          
+          <div class="info-section">
+            <h3>${quote.title}</h3>
+            <p>${quote.description}</p>
+          </div>
+          
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Quantité</th>
+                <th>Prix unitaire</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${quote.items.map((item: QuoteItem) => `
+                <tr>
+                  <td>
+                    <strong>${item.name}</strong>
+                    ${item.description ? `<br><small>${item.description}</small>` : ''}
+                  </td>
+                  <td>${item.quantity}</td>
+                  <td>${item.unitPrice.toFixed(2)}€</td>
+                  <td>${item.total.toFixed(2)}€</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          
+          <div class="total-section">
+            <div class="total-row">Sous-total: ${quote.subtotal.toFixed(2)}€</div>
+            <div class="total-row">TVA (20%): ${quote.tax.toFixed(2)}€</div>
+            <div class="total-row total-final">Total TTC: ${quote.total.toFixed(2)}€</div>
+          </div>
+          
+          <div class="footer">
+            <p>Devis généré par EventApp - ${new Date().toLocaleDateString('fr-FR')}</p>
+          </div>
+        </body>
+        </html>
+      `;
+      
+      const { uri } = await Print.printToFileAsync({
+        html: htmlContent,
+        base64: false
+      });
+      
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri, {
+          mimeType: 'application/pdf',
+          dialogTitle: `Devis ${quote.id.slice(-6)}`
+        });
+      } else {
+        Alert.alert('Succès', 'PDF généré avec succès');
+      }
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      Alert.alert('Erreur', 'Impossible de générer le PDF');
+    }
+  };
+  
   // Handle submit
   const handleSubmit = async () => {
     if (!title.trim()) {
@@ -180,12 +281,16 @@ export default function CreateQuoteScreen() {
       
       Alert.alert('Succès', 'Devis créé et envoyé avec succès', [
         { 
+          text: 'Générer PDF', 
+          onPress: () => generatePDF(quote)
+        },
+        { 
           text: 'Voir les devis', 
-          onPress: () => router.replace('/(tabs)/profile') 
+          onPress: () => router.push('/quotes') 
         },
         { 
           text: 'Retour aux messages', 
-          onPress: () => router.replace('/(tabs)/messages') 
+          onPress: () => router.push('/(tabs)/messages') 
         }
       ]);
     } catch (error) {
@@ -402,7 +507,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 20,
+    paddingBottom: 40,
   },
   section: {
     marginBottom: 32,
@@ -545,7 +650,7 @@ const styles = StyleSheet.create({
     paddingBottom: Platform.OS === 'ios' ? 40 : 20,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
-    marginBottom: Platform.OS === 'ios' ? 100 : 85,
+    marginBottom: Platform.OS === 'ios' ? 90 : 75,
   },
   submitButton: {
     backgroundColor: Colors.primary,

@@ -38,12 +38,18 @@ export const useListings = create<ListingsState>()(
           // Simulate API call
           await new Promise(resolve => setTimeout(resolve, 1000));
           
-          // Use mock data for now
-          const listings = mockListings;
+          // Get existing listings from state and merge with mock data
+          const { listings: existingListings } = get();
+          const userCreatedListings = existingListings.filter(listing => 
+            listing.id.startsWith('listing-') && !mockListings.find(mock => mock.id === listing.id)
+          );
+          
+          // Combine mock listings with user-created listings
+          const allListings = [...mockListings, ...userCreatedListings];
           
           set({ 
-            listings,
-            filteredListings: listings,
+            listings: allListings,
+            filteredListings: allListings,
             isLoading: false 
           });
         } catch (error) {
@@ -66,7 +72,7 @@ export const useListings = create<ListingsState>()(
           
           const newListing: Listing = {
             ...listingData,
-            id: `listing-${Date.now()}-${Math.random()}`,
+            id: `listing-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             createdAt: Date.now(),
           };
           

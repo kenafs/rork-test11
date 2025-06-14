@@ -11,11 +11,13 @@ import SearchBar from '@/components/SearchBar';
 import CategoryFilter from '@/components/CategoryFilter';
 import ListingCard from '@/components/ListingCard';
 import LocationPermissionRequest from '@/components/LocationPermissionRequest';
-import { Plus, MapPin, Star, Users, Calendar, Heart, TrendingUp, Sparkles } from 'lucide-react-native';
+import Button from '@/components/Button';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Plus, MapPin, Star, Users, Calendar, Heart, TrendingUp, Sparkles, ArrowRight } from 'lucide-react-native';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { 
     filteredListings = [], 
     isLoading, 
@@ -38,7 +40,7 @@ export default function HomeScreen() {
     hasPermission
   } = useLocation();
   const { t } = useLanguage();
-  const { favorites } = useFavorites();
+  const { favorites = [] } = useFavorites();
   
   const [refreshing, setRefreshing] = useState(false);
   
@@ -74,7 +76,30 @@ export default function HomeScreen() {
   const safeFavorites = Array.isArray(favorites) ? favorites : [];
   
   // Landing page for non-authenticated users
-  if (!user) {
+  if (!isAuthenticated || !user) {
+    const features = [
+      {
+        icon: Users,
+        title: 'Trouvez des prestataires',
+        description: 'DJ, photographes, traiteurs... Tous les professionnels pour vos événements'
+      },
+      {
+        icon: Calendar,
+        title: 'Organisez vos événements',
+        description: 'Mariages, anniversaires, soirées d\'entreprise... Planifiez facilement'
+      },
+      {
+        icon: Heart,
+        title: 'Communiquez directement',
+        description: 'Échangez avec les prestataires et recevez des devis personnalisés'
+      },
+      {
+        icon: Star,
+        title: 'Avis vérifiés',
+        description: 'Consultez les avis clients pour faire le meilleur choix'
+      }
+    ];
+
     return (
       <View style={styles.container}>
         <Stack.Screen options={{ headerShown: false }} />
@@ -85,98 +110,118 @@ export default function HomeScreen() {
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
           }
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={styles.landingScrollContent}
         >
           {/* Hero Section */}
-          <View style={styles.heroSection}>
+          <LinearGradient
+            colors={[Colors.primary, Colors.secondary] as const}
+            style={styles.heroSection}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
             <View style={styles.heroContent}>
-              <Text style={styles.heroTitle}>Trouvez le prestataire parfait pour votre événement</Text>
+              <View style={styles.heroIcon}>
+                <Sparkles size={40} color="#fff" />
+              </View>
+              <Text style={styles.heroTitle}>EventApp</Text>
               <Text style={styles.heroSubtitle}>
-                Connectez-vous avec les meilleurs DJ, traiteurs, photographes et lieux d'événements
+                La plateforme qui connecte clients, prestataires et établissements pour des événements réussis
               </Text>
               
-              <View style={styles.heroStats}>
-                <View style={styles.statItem}>
-                  <Star size={20} color={Colors.secondary} />
-                  <Text style={styles.statNumber}>4.8</Text>
-                  <Text style={styles.statLabel}>Note moyenne</Text>
-                </View>
-                <View style={styles.statItem}>
-                  <Users size={20} color={Colors.secondary} />
-                  <Text style={styles.statNumber}>500+</Text>
-                  <Text style={styles.statLabel}>Prestataires</Text>
-                </View>
-                <View style={styles.statItem}>
-                  <Calendar size={20} color={Colors.secondary} />
-                  <Text style={styles.statNumber}>1000+</Text>
-                  <Text style={styles.statLabel}>Événements</Text>
-                </View>
-              </View>
-              
-              <View style={styles.heroActions}>
-                <TouchableOpacity 
+              <View style={styles.heroButtons}>
+                <Button
+                  title="Commencer"
+                  onPress={() => router.push('/(auth)/register')}
                   style={styles.primaryButton}
+                  textStyle={styles.primaryButtonText}
+                />
+                <Button
+                  title="Essayer la démo"
+                  variant="outline"
                   onPress={() => router.push('/(auth)/demo')}
-                >
-                  <Text style={styles.primaryButtonText}>Essayer la démo</Text>
-                </TouchableOpacity>
-                
-                <TouchableOpacity 
-                  style={styles.secondaryButton}
-                  onPress={() => router.push('/(auth)/login')}
-                >
-                  <Text style={styles.secondaryButtonText}>Se connecter</Text>
-                </TouchableOpacity>
+                  style={styles.demoButton}
+                  textStyle={styles.demoButtonText}
+                />
               </View>
             </View>
+          </LinearGradient>
+
+          {/* Features Section */}
+          <View style={styles.featuresSection}>
+            <Text style={styles.sectionTitle}>Pourquoi choisir EventApp ?</Text>
+            
+            {features.map((feature, index) => (
+              <View key={index} style={styles.featureCard}>
+                <View style={styles.featureIcon}>
+                  <feature.icon size={24} color={Colors.primary} />
+                </View>
+                <View style={styles.featureContent}>
+                  <Text style={styles.featureTitle}>{feature.title}</Text>
+                  <Text style={styles.featureDescription}>{feature.description}</Text>
+                </View>
+              </View>
+            ))}
           </View>
-          
-          {/* Search Bar */}
-          <SearchBar
-            value={searchQuery || ''}
-            onChangeText={handleSearch}
-            onClear={handleClearSearch}
-            onLocationPress={handleLocationPress}
-            placeholder="Rechercher un prestataire..."
-          />
-          
-          {/* Location Permission Request */}
-          {!hasPermission && (
-            <LocationPermissionRequest onRequestPermission={requestPermission} />
-          )}
-          
-          {/* Category Filter */}
-          <CategoryFilter
-            selectedCategory={selectedCategory}
-            onSelectCategory={filterByCategory}
-          />
-          
-          {/* Listings */}
-          <View style={styles.listingsContainer}>
-            <View style={styles.listingsHeader}>
-              <Text style={styles.listingsTitle}>
-                {selectedCategory ? 'Résultats filtrés' : 'Annonces récentes'}
-              </Text>
-              <Text style={styles.listingsCount}>
-                {safeFilteredListings.length} résultat{safeFilteredListings.length > 1 ? 's' : ''}
+
+          {/* User Types Section */}
+          <View style={styles.userTypesSection}>
+            <Text style={styles.sectionTitle}>Pour qui ?</Text>
+            
+            <View style={styles.userTypeCard}>
+              <Text style={styles.userTypeTitle}>👤 Clients</Text>
+              <Text style={styles.userTypeDescription}>
+                Trouvez facilement des prestataires et établissements pour vos événements. 
+                Comparez les offres et recevez des devis personnalisés.
               </Text>
             </View>
             
-            {safeFilteredListings.length > 0 ? (
-              safeFilteredListings.map((listing) => (
-                <ListingCard
-                  key={listing.id}
-                  listing={listing}
-                />
-              ))
-            ) : (
-              <View style={styles.emptyState}>
-                <Text style={styles.emptyTitle}>Aucun résultat</Text>
-                <Text style={styles.emptyText}>
-                  Essayez de modifier vos critères de recherche
-                </Text>
+            <View style={styles.userTypeCard}>
+              <Text style={styles.userTypeTitle}>💼 Prestataires</Text>
+              <Text style={styles.userTypeDescription}>
+                Proposez vos services, créez des devis et développez votre clientèle. 
+                DJ, photographes, traiteurs, animateurs...
+              </Text>
+            </View>
+            
+            <View style={styles.userTypeCard}>
+              <Text style={styles.userTypeTitle}>🏢 Établissements</Text>
+              <Text style={styles.userTypeDescription}>
+                Proposez votre lieu pour des événements. Restaurants, salles de réception, 
+                châteaux, domaines...
+              </Text>
+            </View>
+          </View>
+
+          {/* CTA Section */}
+          <View style={styles.ctaSection}>
+            <LinearGradient
+              colors={[Colors.primary, Colors.secondary] as const}
+              style={styles.ctaGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <Text style={styles.ctaTitle}>Prêt à commencer ?</Text>
+              <Text style={styles.ctaSubtitle}>
+                Rejoignez EventApp et donnez vie à vos événements
+              </Text>
+              
+              <View style={styles.ctaButtons}>
+                <TouchableOpacity
+                  style={styles.ctaButton}
+                  onPress={() => router.push('/(auth)/register')}
+                >
+                  <Text style={styles.ctaButtonText}>Créer un compte</Text>
+                  <ArrowRight size={20} color="#fff" />
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={styles.loginLink}
+                  onPress={() => router.push('/(auth)/login')}
+                >
+                  <Text style={styles.loginLinkText}>Déjà inscrit ? Se connecter</Text>
+                </TouchableOpacity>
               </View>
-            )}
+            </LinearGradient>
           </View>
         </ScrollView>
       </View>
@@ -358,82 +403,186 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 150,
+    paddingBottom: 120,
+  },
+  landingScrollContent: {
+    paddingBottom: 40,
   },
   heroSection: {
-    backgroundColor: Colors.primary,
     paddingTop: 60,
-    paddingBottom: 40,
+    paddingBottom: 60,
     paddingHorizontal: 20,
   },
   heroContent: {
     alignItems: 'center',
   },
+  heroIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
   heroTitle: {
-    fontSize: 28,
-    fontWeight: '800',
+    fontSize: 36,
+    fontWeight: '900',
     color: '#fff',
+    marginBottom: 16,
     textAlign: 'center',
-    marginBottom: 12,
-    lineHeight: 34,
   },
   heroSubtitle: {
+    fontSize: 18,
+    color: 'rgba(255, 255, 255, 0.9)',
+    textAlign: 'center',
+    lineHeight: 26,
+    marginBottom: 40,
+    paddingHorizontal: 20,
+  },
+  heroButtons: {
+    width: '100%',
+    gap: 16,
+  },
+  primaryButton: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    paddingVertical: 16,
+  },
+  primaryButtonText: {
+    color: Colors.primary,
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  demoButton: {
+    borderColor: '#fff',
+    borderWidth: 2,
+    borderRadius: 16,
+    paddingVertical: 16,
+    backgroundColor: 'transparent',
+  },
+  demoButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  featuresSection: {
+    padding: 20,
+    paddingTop: 40,
+  },
+  sectionTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: Colors.text,
+    textAlign: 'center',
+    marginBottom: 32,
+  },
+  featureCard: {
+    flexDirection: 'row',
+    backgroundColor: Colors.backgroundAlt,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    alignItems: 'center',
+  },
+  featureIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  featureContent: {
+    flex: 1,
+  },
+  featureTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: Colors.text,
+    marginBottom: 4,
+  },
+  featureDescription: {
+    fontSize: 14,
+    color: Colors.textLight,
+    lineHeight: 20,
+  },
+  userTypesSection: {
+    padding: 20,
+    backgroundColor: Colors.backgroundAlt,
+  },
+  userTypeCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  userTypeTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: Colors.text,
+    marginBottom: 12,
+  },
+  userTypeDescription: {
+    fontSize: 16,
+    color: Colors.textLight,
+    lineHeight: 24,
+  },
+  ctaSection: {
+    margin: 20,
+    borderRadius: 24,
+    overflow: 'hidden',
+  },
+  ctaGradient: {
+    padding: 32,
+    alignItems: 'center',
+  },
+  ctaTitle: {
+    fontSize: 28,
+    fontWeight: '900',
+    color: '#fff',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  ctaSubtitle: {
     fontSize: 16,
     color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
     marginBottom: 32,
-    lineHeight: 22,
+    lineHeight: 24,
   },
-  heroStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+  ctaButtons: {
     width: '100%',
-    marginBottom: 32,
-  },
-  statItem: {
     alignItems: 'center',
   },
-  statNumber: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#fff',
-    marginTop: 8,
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.8)',
-  },
-  heroActions: {
+  ctaButton: {
     flexDirection: 'row',
-    gap: 16,
-    width: '100%',
-  },
-  primaryButton: {
-    flex: 1,
-    backgroundColor: Colors.secondary,
-    paddingVertical: 16,
-    borderRadius: 12,
     alignItems: 'center',
-  },
-  primaryButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  secondaryButton: {
-    flex: 1,
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    paddingHorizontal: 32,
+    borderRadius: 16,
+    marginBottom: 16,
+    gap: 8,
   },
-  secondaryButtonText: {
+  ctaButtonText: {
+    fontSize: 18,
+    fontWeight: '700',
     color: '#fff',
+  },
+  loginLink: {
+    paddingVertical: 12,
+  },
+  loginLinkText: {
     fontSize: 16,
-    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.8)',
+    textDecorationLine: 'underline',
   },
   header: {
     backgroundColor: Colors.primary,
