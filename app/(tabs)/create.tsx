@@ -146,6 +146,15 @@ export default function CreateListingScreen() {
       
       console.log('Listing created successfully:', newListing);
       
+      // Clear form immediately
+      setTitle('');
+      setDescription('');
+      setCategory('');
+      setPrice('');
+      setImages([]);
+      setTags([]);
+      setTagInput('');
+      
       Alert.alert(
         'Succès', 
         'Votre annonce a été publiée avec succès.', 
@@ -153,31 +162,13 @@ export default function CreateListingScreen() {
           { 
             text: 'Voir l\'annonce', 
             onPress: () => {
-              // Clear form
-              setTitle('');
-              setDescription('');
-              setCategory('');
-              setPrice('');
-              setImages([]);
-              setTags([]);
-              setTagInput('');
-              
-              // Navigate to the created listing
+              // Navigate to the created listing using the correct ID
               router.push(`/listing/${newListing.id}`);
             }
           },
           { 
             text: 'Retour à l\'accueil', 
             onPress: () => {
-              // Clear form
-              setTitle('');
-              setDescription('');
-              setCategory('');
-              setPrice('');
-              setImages([]);
-              setTags([]);
-              setTagInput('');
-              
               router.push('/(tabs)');
             }
           }
@@ -411,6 +402,9 @@ export default function CreateListingScreen() {
               </View>
             </View>
           </View>
+          
+          {/* Add extra padding at bottom for keyboard */}
+          <View style={styles.bottomPadding} />
         </ScrollView>
         
         {/* Fixed Submit Button */}
@@ -495,7 +489,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 20,
   },
   formCard: {
     backgroundColor: '#fff',
@@ -658,13 +652,15 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     fontWeight: '700',
   },
+  bottomPadding: {
+    height: 120,
+  },
   submitContainer: {
     backgroundColor: '#fff',
     padding: 20,
-    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
-    marginBottom: Platform.OS === 'ios' ? 90 : 75,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,

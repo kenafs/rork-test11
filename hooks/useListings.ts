@@ -20,6 +20,7 @@ interface ListingsState {
   filterBySearch: (query: string) => void;
   filterByLocation: (latitude: number, longitude: number, radius?: number) => void;
   clearFilters: () => void;
+  getListingById: (id: string) => Listing | undefined;
 }
 
 export const useListings = create<ListingsState>()(
@@ -75,6 +76,8 @@ export const useListings = create<ListingsState>()(
             id: `listing-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             createdAt: Date.now(),
           };
+          
+          console.log('Creating new listing:', newListing);
           
           set(state => {
             const updatedListings = [...state.listings, newListing];
@@ -146,6 +149,11 @@ export const useListings = create<ListingsState>()(
           set({ isLoading: false });
           return false;
         }
+      },
+      
+      getListingById: (id: string) => {
+        const { listings } = get();
+        return listings.find(listing => listing.id === id);
       },
       
       filterByCategory: (category: string | null) => {
