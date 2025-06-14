@@ -12,7 +12,7 @@ import Colors from '@/constants/colors';
 export default function SearchScreen() {
   const { category: initialCategory } = useLocalSearchParams<{ category?: string }>();
   const { 
-    listings = [], 
+    listings, 
     filteredListings = [], 
     isLoading, 
     fetchListings, 
@@ -35,7 +35,7 @@ export default function SearchScreen() {
   
   // Fetch listings on mount if not already loaded
   useEffect(() => {
-    if (!Array.isArray(listings) || listings.length === 0) {
+    if (listings.length === 0) {
       fetchListings();
     }
   }, []);
@@ -66,12 +66,6 @@ export default function SearchScreen() {
     return () => clearTimeout(debounce);
   };
   
-  // Handle clear search
-  const handleClearSearch = () => {
-    setSearchQuery('');
-    filterBySearch('');
-  };
-  
   // Handle category selection
   const handleCategorySelect = (category: string | null) => {
     filterByCategory(category);
@@ -95,7 +89,7 @@ export default function SearchScreen() {
         <SearchBar
           value={searchQuery}
           onChangeText={handleSearch}
-          onClear={handleClearSearch}
+          onClear={() => handleSearch('')}
           onLocationPress={handleLocationFilter}
           placeholder="Rechercher un service, un lieu..."
         />

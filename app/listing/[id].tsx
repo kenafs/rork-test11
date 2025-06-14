@@ -5,7 +5,7 @@ import { Image } from 'expo-image';
 import { useAuth } from '@/hooks/useAuth';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useMessages } from '@/hooks/useMessages';
-import { useListings } from '@/hooks/useListings';
+import { mockListings } from '@/mocks/listings';
 import { mockProviders, mockVenues } from '@/mocks/users';
 import Colors from '@/constants/colors';
 import RatingStars from '@/components/RatingStars';
@@ -19,11 +19,9 @@ export default function ListingDetailScreen() {
   const { isAuthenticated, user } = useAuth();
   const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
   const { createConversation } = useMessages();
-  const { getAllListings } = useListings();
   
-  // Find the listing by ID from all listings
-  const allListings = getAllListings();
-  const listing = allListings.find(item => item.id === id);
+  // Find the listing by ID
+  const listing = mockListings.find(item => item.id === id);
   
   if (!listing) {
     return (
@@ -82,7 +80,7 @@ export default function ListingDetailScreen() {
     Alert.alert('Partager', 'Fonctionnalité de partage à implémenter');
   };
   
-  // Handle contact - create conversation with proper user info
+  // Handle contact - simplified without initial message
   const handleContact = async () => {
     if (!isAuthenticated) {
       Alert.alert(
@@ -102,15 +100,15 @@ export default function ListingDetailScreen() {
     }
 
     try {
-      console.log('Creating conversation with creator:', creatorUser.name, creatorUser.id);
+      console.log('Creating conversation with:', listing.createdBy);
       
       // Create conversation without initial message
-      const conversationId = await createConversation(creatorUser.id);
+      const conversationId = await createConversation(listing.createdBy);
       
-      console.log('Conversation created successfully:', conversationId);
+      console.log('Conversation created:', conversationId);
       
-      // Navigate to the conversation with the creator's ID
-      router.push(`/conversation/${creatorUser.id}`);
+      // Navigate to the conversation with the participant ID
+      router.push(`/conversation/${listing.createdBy}`);
     } catch (error) {
       console.error('Error creating conversation:', error);
       Alert.alert('Erreur', 'Impossible de créer la conversation');
@@ -146,15 +144,15 @@ export default function ListingDetailScreen() {
         console.log('Requesting quote via message for listing:', listing.id);
         
         const conversationId = await createConversation(
-          creatorUser.id,
+          listing.createdBy,
           `Bonjour, je souhaiterais recevoir un devis pour votre annonce "${listing.title}". Pourriez-vous me faire une proposition ?`,
           listing.id
         );
         
         console.log('Quote request conversation created:', conversationId);
         
-        // Navigate to the conversation with the creator's ID
-        router.push(`/conversation/${creatorUser.id}`);
+        // Navigate to the conversation with the participant ID
+        router.push(`/conversation/${listing.createdBy}`);
       } catch (error) {
         console.error('Error creating quote request conversation:', error);
         Alert.alert('Erreur', 'Impossible de créer la demande de devis');
@@ -527,7 +525,7 @@ const styles = StyleSheet.create({
     right: 0,
     flexDirection: 'row',
     padding: 20,
-    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
+    paddingBottom: 34,
     backgroundColor: '#fff',
     borderTopWidth: 1,
     borderTopColor: Colors.border,
@@ -536,7 +534,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 10,
-    marginBottom: Platform.OS === 'ios' ? 90 : 75,
   },
   contactButton: {
     flex: 1,

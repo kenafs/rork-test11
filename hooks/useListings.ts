@@ -3,24 +3,16 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Listing } from '@/types';
 import { mockListings } from '@/mocks/listings';
-import { useAuth } from './useAuth';
-import { getCategoryFilter } from '@/constants/categories';
-
-interface UserListingsData {
-  userCreatedListings: Listing[];
-}
 
 interface ListingsState {
-  userListings: { [userId: string]: UserListingsData };
+  listings: Listing[];
   filteredListings: Listing[];
   selectedCategory: string | null;
   searchQuery: string | null;
   isLoading: boolean;
-  listings: Listing[];
   
   fetchListings: () => Promise<void>;
   refreshListings: () => Promise<void>;
-  addListing: (listingData: Omit<Listing, 'id' | 'createdAt'>) => Promise<Listing>;
   createListing: (listingData: Omit<Listing, 'id' | 'createdAt'>) => Promise<Listing>;
   updateListing: (id: string, updates: Partial<Listing>) => Promise<boolean>;
   deleteListing: (id: string) => Promise<boolean>;
@@ -28,45 +20,16 @@ interface ListingsState {
   filterBySearch: (query: string) => void;
   filterByLocation: (latitude: number, longitude: number, radius?: number) => void;
   clearFilters: () => void;
-  getAllListings: () => Listing[];
-  getUserListings: (userId: string) => Listing[];
 }
-
-const getEmptyUserData = (): UserListingsData => ({
-  userCreatedListings: [],
-});
 
 export const useListings = create<ListingsState>()(
   persist(
     (set, get) => ({
-      userListings: {},
+      listings: [],
       filteredListings: [],
       selectedCategory: null,
       searchQuery: null,
       isLoading: false,
-      listings: [],
-      
-      getAllListings: () => {
-        const { userListings } = get();
-        
-        // Combine all user-created listings with mock listings
-        const allUserListings: Listing[] = [];
-        Object.values(userListings).forEach(userData => {
-          allUserListings.push(...userData.userCreatedListings);
-        });
-        
-        const combined = [...mockListings, ...allUserListings];
-        
-        // Update listings property
-        set({ listings: combined });
-        
-        return combined;
-      },
-      
-      getUserListings: (userId: string) => {
-        const { userListings } = get();
-        return userListings[userId]?.userCreatedListings || [];
-      },
       
       fetchListings: async () => {
         set({ isLoading: true });
@@ -75,11 +38,18 @@ export const useListings = create<ListingsState>()(
           // Simulate API call
           await new Promise(resolve => setTimeout(resolve, 1000));
           
-          const allListings = get().getAllListings();
+          // Get existing listings from state and merge with mock data
+          const { listings: existingListings } = get();
+          const userCreatedListings = existingListings.filter(listing => 
+            listing.id.startsWith('listing-') && !mockListings.find(mock => mock.id === listing.id)
+          );
+          
+          // Combine mock listings with user-created listings
+          const allListings = [...mockListings, ...userCreatedListings];
           
           set({ 
-            filteredListings: allListings,
             listings: allListings,
+            filteredListings: allListings,
             isLoading: false 
           });
         } catch (error) {
@@ -93,14 +63,7 @@ export const useListings = create<ListingsState>()(
         await fetchListings();
       },
       
-      addListing: async (listingData) => {
-        return get().createListing(listingData);
-      },
-      
       createListing: async (listingData) => {
-        const user = useAuth.getState().user;
-        if (!user) throw new Error('User must be logged in to create a listing');
-        
         set({ isLoading: true });
         
         try {
@@ -114,19 +77,10 @@ export const useListings = create<ListingsState>()(
           };
           
           set(state => {
-            const updatedUserListings = { ...state.userListings };
-            if (!updatedUserListings[user.id]) {
-              updatedUserListings[user.id] = getEmptyUserData();
-            }
-            
-            updatedUserListings[user.id].userCreatedListings.push(newListing);
-            
-            const allListings = [...state.listings, newListing];
-            
+            const updatedListings = [...state.listings, newListing];
             return {
-              userListings: updatedUserListings,
-              filteredListings: allListings,
-              listings: allListings,
+              listings: updatedListings,
+              filteredListings: updatedListings,
               isLoading: false
             };
           });
@@ -141,9 +95,6 @@ export const useListings = create<ListingsState>()(
       },
       
       updateListing: async (id: string, updates: Partial<Listing>) => {
-        const user = useAuth.getState().user;
-        if (!user) return false;
-        
         set({ isLoading: true });
         
         try {
@@ -151,20 +102,13 @@ export const useListings = create<ListingsState>()(
           await new Promise(resolve => setTimeout(resolve, 1000));
           
           set(state => {
-            const updatedUserListings = { ...state.userListings };
-            
-            if (updatedUserListings[user.id]) {
-              updatedUserListings[user.id].userCreatedListings = updatedUserListings[user.id].userCreatedListings.map(listing =>
-                listing.id === id ? { ...listing, ...updates } : listing
-              );
-            }
-            
-            const allListings = get().getAllListings();
+            const updatedListings = state.listings.map(listing =>
+              listing.id === id ? { ...listing, ...updates } : listing
+            );
             
             return {
-              userListings: updatedUserListings,
-              filteredListings: allListings,
-              listings: allListings,
+              listings: updatedListings,
+              filteredListings: updatedListings,
               isLoading: false
             };
           });
@@ -179,9 +123,6 @@ export const useListings = create<ListingsState>()(
       },
       
       deleteListing: async (id: string) => {
-        const user = useAuth.getState().user;
-        if (!user) return false;
-        
         set({ isLoading: true });
         
         try {
@@ -189,18 +130,11 @@ export const useListings = create<ListingsState>()(
           await new Promise(resolve => setTimeout(resolve, 500));
           
           set(state => {
-            const updatedUserListings = { ...state.userListings };
-            
-            if (updatedUserListings[user.id]) {
-              updatedUserListings[user.id].userCreatedListings = updatedUserListings[user.id].userCreatedListings.filter(listing => listing.id !== id);
-            }
-            
-            const allListings = get().getAllListings();
+            const updatedListings = state.listings.filter(listing => listing.id !== id);
             
             return {
-              userListings: updatedUserListings,
-              filteredListings: allListings,
-              listings: allListings,
+              listings: updatedListings,
+              filteredListings: updatedListings,
               isLoading: false
             };
           });
@@ -215,15 +149,14 @@ export const useListings = create<ListingsState>()(
       },
       
       filterByCategory: (category: string | null) => {
-        const { searchQuery } = get();
-        const allListings = get().getAllListings();
+        const { listings, searchQuery } = get();
         
-        let filtered = [...allListings];
+        let filtered = [...listings];
         
         // Apply category filter
-        if (category && category !== 'all' && category !== 'Tous') {
+        if (category && category !== 'all') {
           filtered = filtered.filter(listing => 
-            getCategoryFilter(category, listing.category)
+            listing.category.toLowerCase() === category.toLowerCase()
           );
         }
         
@@ -246,15 +179,14 @@ export const useListings = create<ListingsState>()(
       },
       
       filterBySearch: (query: string) => {
-        const { selectedCategory } = get();
-        const allListings = get().getAllListings();
+        const { listings, selectedCategory } = get();
         
-        let filtered = [...allListings];
+        let filtered = [...listings];
         
         // Apply category filter if exists
-        if (selectedCategory && selectedCategory !== 'all' && selectedCategory !== 'Tous') {
+        if (selectedCategory && selectedCategory !== 'all') {
           filtered = filtered.filter(listing => 
-            getCategoryFilter(selectedCategory, listing.category)
+            listing.category.toLowerCase() === selectedCategory.toLowerCase()
           );
         }
         
@@ -277,10 +209,10 @@ export const useListings = create<ListingsState>()(
       },
       
       filterByLocation: (latitude: number, longitude: number, radius: number = 50) => {
-        const allListings = get().getAllListings();
+        const { listings } = get();
         
         // Simple distance calculation (not precise but good for demo)
-        const filtered = allListings.filter(listing => {
+        const filtered = listings.filter(listing => {
           if (!listing.location) return true;
           
           const distance = Math.sqrt(
@@ -295,9 +227,9 @@ export const useListings = create<ListingsState>()(
       },
       
       clearFilters: () => {
-        const allListings = get().getAllListings();
+        const { listings } = get();
         set({ 
-          filteredListings: allListings,
+          filteredListings: listings,
           selectedCategory: null,
           searchQuery: null 
         });
@@ -307,7 +239,7 @@ export const useListings = create<ListingsState>()(
       name: 'listings-storage',
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
-        userListings: state.userListings,
+        listings: state.listings,
       }),
     }
   )

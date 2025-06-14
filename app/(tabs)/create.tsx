@@ -1,293 +1,436 @@
-import React, { useState, useRef } from 'react';
-import { 
-  StyleSheet, 
-  View, 
-  Text, 
-  ScrollView, 
-  TextInput, 
-  TouchableOpacity, 
-  Alert, 
-  Platform,
-  KeyboardAvoidingView,
-  Dimensions
-} from 'react-native';
-import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { StyleSheet, View, Text, ScrollView, TextInput, Alert, Platform, TouchableOpacity, KeyboardAvoidingView } from 'react-native';
+import { useRouter, Stack } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useListings } from '@/hooks/useListings';
 import { useLocation } from '@/hooks/useLocation';
 import Button from '@/components/Button';
 import Colors from '@/constants/colors';
-import { categories } from '@/constants/categories';
-import { MapPin, DollarSign, Tag, FileText, Sparkles } from 'lucide-react-native';
-
-const { height: screenHeight } = Dimensions.get('window');
+import { listingCategories } from '@/constants/categories';
+import * as ImagePicker from 'expo-image-picker';
+import { Image } from 'expo-image';
+import { X, Camera, Plus, Sparkles } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function CreateListingScreen() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
-  const { createListing } = useListings();
-  const { latitude, longitude, city, requestPermission } = useLocation();
+  const { createListing, isLoading } = useListings();
+  const { latitude, longitude, city } = useLocation();
   
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [category, setCategory] = useState('');
   const [price, setPrice] = useState('');
-  const [tags, setTags] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [images, setImages] = useState<string[]>([]);
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState('');
   
-  const scrollViewRef = useRef<ScrollView>(null);
-
+  React.useEffect(() => {
+    if (!isAuthenticated || !user) {
+      Alert.alert(
+        'Connexion requise',
+        'Vous devez être connecté pour créer une annonce.',
+        [
+          { text: 'OK', onPress: () => router.replace('/(auth)/login') }
+        ]
+      );
+    }
+  }, [isAuthenticated, user]);
+  
   if (!isAuthenticated || !user) {
     return (
       <View style={styles.container}>
-        <View style={styles.notLoggedInContainer}>
-          <Text style={styles.notLoggedInTitle}>Connexion requise</Text>
-          <Text style={styles.notLoggedInText}>
+        <Stack.Screen options={{ title: "Créer une annonce" }} />
+        <View style={styles.loginPrompt}>
+          <Text style={styles.loginTitle}>Connexion requise</Text>
+          <Text style={styles.loginSubtitle}>
             Vous devez être connecté pour créer une annonce
           </Text>
           <Button
             title="Se connecter"
-            onPress={() => router.push('/(auth)/login')}
+            onPress={() => router.replace('/(auth)/login')}
             style={styles.loginButton}
           />
         </View>
       </View>
     );
   }
-
+  
+  const pickImage = async () => {
+    if (images.length >= 5) {
+      Alert.alert('Limite atteinte', 'Vous ne pouvez pas ajouter plus de 5 images.');
+      return;
+    }
+    
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+      
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setImages([...images, result.assets[0].uri]);
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      Alert.alert('Erreur', 'Impossible de sélectionner l\'image');
+    }
+  };
+  
+  const removeImage = (index: number) => {
+    const newImages = [...images];
+    newImages.splice(index, 1);
+    setImages(newImages);
+  };
+  
+  const addTag = () => {
+    if (tagInput.trim() && !tags.includes(tagInput.trim()) && tags.length < 5) {
+      setTags([...tags, tagInput.trim()]);
+      setTagInput('');
+    }
+  };
+  
+  const removeTag = (index: number) => {
+    const newTags = [...tags];
+    newTags.splice(index, 1);
+    setTags(newTags);
+  };
+  
   const handleSubmit = async () => {
     if (!title.trim()) {
-      Alert.alert('Erreur', 'Veuillez saisir un titre pour votre annonce');
+      Alert.alert('Erreur', 'Veuillez saisir un titre pour votre annonce.');
       return;
     }
-
+    
     if (!description.trim()) {
-      Alert.alert('Erreur', 'Veuillez saisir une description');
+      Alert.alert('Erreur', 'Veuillez saisir une description pour votre annonce.');
       return;
     }
-
-    if (!selectedCategory) {
-      Alert.alert('Erreur', 'Veuillez sélectionner une catégorie');
+    
+    if (!category) {
+      Alert.alert('Erreur', 'Veuillez sélectionner une catégorie.');
       return;
     }
-
-    if (!latitude || !longitude || !city) {
-      Alert.alert(
-        'Localisation requise',
-        'Nous avons besoin de votre localisation pour publier votre annonce',
-        [
-          { text: 'Annuler', style: 'cancel' },
-          { text: 'Autoriser', onPress: requestPermission }
-        ]
-      );
+    
+    if (!user) {
+      Alert.alert('Erreur', 'Vous devez être connecté pour créer une annonce.');
       return;
     }
-
-    setIsSubmitting(true);
-
+    
     try {
-      const newListing = {
+      console.log('Creating listing with user:', user);
+      console.log('User type:', user.userType);
+      
+      const newListing = await createListing({
         title: title.trim(),
         description: description.trim(),
-        category: selectedCategory,
-        price: price ? parseFloat(price) : undefined,
-        tags: tags.trim() ? tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
-        location: {
-          latitude,
-          longitude,
-          city,
-        },
         createdBy: user.id,
         creatorType: user.userType,
         creatorName: user.name,
         creatorImage: user.profileImage,
         creatorRating: user.rating,
         creatorReviewCount: user.reviewCount,
-      };
-
-      console.log('Creating listing:', newListing);
+        location: {
+          latitude: latitude || 48.8566,
+          longitude: longitude || 2.3522,
+          city: city || 'Paris',
+        },
+        category,
+        price: price ? parseFloat(price) : undefined,
+        images,
+        tags,
+      });
       
-      const createdListing = await createListing(newListing);
+      console.log('Listing created successfully:', newListing);
       
-      console.log('Listing created successfully:', createdListing);
-
       Alert.alert(
-        'Succès',
-        'Votre annonce a été publiée avec succès !',
+        'Succès', 
+        'Votre annonce a été publiée avec succès.', 
         [
-          {
-            text: 'Voir l\'annonce',
+          { 
+            text: 'Voir l\'annonce', 
             onPress: () => {
-              router.replace(`/listing/${createdListing.id}`);
+              // Clear form
+              setTitle('');
+              setDescription('');
+              setCategory('');
+              setPrice('');
+              setImages([]);
+              setTags([]);
+              setTagInput('');
+              
+              // Navigate to the created listing
+              router.push(`/listing/${newListing.id}`);
+            }
+          },
+          { 
+            text: 'Retour à l\'accueil', 
+            onPress: () => {
+              // Clear form
+              setTitle('');
+              setDescription('');
+              setCategory('');
+              setPrice('');
+              setImages([]);
+              setTags([]);
+              setTagInput('');
+              
+              router.push('/(tabs)');
             }
           }
         ]
       );
-
-      // Reset form
-      setTitle('');
-      setDescription('');
-      setSelectedCategory('');
-      setPrice('');
-      setTags('');
-
     } catch (error) {
       console.error('Error creating listing:', error);
-      Alert.alert('Erreur', 'Impossible de publier votre annonce. Veuillez réessayer.');
-    } finally {
-      setIsSubmitting(false);
+      Alert.alert('Erreur', "Une erreur s'est produite lors de la publication de votre annonce.");
     }
   };
 
-  const handleCategorySelect = (category: { id: string; name: string; icon: string }) => {
-    setSelectedCategory(category.name);
+  const getHeaderText = () => {
+    switch (user.userType) {
+      case 'provider':
+        return {
+          title: '✨ Créer une annonce',
+          subtitle: 'Proposez vos services !'
+        };
+      case 'business':
+        return {
+          title: '✨ Publier une offre',
+          subtitle: 'Proposez votre établissement !'
+        };
+      default:
+        return {
+          title: '✨ Créer une demande',
+          subtitle: 'Publiez votre besoin !'
+        };
+    }
   };
 
+  const getPlaceholders = () => {
+    switch (user.userType) {
+      case 'provider':
+        return {
+          title: "Ex: DJ professionnel pour soirée d'entreprise",
+          description: "Décrivez vos services en détail..."
+        };
+      case 'business':
+        return {
+          title: "Ex: Salle de réception avec terrasse",
+          description: "Décrivez votre établissement et ses équipements..."
+        };
+      default:
+        return {
+          title: "Ex: Recherche DJ pour mariage",
+          description: "Décrivez votre besoin en détail..."
+        };
+    }
+  };
+
+  const headerText = getHeaderText();
+  const placeholders = getPlaceholders();
+  
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerContent}>
-          <Sparkles size={24} color="#fff" />
-          <View style={styles.headerText}>
-            <Text style={styles.headerTitle}>Créer une annonce</Text>
-            <Text style={styles.headerSubtitle}>Proposez vos services !</Text>
-          </View>
-        </View>
-      </View>
-
+      <Stack.Screen options={{ 
+        title: user.userType === 'business' ? "Publier une offre" : "Créer une annonce",
+        headerStyle: { backgroundColor: Colors.primary },
+        headerTintColor: "#fff",
+        headerTitleStyle: { fontWeight: "700" }
+      }} />
+      
       <KeyboardAvoidingView 
         style={styles.keyboardContainer}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
+        <LinearGradient
+          colors={[Colors.primary, Colors.secondary] as const}
+          style={styles.headerGradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        >
+          <View style={styles.headerContent}>
+            <Text style={styles.headerTitle}>{headerText.title}</Text>
+            <Text style={styles.headerSubtitle}>{headerText.subtitle}</Text>
+          </View>
+        </LinearGradient>
+        
         <ScrollView 
-          ref={scrollViewRef}
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
+          style={styles.scrollView} 
+          contentContainerStyle={styles.contentContainer}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Title */}
-          <View style={styles.inputGroup}>
-            <View style={styles.inputHeader}>
-              <FileText size={20} color={Colors.primary} />
-              <Text style={styles.inputLabel}>Titre de l'annonce *</Text>
+          <View style={styles.formCard}>
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>🎯 Titre {user.userType === 'business' ? "de l'offre" : "de l'annonce"} *</Text>
+              <TextInput
+                style={styles.input}
+                value={title}
+                onChangeText={setTitle}
+                placeholder={placeholders.title}
+                maxLength={100}
+                placeholderTextColor={Colors.textLight}
+              />
             </View>
-            <TextInput
-              style={styles.textInput}
-              value={title}
-              onChangeText={setTitle}
-              placeholder="Ex: DJ professionnel pour soirée d'entreprise"
-              placeholderTextColor={Colors.textLight}
-              maxLength={100}
-            />
-          </View>
-
-          {/* Category Selection */}
-          <View style={styles.inputGroup}>
-            <View style={styles.inputHeader}>
-              <Tag size={20} color={Colors.primary} />
-              <Text style={styles.inputLabel}>Catégorie *</Text>
+            
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>📝 Description *</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                value={description}
+                onChangeText={setDescription}
+                placeholder={placeholders.description}
+                multiline
+                numberOfLines={6}
+                textAlignVertical="top"
+                placeholderTextColor={Colors.textLight}
+              />
             </View>
-            <ScrollView 
-              horizontal 
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.categoriesContainer}
-            >
-              {categories.map((category) => (
-                <TouchableOpacity
-                  key={category.id}
-                  style={[
-                    styles.categoryChip,
-                    selectedCategory === category.name && styles.categoryChipSelected
-                  ]}
-                  onPress={() => handleCategorySelect(category)}
-                >
-                  <Text style={styles.categoryEmoji}>{category.icon}</Text>
-                  <Text style={[
-                    styles.categoryChipText,
-                    selectedCategory === category.name && styles.categoryChipTextSelected
-                  ]}>
-                    {category.name}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-
-          {/* Price */}
-          <View style={styles.inputGroup}>
-            <View style={styles.inputHeader}>
-              <DollarSign size={20} color={Colors.primary} />
-              <Text style={styles.inputLabel}>Prix (€)</Text>
+            
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>🏷️ Catégorie *</Text>
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.categoriesContainer}
+              >
+                {listingCategories.filter(c => c.id !== 'all').map((cat) => (
+                  <TouchableOpacity
+                    key={cat.id}
+                    style={[
+                      styles.categoryButton,
+                      category === cat.name && styles.selectedCategory,
+                    ]}
+                    onPress={() => setCategory(cat.name)}
+                  >
+                    <Text
+                      style={[
+                        styles.categoryText,
+                        category === cat.name && styles.selectedCategoryText,
+                      ]}
+                    >
+                      {cat.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
             </View>
-            <TextInput
-              style={styles.textInput}
-              value={price}
-              onChangeText={setPrice}
-              placeholder="200"
-              placeholderTextColor={Colors.textLight}
-              keyboardType="numeric"
-            />
-          </View>
-
-          {/* Description */}
-          <View style={styles.inputGroup}>
-            <View style={styles.inputHeader}>
-              <FileText size={20} color={Colors.primary} />
-              <Text style={styles.inputLabel}>Description *</Text>
-            </View>
-            <TextInput
-              style={[styles.textInput, styles.textArea]}
-              value={description}
-              onChangeText={setDescription}
-              placeholder="Décrivez vos services en détail..."
-              placeholderTextColor={Colors.textLight}
-              multiline
-              numberOfLines={4}
-              textAlignVertical="top"
-            />
-          </View>
-
-          {/* Tags */}
-          <View style={styles.inputGroup}>
-            <View style={styles.inputHeader}>
-              <Tag size={20} color={Colors.primary} />
-              <Text style={styles.inputLabel}>Mots-clés</Text>
-            </View>
-            <TextInput
-              style={styles.textInput}
-              value={tags}
-              onChangeText={setTags}
-              placeholder="mariage, anniversaire, entreprise (séparés par des virgules)"
-              placeholderTextColor={Colors.textLight}
-            />
-          </View>
-
-          {/* Location */}
-          <View style={styles.inputGroup}>
-            <View style={styles.inputHeader}>
-              <MapPin size={20} color={Colors.primary} />
-              <Text style={styles.inputLabel}>Localisation</Text>
-            </View>
-            <TouchableOpacity style={styles.locationButton} onPress={requestPermission}>
-              <Text style={styles.locationButtonText}>
-                {city ? `📍 ${city}` : '📍 Définir ma localisation'}
+            
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>💰 Prix (€)</Text>
+              <TextInput
+                style={styles.input}
+                value={price}
+                onChangeText={(text) => setPrice(text.replace(/[^0-9.]/g, ''))}
+                placeholder="Ex: 250"
+                keyboardType="numeric"
+                placeholderTextColor={Colors.textLight}
+              />
+              <Text style={styles.helperText}>
+                💡 Laissez vide si le prix est sur demande ou variable.
               </Text>
-            </TouchableOpacity>
+            </View>
+            
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>📸 Photos (max 5)</Text>
+              <View style={styles.imagesContainer}>
+                {images.map((image, index) => (
+                  <View key={index} style={styles.imageWrapper}>
+                    <Image source={{ uri: image }} style={styles.imagePreview} />
+                    <TouchableOpacity
+                      style={styles.removeImageButton}
+                      onPress={() => removeImage(index)}
+                    >
+                      <X size={16} color="#fff" />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+                {images.length < 5 && (
+                  <TouchableOpacity style={styles.addImageButton} onPress={pickImage}>
+                    <LinearGradient
+                      colors={[Colors.primary, Colors.secondary] as const}
+                      style={styles.addImageGradient}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                    >
+                      <Camera size={24} color="#fff" />
+                      <Text style={styles.addImageText}>Ajouter</Text>
+                    </LinearGradient>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+            
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>🏷️ Tags (max 5)</Text>
+              <View style={styles.tagInputContainer}>
+                <TextInput
+                  style={[styles.input, styles.tagInput]}
+                  value={tagInput}
+                  onChangeText={setTagInput}
+                  placeholder="Ex: Mariage, Soirée, etc."
+                  onSubmitEditing={addTag}
+                  placeholderTextColor={Colors.textLight}
+                />
+                <Button
+                  title="Ajouter"
+                  onPress={addTag}
+                  size="small"
+                  disabled={!tagInput.trim() || tags.length >= 5}
+                  style={styles.addTagButton}
+                />
+              </View>
+              <View style={styles.tagsContainer}>
+                {tags.map((tag, index) => (
+                  <View key={index} style={styles.tag}>
+                    <Text style={styles.tagText}>{tag}</Text>
+                    <TouchableOpacity onPress={() => removeTag(index)}>
+                      <X size={14} color={Colors.textLight} />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            </View>
+            
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>📍 Localisation</Text>
+              <View style={styles.locationContainer}>
+                <View style={styles.locationInfo}>
+                  <Sparkles size={20} color={Colors.primary} />
+                  <Text style={styles.locationText}>
+                    {city ? `${city}` : 'Localisation non disponible'}
+                  </Text>
+                </View>
+                <Text style={styles.helperText}>
+                  💡 Votre {user.userType === 'business' ? 'offre' : 'annonce'} sera visible en priorité aux personnes proches de cette localisation.
+                </Text>
+              </View>
+            </View>
           </View>
         </ScrollView>
-
-        {/* Submit Button - Fixed at bottom */}
+        
+        {/* Fixed Submit Button */}
         <View style={styles.submitContainer}>
-          <Button
-            title={isSubmitting ? "Publication..." : "🚀 Publier l'annonce"}
-            onPress={handleSubmit}
-            disabled={isSubmitting}
-            fullWidth
-            style={styles.submitButton}
-          />
+          <LinearGradient
+            colors={[Colors.primary, Colors.secondary] as const}
+            style={styles.submitGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <TouchableOpacity
+              style={styles.submitButton}
+              onPress={handleSubmit}
+              disabled={isLoading}
+            >
+              <Text style={styles.submitButtonText}>
+                {isLoading ? '🚀 Publication...' : `🚀 Publier ${user.userType === 'business' ? "l'offre" : "l'annonce"}`}
+              </Text>
+            </TouchableOpacity>
+          </LinearGradient>
         </View>
       </KeyboardAvoidingView>
     </View>
@@ -299,144 +442,251 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.backgroundAlt,
   },
-  header: {
-    backgroundColor: Colors.primary,
-    paddingTop: Platform.OS === 'ios' ? 50 : 20,
-    paddingBottom: 20,
-    paddingHorizontal: 20,
+  keyboardContainer: {
+    flex: 1,
   },
-  headerContent: {
-    flexDirection: 'row',
+  loginPrompt: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
+    padding: 40,
   },
-  headerText: {
-    marginLeft: 12,
-  },
-  headerTitle: {
+  loginTitle: {
     fontSize: 24,
     fontWeight: '700',
+    color: Colors.text,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  loginSubtitle: {
+    fontSize: 16,
+    color: Colors.textLight,
+    textAlign: 'center',
+    marginBottom: 32,
+    lineHeight: 24,
+  },
+  loginButton: {
+    paddingHorizontal: 32,
+  },
+  headerGradient: {
+    paddingTop: Platform.OS === 'ios' ? 0 : 0,
+    paddingBottom: 24,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+  },
+  headerContent: {
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: '900',
     color: '#fff',
+    marginBottom: 8,
   },
   headerSubtitle: {
     fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
-  },
-  keyboardContainer: {
-    flex: 1,
+    color: 'rgba(255, 255, 255, 0.9)',
+    textAlign: 'center',
+    fontWeight: '500',
   },
   scrollView: {
     flex: 1,
   },
-  scrollContent: {
+  contentContainer: {
     padding: 20,
-    paddingBottom: 20,
+    paddingBottom: 40,
   },
-  inputGroup: {
-    marginBottom: 24,
+  formCard: {
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
   },
-  inputHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  formGroup: {
+    marginBottom: 28,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: Colors.text,
     marginBottom: 12,
   },
-  inputLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.text,
-    marginLeft: 8,
-  },
-  textInput: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
+  input: {
+    backgroundColor: Colors.backgroundAlt,
+    borderWidth: 2,
     borderColor: Colors.border,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    borderRadius: 16,
+    padding: 16,
     fontSize: 16,
     color: Colors.text,
+    fontWeight: '500',
   },
   textArea: {
-    height: 100,
-    paddingTop: 14,
+    minHeight: 120,
+    textAlignVertical: 'top',
+  },
+  helperText: {
+    fontSize: 14,
+    color: Colors.textLight,
+    marginTop: 8,
+    fontWeight: '500',
   },
   categoriesContainer: {
+    flexDirection: 'row',
     paddingVertical: 8,
+    gap: 12,
   },
-  categoryChip: {
+  categoryButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 25,
+    backgroundColor: Colors.backgroundAlt,
+    borderWidth: 2,
+    borderColor: Colors.border,
+  },
+  selectedCategory: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  categoryText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.text,
+  },
+  selectedCategoryText: {
+    color: '#fff',
+    fontWeight: '700',
+  },
+  imagesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  imageWrapper: {
+    position: 'relative',
+    width: 100,
+    height: 100,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  imagePreview: {
+    width: '100%',
+    height: '100%',
+  },
+  removeImageButton: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  addImageButton: {
+    width: 100,
+    height: 100,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  addImageGradient: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  addImageText: {
+    fontSize: 12,
+    color: '#fff',
+    fontWeight: '700',
+    marginTop: 4,
+  },
+  tagInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    borderWidth: 1,
+    gap: 12,
+  },
+  tagInput: {
+    flex: 1,
+  },
+  addTagButton: {
+    height: 54,
+    paddingHorizontal: 16,
+  },
+  tagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 12,
+  },
+  tag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.backgroundAlt,
+    borderWidth: 2,
     borderColor: Colors.border,
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    marginRight: 12,
+    gap: 8,
   },
-  categoryChipSelected: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-  },
-  categoryEmoji: {
-    fontSize: 16,
-    marginRight: 6,
-  },
-  categoryChipText: {
+  tagText: {
     fontSize: 14,
-    fontWeight: '500',
     color: Colors.text,
+    fontWeight: '600',
   },
-  categoryChipTextSelected: {
-    color: '#fff',
-  },
-  locationButton: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
+  locationContainer: {
+    backgroundColor: Colors.backgroundAlt,
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 2,
     borderColor: Colors.border,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
   },
-  locationButtonText: {
+  locationInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    gap: 8,
+  },
+  locationText: {
     fontSize: 16,
-    color: Colors.text,
+    color: Colors.primary,
+    fontWeight: '700',
   },
   submitContainer: {
     backgroundColor: '#fff',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    paddingBottom: Platform.OS === 'ios' ? 34 : 16,
+    padding: 20,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
+    marginBottom: Platform.OS === 'ios' ? 90 : 75,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 10,
   },
+  submitGradient: {
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 12,
+  },
   submitButton: {
-    paddingVertical: 16,
-    minHeight: 56,
-  },
-  notLoggedInContainer: {
-    flex: 1,
-    justifyContent: 'center',
+    paddingVertical: 18,
     alignItems: 'center',
-    padding: 40,
+    justifyContent: 'center',
   },
-  notLoggedInTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: Colors.text,
-    marginBottom: 16,
-  },
-  notLoggedInText: {
-    fontSize: 16,
-    color: Colors.textLight,
-    textAlign: 'center',
-    marginBottom: 32,
-  },
-  loginButton: {
-    paddingHorizontal: 32,
+  submitButtonText: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#fff',
   },
 });
