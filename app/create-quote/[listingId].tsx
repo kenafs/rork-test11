@@ -631,10 +631,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   footer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
     backgroundColor: '#fff',
     padding: 20,
     paddingBottom: Platform.OS === 'ios' ? 34 : 20,

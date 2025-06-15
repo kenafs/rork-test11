@@ -110,7 +110,7 @@ export const useMessages = create<MessagesState>()(
             type: 'text',
           };
           
-          // Add message to current user's messages
+          // CRITICAL FIX: Only add message to current user's messages, not to receiver's
           set(state => {
             const userMessages = state.messages[user.id] || {};
             const conversationMessages = userMessages[conversationId] || [];
@@ -126,23 +126,7 @@ export const useMessages = create<MessagesState>()(
             };
           });
           
-          // Also add to receiver's messages (simulate real-time messaging)
-          set(state => {
-            const receiverMessages = state.messages[receiverId] || {};
-            const receiverConversationMessages = receiverMessages[conversationId] || [];
-            
-            return {
-              messages: {
-                ...state.messages,
-                [receiverId]: {
-                  ...receiverMessages,
-                  [conversationId]: [...receiverConversationMessages, newMessage],
-                },
-              },
-            };
-          });
-          
-          // Update conversation's last message for current user
+          // Update conversation's last message for current user only
           set(state => {
             const userConversations = state.conversations[user.id] || [];
             const updatedConversations = userConversations.map(conv => {
@@ -224,7 +208,7 @@ export const useMessages = create<MessagesState>()(
           
           console.log('Creating new conversation:', newConversation);
           
-          // Add conversation to current user
+          // CRITICAL FIX: Only add conversation to current user, not to participant
           set(state => {
             const userConversations = state.conversations[user.id] || [];
             const userMessages = state.messages[user.id] || {};
@@ -238,26 +222,6 @@ export const useMessages = create<MessagesState>()(
                 ...state.messages,
                 [user.id]: {
                   ...userMessages,
-                  [conversationId]: [],
-                },
-              },
-            };
-          });
-          
-          // Also add conversation to participant
-          set(state => {
-            const participantConversations = state.conversations[participantId] || [];
-            const participantMessages = state.messages[participantId] || {};
-            
-            return {
-              conversations: {
-                ...state.conversations,
-                [participantId]: [newConversation, ...participantConversations],
-              },
-              messages: {
-                ...state.messages,
-                [participantId]: {
-                  ...participantMessages,
                   [conversationId]: [],
                 },
               },

@@ -49,11 +49,11 @@ export default function ProfileScreen() {
               await logout();
               console.log('Logout completed successfully');
               // Navigate to home after logout
-              router.replace('/(tabs)');
+              router.replace('/');
             } catch (error) {
               console.error('Logout error:', error);
               // Force navigation even if logout fails
-              router.replace('/(tabs)');
+              router.replace('/');
             }
           }
         },
@@ -385,8 +385,8 @@ export default function ProfileScreen() {
         </View>
         
         {userListings.length > 0 ? (
-          userListings.map(listing => (
-            <ListingCard key={listing.id} listing={listing} />
+          userListings.map((listing, index) => (
+            <ListingCard key={`user-listing-${listing.id}-${index}`} listing={listing} />
           ))
         ) : (
           <View style={styles.emptyListings}>

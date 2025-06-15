@@ -40,15 +40,6 @@ export default function ListingDetailScreen() {
   const allUsers = [...mockProviders, ...mockVenues];
   const creatorUser = allUsers.find(u => u.id === listing.createdBy);
   
-  // Format date if available
-  const formattedDate = listing.date 
-    ? new Date(listing.date).toLocaleDateString('fr-FR', { 
-        day: 'numeric', 
-        month: 'long', 
-        year: 'numeric' 
-      })
-    : null;
-  
   // Format price
   const formattedPrice = listing.price 
     ? `${listing.price.toLocaleString('fr-FR')}€${listing.category === 'Catering' ? '/pers' : ''}`
@@ -263,13 +254,6 @@ export default function ListingDetailScreen() {
               <View style={styles.infoItem}>
                 <MapPin size={18} color={Colors.primary} style={styles.infoIcon} />
                 <Text style={styles.infoText}>{listing.location.city}</Text>
-              </View>
-            )}
-            
-            {formattedDate && (
-              <View style={styles.infoItem}>
-                <Clock size={18} color={Colors.primary} style={styles.infoIcon} />
-                <Text style={styles.infoText}>{formattedDate}</Text>
               </View>
             )}
             

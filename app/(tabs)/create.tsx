@@ -165,12 +165,6 @@ export default function CreateListingScreen() {
               // Navigate to the created listing
               router.push(`/listing/${newListing.id}`);
             }
-          },
-          { 
-            text: 'Retour à l\'accueil', 
-            onPress: () => {
-              router.push('/(tabs)');
-            }
           }
         ]
       );
@@ -404,7 +398,7 @@ export default function CreateListingScreen() {
           </View>
         </ScrollView>
         
-        {/* Fixed Submit Button */}
+        {/* Fixed Submit Button - CRITICAL FIX: Proper positioning */}
         <View style={styles.submitContainer}>
           <LinearGradient
             colors={[Colors.primary, Colors.secondary] as const}
@@ -486,7 +480,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 20,
-    paddingBottom: 120, // Extra space for submit button
+    paddingBottom: 20, // Reduced padding since submit button is fixed
   },
   formCard: {
     backgroundColor: '#fff',
@@ -650,10 +644,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   submitContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
     backgroundColor: '#fff',
     padding: 20,
     paddingBottom: Platform.OS === 'ios' ? 34 : 20,

@@ -246,6 +246,7 @@ export default function ConversationScreen() {
         }
       />
       
+      {/* CRITICAL FIX: Better keyboard handling */}
       <View style={styles.inputContainer}>
         <View style={styles.inputWrapper}>
           <TextInput
@@ -256,6 +257,9 @@ export default function ConversationScreen() {
             placeholderTextColor={Colors.textLight}
             multiline
             maxLength={500}
+            blurOnSubmit={false}
+            returnKeyType="send"
+            onSubmitEditing={handleSendMessage}
           />
           <TouchableOpacity style={styles.attachButton}>
             <Paperclip size={20} color={Colors.textLight} />
@@ -396,8 +400,8 @@ const styles = StyleSheet.create({
     gap: 12,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
-    minHeight: 80,
     paddingBottom: Platform.OS === 'ios' ? 34 : 16,
+    minHeight: Platform.OS === 'ios' ? 90 : 80,
   },
   inputWrapper: {
     flex: 1,

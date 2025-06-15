@@ -151,7 +151,7 @@ export default function HomeScreen() {
             <Text style={styles.sectionTitle}>Pourquoi choisir EventApp ?</Text>
             
             {features.map((feature, index) => (
-              <View key={index} style={styles.featureCard}>
+              <View key={`feature-${index}`} style={styles.featureCard}>
                 <View style={styles.featureIcon}>
                   <feature.icon size={24} color={Colors.primary} />
                 </View>
@@ -363,9 +363,9 @@ export default function HomeScreen() {
           </View>
           
           {safeFilteredListings.length > 0 ? (
-            safeFilteredListings.map((listing) => (
+            safeFilteredListings.map((listing, index) => (
               <ListingCard
-                key={listing.id}
+                key={`listing-${listing.id}-${index}`}
                 listing={listing}
               />
             ))

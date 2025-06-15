@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Text, ScrollView, RefreshControl } from 'react-native';
 import { useListings } from '@/hooks/useListings';
 import { useLocation } from '@/hooks/useLocation';
-import { useFavorites } from '@/hooks/useFavorites';
 import Colors from '@/constants/colors';
 import SearchBar from '@/components/SearchBar';
 import CategoryFilter from '@/components/CategoryFilter';
@@ -26,9 +25,8 @@ export default function SearchScreen() {
     longitude, 
     city, 
     hasPermission,
-    requestPermission 
+    requestPermission
   } = useLocation();
-  const { favorites = [] } = useFavorites();
   
   const [refreshing, setRefreshing] = useState(false);
   
@@ -58,9 +56,12 @@ export default function SearchScreen() {
     filterBySearch('');
   };
   
+  const handleCategorySelect = (category: string | null) => {
+    filterByCategory(category);
+  };
+  
   // Ensure arrays are always defined
   const safeFilteredListings = Array.isArray(filteredListings) ? filteredListings : [];
-  const safeFavorites = Array.isArray(favorites) ? favorites : [];
   
   return (
     <View style={styles.container}>
@@ -76,7 +77,7 @@ export default function SearchScreen() {
         <View style={styles.header}>
           <Text style={styles.headerTitle}>🔍 Rechercher</Text>
           <Text style={styles.headerSubtitle}>
-            Trouvez le prestataire ou établissement parfait
+            Trouvez le prestataire parfait pour votre événement
           </Text>
         </View>
         
@@ -94,11 +95,13 @@ export default function SearchScreen() {
           <LocationPermissionRequest onRequestPermission={requestPermission} />
         )}
         
-        {/* Category Filter */}
-        <CategoryFilter
-          selectedCategory={selectedCategory}
-          onSelectCategory={filterByCategory}
-        />
+        {/* Category Filter - CRITICAL FIX: Better scrolling */}
+        <View style={styles.categorySection}>
+          <CategoryFilter
+            selectedCategory={selectedCategory}
+            onSelectCategory={handleCategorySelect}
+          />
+        </View>
         
         {/* Results */}
         <View style={styles.resultsContainer}>
@@ -106,9 +109,7 @@ export default function SearchScreen() {
             <Text style={styles.resultsTitle}>
               {selectedCategory && selectedCategory !== 'all' 
                 ? `Résultats pour "${selectedCategory}"` 
-                : searchQuery 
-                ? `Résultats pour "${searchQuery}"`
-                : 'Toutes les annonces'
+                : 'Tous les résultats'
               }
             </Text>
             <Text style={styles.resultsCount}>
@@ -117,9 +118,9 @@ export default function SearchScreen() {
           </View>
           
           {safeFilteredListings.length > 0 ? (
-            safeFilteredListings.map((listing) => (
+            safeFilteredListings.map((listing, index) => (
               <ListingCard
-                key={listing.id}
+                key={`search-listing-${listing.id}-${index}`}
                 listing={listing}
               />
             ))
@@ -127,15 +128,12 @@ export default function SearchScreen() {
             <View style={styles.emptyState}>
               <Text style={styles.emptyTitle}>Aucun résultat trouvé</Text>
               <Text style={styles.emptyText}>
-                {selectedCategory && selectedCategory !== 'all'
-                  ? `Aucune annonce trouvée dans la catégorie "${selectedCategory}"`
-                  : searchQuery
-                  ? `Aucune annonce trouvée pour "${searchQuery}"`
-                  : 'Aucune annonce disponible pour le moment'
+                {searchQuery 
+                  ? `Aucun résultat pour "${searchQuery}"`
+                  : selectedCategory && selectedCategory !== 'all'
+                  ? `Aucun résultat dans la catégorie "${selectedCategory}"`
+                  : 'Essayez de modifier vos critères de recherche'
                 }
-              </Text>
-              <Text style={styles.emptyHint}>
-                💡 Essayez de modifier vos critères de recherche ou explorez d'autres catégories
               </Text>
             </View>
           )}
@@ -154,7 +152,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 120,
+    paddingBottom: 120, // Extra space for tab bar
   },
   header: {
     backgroundColor: Colors.primary,
@@ -173,6 +171,12 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.9)',
     lineHeight: 22,
   },
+  categorySection: {
+    backgroundColor: '#fff',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
   resultsContainer: {
     padding: 16,
   },
@@ -183,16 +187,15 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   resultsTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
     color: Colors.text,
     flex: 1,
-    marginRight: 12,
   },
   resultsCount: {
     fontSize: 14,
     color: Colors.textLight,
-    fontWeight: '500',
+    marginLeft: 12,
   },
   emptyState: {
     alignItems: 'center',
@@ -202,24 +205,15 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   emptyTitle: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 18,
+    fontWeight: '600',
     color: Colors.text,
-    marginBottom: 12,
-    textAlign: 'center',
+    marginBottom: 8,
   },
   emptyText: {
-    fontSize: 16,
-    color: Colors.textLight,
-    textAlign: 'center',
-    marginBottom: 16,
-    lineHeight: 24,
-  },
-  emptyHint: {
     fontSize: 14,
     color: Colors.textLight,
     textAlign: 'center',
-    fontStyle: 'italic',
     lineHeight: 20,
   },
 });
