@@ -25,6 +25,7 @@ export default function CreateQuoteScreen() {
   const [items, setItems] = useState<QuoteItem[]>([
     {
       id: '1',
+      name: '',
       description: '',
       quantity: 1,
       unitPrice: 0,
@@ -73,6 +74,7 @@ export default function CreateQuoteScreen() {
   const addItem = () => {
     const newItem: QuoteItem = {
       id: Date.now().toString(),
+      name: '',
       description: '',
       quantity: 1,
       unitPrice: 0,
@@ -163,7 +165,7 @@ export default function CreateQuoteScreen() {
             <tbody>
               ${quote.items.map((item: QuoteItem) => `
                 <tr>
-                  <td>${item.description}</td>
+                  <td>${item.name || item.description || ''}</td>
                   <td>${item.quantity}</td>
                   <td>${item.unitPrice.toFixed(2)}€</td>
                   <td>${item.total.toFixed(2)}€</td>
@@ -185,13 +187,13 @@ export default function CreateQuoteScreen() {
         </html>
       `;
       
-      const { uri } = await Print.printToFileAsync({
+      const result = await Print.printToFileAsync({
         html: htmlContent,
         base64: false
       });
       
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(uri, {
+      if (result && result.uri && await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(result.uri, {
           mimeType: 'application/pdf',
           dialogTitle: `Devis ${quote.id.slice(-6)}`
         });
@@ -216,7 +218,7 @@ export default function CreateQuoteScreen() {
       return;
     }
     
-    if (items.some(item => !item.description.trim() || item.unitPrice <= 0)) {
+    if (items.some(item => !item.name.trim() || item.unitPrice <= 0)) {
       Alert.alert('Erreur', 'Veuillez remplir tous les éléments du devis');
       return;
     }
@@ -386,11 +388,11 @@ export default function CreateQuoteScreen() {
                 </View>
                 
                 <View style={styles.formGroup}>
-                  <Text style={styles.label}>Description *</Text>
+                  <Text style={styles.label}>Nom/Description *</Text>
                   <TextInput
                     style={styles.input}
-                    value={item.description}
-                    onChangeText={(value) => updateItem(item.id, 'description', value)}
+                    value={item.name}
+                    onChangeText={(value) => updateItem(item.id, 'name', value)}
                     placeholder="Ex: Animation musicale"
                     placeholderTextColor={Colors.textLight}
                   />

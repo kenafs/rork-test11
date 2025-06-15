@@ -219,6 +219,7 @@ export const useMessages = create<MessagesState>()(
             participants: [user.id, participantId],
             createdAt: Date.now(),
             updatedAt: Date.now(),
+            unreadCount: 0,
           };
           
           console.log('Creating new conversation:', newConversation);
