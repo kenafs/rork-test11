@@ -99,7 +99,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
           {listing.tags && listing.tags.length > 0 && (
             <View style={styles.tagsContainer}>
               {listing.tags.slice(0, 2).map((tag, index) => (
-                <View key={index} style={styles.tag}>
+                <View key={`tag-${listing.id}-${index}`} style={styles.tag}>
                   <Text style={styles.tagText}>{tag}</Text>
                 </View>
               ))}

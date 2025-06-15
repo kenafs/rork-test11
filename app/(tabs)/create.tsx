@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, TextInput, Alert, Platform, TouchableOpacity, KeyboardAvoidingView } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TextInput, Alert, Platform, TouchableOpacity } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useListings } from '@/hooks/useListings';
@@ -226,198 +226,192 @@ export default function CreateListingScreen() {
         headerTitleStyle: { fontWeight: "700" }
       }} />
       
-      <KeyboardAvoidingView 
-        style={styles.keyboardContainer}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      <LinearGradient
+        colors={[Colors.primary, Colors.secondary] as const}
+        style={styles.headerGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
       >
-        <LinearGradient
-          colors={[Colors.primary, Colors.secondary] as const}
-          style={styles.headerGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
-          <View style={styles.headerContent}>
-            <Text style={styles.headerTitle}>{headerText.title}</Text>
-            <Text style={styles.headerSubtitle}>{headerText.subtitle}</Text>
+        <View style={styles.headerContent}>
+          <Text style={styles.headerTitle}>{headerText.title}</Text>
+          <Text style={styles.headerSubtitle}>{headerText.subtitle}</Text>
+        </View>
+      </LinearGradient>
+      
+      <ScrollView 
+        style={styles.scrollView} 
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.formCard}>
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>🎯 Titre {user.userType === 'business' ? "de l'offre" : "de l'annonce"} *</Text>
+            <TextInput
+              style={styles.input}
+              value={title}
+              onChangeText={setTitle}
+              placeholder={placeholders.title}
+              maxLength={100}
+              placeholderTextColor={Colors.textLight}
+            />
           </View>
-        </LinearGradient>
-        
-        <ScrollView 
-          style={styles.scrollView} 
-          contentContainerStyle={styles.contentContainer}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View style={styles.formCard}>
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>🎯 Titre {user.userType === 'business' ? "de l'offre" : "de l'annonce"} *</Text>
-              <TextInput
-                style={styles.input}
-                value={title}
-                onChangeText={setTitle}
-                placeholder={placeholders.title}
-                maxLength={100}
-                placeholderTextColor={Colors.textLight}
-              />
-            </View>
-            
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>📝 Description *</Text>
-              <TextInput
-                style={[styles.input, styles.textArea]}
-                value={description}
-                onChangeText={setDescription}
-                placeholder={placeholders.description}
-                multiline
-                numberOfLines={6}
-                textAlignVertical="top"
-                placeholderTextColor={Colors.textLight}
-              />
-            </View>
-            
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>🏷️ Catégorie *</Text>
-              <ScrollView 
-                horizontal 
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.categoriesContainer}
-              >
-                {listingCategories.filter(c => c.id !== 'all').map((cat) => (
-                  <TouchableOpacity
-                    key={cat.id}
+          
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>📝 Description *</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              value={description}
+              onChangeText={setDescription}
+              placeholder={placeholders.description}
+              multiline
+              numberOfLines={6}
+              textAlignVertical="top"
+              placeholderTextColor={Colors.textLight}
+            />
+          </View>
+          
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>🏷️ Catégorie *</Text>
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.categoriesContainer}
+            >
+              {listingCategories.filter(c => c.id !== 'all').map((cat) => (
+                <TouchableOpacity
+                  key={cat.id}
+                  style={[
+                    styles.categoryButton,
+                    category === cat.name && styles.selectedCategory,
+                  ]}
+                  onPress={() => setCategory(cat.name)}
+                >
+                  <Text
                     style={[
-                      styles.categoryButton,
-                      category === cat.name && styles.selectedCategory,
+                      styles.categoryText,
+                      category === cat.name && styles.selectedCategoryText,
                     ]}
-                    onPress={() => setCategory(cat.name)}
                   >
-                    <Text
-                      style={[
-                        styles.categoryText,
-                        category === cat.name && styles.selectedCategoryText,
-                      ]}
-                    >
-                      {cat.name}
-                    </Text>
+                    {cat.name}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+          
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>💰 Prix (€)</Text>
+            <TextInput
+              style={styles.input}
+              value={price}
+              onChangeText={(text) => setPrice(text.replace(/[^0-9.]/g, ''))}
+              placeholder="Ex: 250"
+              keyboardType="numeric"
+              placeholderTextColor={Colors.textLight}
+            />
+            <Text style={styles.helperText}>
+              💡 Laissez vide si le prix est sur demande ou variable.
+            </Text>
+          </View>
+          
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>📸 Photos (max 5)</Text>
+            <View style={styles.imagesContainer}>
+              {images.map((image, index) => (
+                <View key={index} style={styles.imageWrapper}>
+                  <Image source={{ uri: image }} style={styles.imagePreview} />
+                  <TouchableOpacity
+                    style={styles.removeImageButton}
+                    onPress={() => removeImage(index)}
+                  >
+                    <X size={16} color="#fff" />
                   </TouchableOpacity>
-                ))}
-              </ScrollView>
+                </View>
+              ))}
+              {images.length < 5 && (
+                <TouchableOpacity style={styles.addImageButton} onPress={pickImage}>
+                  <LinearGradient
+                    colors={[Colors.primary, Colors.secondary] as const}
+                    style={styles.addImageGradient}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                  >
+                    <Camera size={24} color="#fff" />
+                    <Text style={styles.addImageText}>Ajouter</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              )}
             </View>
-            
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>💰 Prix (€)</Text>
+          </View>
+          
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>🏷️ Tags (max 5)</Text>
+            <View style={styles.tagInputContainer}>
               <TextInput
-                style={styles.input}
-                value={price}
-                onChangeText={(text) => setPrice(text.replace(/[^0-9.]/g, ''))}
-                placeholder="Ex: 250"
-                keyboardType="numeric"
+                style={[styles.input, styles.tagInput]}
+                value={tagInput}
+                onChangeText={setTagInput}
+                placeholder="Ex: Mariage, Soirée, etc."
+                onSubmitEditing={addTag}
                 placeholderTextColor={Colors.textLight}
               />
-              <Text style={styles.helperText}>
-                💡 Laissez vide si le prix est sur demande ou variable.
-              </Text>
+              <Button
+                title="Ajouter"
+                onPress={addTag}
+                size="small"
+                disabled={!tagInput.trim() || tags.length >= 5}
+                style={styles.addTagButton}
+              />
             </View>
-            
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>📸 Photos (max 5)</Text>
-              <View style={styles.imagesContainer}>
-                {images.map((image, index) => (
-                  <View key={index} style={styles.imageWrapper}>
-                    <Image source={{ uri: image }} style={styles.imagePreview} />
-                    <TouchableOpacity
-                      style={styles.removeImageButton}
-                      onPress={() => removeImage(index)}
-                    >
-                      <X size={16} color="#fff" />
-                    </TouchableOpacity>
-                  </View>
-                ))}
-                {images.length < 5 && (
-                  <TouchableOpacity style={styles.addImageButton} onPress={pickImage}>
-                    <LinearGradient
-                      colors={[Colors.primary, Colors.secondary] as const}
-                      style={styles.addImageGradient}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                    >
-                      <Camera size={24} color="#fff" />
-                      <Text style={styles.addImageText}>Ajouter</Text>
-                    </LinearGradient>
+            <View style={styles.tagsContainer}>
+              {tags.map((tag, index) => (
+                <View key={index} style={styles.tag}>
+                  <Text style={styles.tagText}>{tag}</Text>
+                  <TouchableOpacity onPress={() => removeTag(index)}>
+                    <X size={14} color={Colors.textLight} />
                   </TouchableOpacity>
-                )}
-              </View>
-            </View>
-            
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>🏷️ Tags (max 5)</Text>
-              <View style={styles.tagInputContainer}>
-                <TextInput
-                  style={[styles.input, styles.tagInput]}
-                  value={tagInput}
-                  onChangeText={setTagInput}
-                  placeholder="Ex: Mariage, Soirée, etc."
-                  onSubmitEditing={addTag}
-                  placeholderTextColor={Colors.textLight}
-                />
-                <Button
-                  title="Ajouter"
-                  onPress={addTag}
-                  size="small"
-                  disabled={!tagInput.trim() || tags.length >= 5}
-                  style={styles.addTagButton}
-                />
-              </View>
-              <View style={styles.tagsContainer}>
-                {tags.map((tag, index) => (
-                  <View key={index} style={styles.tag}>
-                    <Text style={styles.tagText}>{tag}</Text>
-                    <TouchableOpacity onPress={() => removeTag(index)}>
-                      <X size={14} color={Colors.textLight} />
-                    </TouchableOpacity>
-                  </View>
-                ))}
-              </View>
-            </View>
-            
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>📍 Localisation</Text>
-              <View style={styles.locationContainer}>
-                <View style={styles.locationInfo}>
-                  <Sparkles size={20} color={Colors.primary} />
-                  <Text style={styles.locationText}>
-                    {city ? `${city}` : 'Localisation non disponible'}
-                  </Text>
                 </View>
-                <Text style={styles.helperText}>
-                  💡 Votre {user.userType === 'business' ? 'offre' : 'annonce'} sera visible en priorité aux personnes proches de cette localisation.
+              ))}
+            </View>
+          </View>
+          
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>📍 Localisation</Text>
+            <View style={styles.locationContainer}>
+              <View style={styles.locationInfo}>
+                <Sparkles size={20} color={Colors.primary} />
+                <Text style={styles.locationText}>
+                  {city ? `${city}` : 'Localisation non disponible'}
                 </Text>
               </View>
+              <Text style={styles.helperText}>
+                💡 Votre {user.userType === 'business' ? 'offre' : 'annonce'} sera visible en priorité aux personnes proches de cette localisation.
+              </Text>
             </View>
           </View>
-        </ScrollView>
-        
-        {/* Fixed Submit Button - CRITICAL FIX: Proper positioning */}
-        <View style={styles.submitContainer}>
-          <LinearGradient
-            colors={[Colors.primary, Colors.secondary] as const}
-            style={styles.submitGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
-            <TouchableOpacity
-              style={styles.submitButton}
-              onPress={handleSubmit}
-              disabled={isLoading}
+          
+          {/* Submit Button moved here - CRITICAL FIX */}
+          <View style={styles.submitSection}>
+            <LinearGradient
+              colors={[Colors.primary, Colors.secondary] as const}
+              style={styles.submitGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
             >
-              <Text style={styles.submitButtonText}>
-                {isLoading ? '🚀 Publication...' : `🚀 Publier ${user.userType === 'business' ? "l'offre" : "l'annonce"}`}
-              </Text>
-            </TouchableOpacity>
-          </LinearGradient>
+              <TouchableOpacity
+                style={styles.submitButton}
+                onPress={handleSubmit}
+                disabled={isLoading}
+              >
+                <Text style={styles.submitButtonText}>
+                  {isLoading ? '🚀 Publication...' : `🚀 Publier ${user.userType === 'business' ? "l'offre" : "l'annonce"}`}
+                </Text>
+              </TouchableOpacity>
+            </LinearGradient>
+          </View>
         </View>
-      </KeyboardAvoidingView>
+      </ScrollView>
     </View>
   );
 }
@@ -426,9 +420,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.backgroundAlt,
-  },
-  keyboardContainer: {
-    flex: 1,
   },
   loginPrompt: {
     flex: 1,
@@ -480,7 +471,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 20,
-    paddingBottom: 20, // Reduced padding since submit button is fixed
+    paddingBottom: 40, // Extra space at bottom
   },
   formCard: {
     backgroundColor: '#fff',
@@ -643,17 +634,9 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     fontWeight: '700',
   },
-  submitContainer: {
-    backgroundColor: '#fff',
-    padding: 20,
-    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
-    borderTopWidth: 1,
-    borderTopColor: Colors.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 10,
+  submitSection: {
+    marginTop: 20,
+    marginBottom: 10,
   },
   submitGradient: {
     borderRadius: 20,

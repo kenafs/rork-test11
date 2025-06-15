@@ -18,6 +18,7 @@ interface QuotesState {
   getQuotesByUser: (userId: string) => Quote[];
   getQuotesForUser: (userId: string) => Quote[];
   getUserQuotes: () => Quote[];
+  getAllQuotes: () => Quote[];
 }
 
 export const useQuotes = create<QuotesState>()(
@@ -204,6 +205,10 @@ export const useQuotes = create<QuotesState>()(
         // Get all quotes where this user is the client
         const allQuotes = Object.values(get().quotes).flat();
         return allQuotes.filter(quote => quote.clientId === userId);
+      },
+      
+      getAllQuotes: () => {
+        return Object.values(get().quotes).flat();
       },
     }),
     {

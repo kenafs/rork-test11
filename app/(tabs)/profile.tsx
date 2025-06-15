@@ -4,11 +4,12 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuotes } from '@/hooks/useQuotes';
 import { useListings } from '@/hooks/useListings';
+import { useFavorites } from '@/hooks/useFavorites';
 import { User, Provider, Venue } from '@/types';
 import Colors from '@/constants/colors';
 import Button from '@/components/Button';
 import RatingStars from '@/components/RatingStars';
-import { MapPin, Mail, Phone, Calendar, Settings, LogOut, Edit, Plus, Globe, Instagram, ExternalLink, FileText } from 'lucide-react-native';
+import { MapPin, Mail, Phone, Calendar, Settings, LogOut, Edit, Plus, Globe, Instagram, ExternalLink, FileText, Heart, Star, TrendingUp, Sparkles } from 'lucide-react-native';
 import ListingCard from '@/components/ListingCard';
 
 export default function ProfileScreen() {
@@ -16,6 +17,7 @@ export default function ProfileScreen() {
   const { user, isAuthenticated, logout, isLoading } = useAuth();
   const { getUserQuotes, getQuotesForUser } = useQuotes();
   const { getUserListings } = useListings();
+  const { favorites } = useFavorites();
   
   const userListings = getUserListings().slice(0, 3);
   
@@ -72,6 +74,26 @@ export default function ProfileScreen() {
   const handleInstagramLink = (username: string) => {
     const cleanUsername = username.replace('@', '');
     Linking.openURL(`https://instagram.com/${cleanUsername}`);
+  };
+
+  // Handle stat card navigation
+  const handleStatCardPress = (type: string) => {
+    switch (type) {
+      case 'favorites':
+        router.push('/favorites');
+        break;
+      case 'rating':
+        router.push('/reviews');
+        break;
+      case 'listings':
+        router.push('/my-listings');
+        break;
+      case 'quotes':
+        router.push('/quotes');
+        break;
+      default:
+        break;
+    }
   };
   
   if (!isAuthenticated || !user) {
@@ -313,6 +335,55 @@ export default function ProfileScreen() {
         </View>
       </View>
       
+      {/* Enhanced Stats Row - CRITICAL FIX: Make clickable */}
+      <View style={styles.statsContainer}>
+        <TouchableOpacity 
+          style={styles.statCard}
+          onPress={() => handleStatCardPress('favorites')}
+          activeOpacity={0.7}
+        >
+          <Heart size={20} color="#FF6B6B" />
+          <Text style={styles.statCardNumber}>{favorites?.length || 0}</Text>
+          <Text style={styles.statCardLabel}>Favoris</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={styles.statCard}
+          onPress={() => handleStatCardPress('rating')}
+          activeOpacity={0.7}
+        >
+          <Star size={20} color="#FFD700" />
+          <Text style={styles.statCardNumber}>{user.rating?.toFixed(1) || '4.8'}</Text>
+          <Text style={styles.statCardLabel}>Note</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={styles.statCard}
+          onPress={() => handleStatCardPress('listings')}
+          activeOpacity={0.7}
+        >
+          <TrendingUp size={20} color="#10B981" />
+          <Text style={styles.statCardNumber}>{userListings.length}</Text>
+          <Text style={styles.statCardLabel}>
+            {user.userType === 'business' ? 'Offres' : 'Annonces'}
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={styles.statCard}
+          onPress={() => handleStatCardPress('quotes')}
+          activeOpacity={0.7}
+        >
+          <Sparkles size={20} color="#8B5CF6" />
+          <Text style={styles.statCardNumber}>
+            {user.userType === 'provider' ? userQuotes.length : receivedQuotes.length}
+          </Text>
+          <Text style={styles.statCardLabel}>
+            {user.userType === 'business' ? 'En ligne' : 'Devis'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+      
       <View style={styles.actionsContainer}>
         <Button 
           title="Modifier le profil" 
@@ -513,9 +584,40 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  statsContainer: {
+    flexDirection: 'row',
+    padding: 16,
+    gap: 8,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 16,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  statCardNumber: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: Colors.text,
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  statCardLabel: {
+    fontSize: 12,
+    color: Colors.textLight,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
   actionsContainer: {
     flexDirection: 'row',
     padding: 16,
+    paddingTop: 0,
     gap: 12,
   },
   actionButton: {

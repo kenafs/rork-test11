@@ -22,6 +22,7 @@ interface ListingsState {
   filterByLocation: (latitude: number, longitude: number, radius?: number) => void;
   getAllListings: () => Listing[];
   getUserListings: () => Listing[];
+  getListingById: (id: string) => Listing | undefined;
 }
 
 export const useListings = create<ListingsState>()(
@@ -70,7 +71,7 @@ export const useListings = create<ListingsState>()(
           
           const newListing: Listing = {
             ...listingData,
-            id: `listing-${Date.now()}-${Math.random()}`,
+            id: `listing-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             createdAt: Date.now(),
             updatedAt: Date.now(),
           };
@@ -78,17 +79,24 @@ export const useListings = create<ListingsState>()(
           // Add to user's listings
           set(state => {
             const userListings = state.listings[user.id] || [];
+            const updatedUserListings = [...userListings, newListing];
+            
+            // Also update filtered listings immediately
+            const allUserListings = Object.values({
+              ...state.listings,
+              [user.id]: updatedUserListings,
+            }).flat();
+            const allListings = [...mockListings, ...allUserListings];
+            
             return {
               listings: {
                 ...state.listings,
-                [user.id]: [...userListings, newListing],
+                [user.id]: updatedUserListings,
               },
+              filteredListings: allListings,
               isLoading: false,
             };
           });
-          
-          // Refresh filtered listings
-          await get().fetchListings();
           
           console.log('Listing created successfully:', newListing);
           return newListing;
@@ -263,6 +271,11 @@ export const useListings = create<ListingsState>()(
         if (!user) return [];
         
         return get().listings[user.id] || [];
+      },
+      
+      getListingById: (id: string) => {
+        const allListings = get().getAllListings();
+        return allListings.find(listing => listing.id === id);
       },
     }),
     {

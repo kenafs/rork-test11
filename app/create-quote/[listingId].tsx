@@ -4,7 +4,7 @@ import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuotes } from '@/hooks/useQuotes';
 import { useMessages } from '@/hooks/useMessages';
-import { mockListings } from '@/mocks/listings';
+import { useListings } from '@/hooks/useListings';
 import { mockProviders, mockVenues } from '@/mocks/users';
 import { QuoteItem } from '@/types';
 import Colors from '@/constants/colors';
@@ -19,6 +19,7 @@ export default function CreateQuoteScreen() {
   const { user } = useAuth();
   const { createQuote, sendQuote, isLoading } = useQuotes();
   const { addContact, sendMessage, getConversationByParticipant, createConversation } = useMessages();
+  const { getListingById } = useListings();
   
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -37,7 +38,7 @@ export default function CreateQuoteScreen() {
   // Find the listing or handle conversation quotes
   const listing = listingId?.startsWith('conversation-') 
     ? null 
-    : mockListings.find(l => l.id === listingId);
+    : getListingById(listingId as string);
   
   // Get conversation participant if it's a conversation quote
   const conversationId = listingId?.startsWith('conversation-') 

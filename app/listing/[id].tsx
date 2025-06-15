@@ -5,7 +5,7 @@ import { Image } from 'expo-image';
 import { useAuth } from '@/hooks/useAuth';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useMessages } from '@/hooks/useMessages';
-import { mockListings } from '@/mocks/listings';
+import { useListings } from '@/hooks/useListings';
 import { mockProviders, mockVenues } from '@/mocks/users';
 import Colors from '@/constants/colors';
 import RatingStars from '@/components/RatingStars';
@@ -19,9 +19,10 @@ export default function ListingDetailScreen() {
   const { isAuthenticated, user } = useAuth();
   const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
   const { createConversation } = useMessages();
+  const { getListingById } = useListings();
   
-  // Find the listing by ID
-  const listing = mockListings.find(item => item.id === id);
+  // Find the listing by ID using the new method
+  const listing = getListingById(id as string);
   
   if (!listing) {
     return (
