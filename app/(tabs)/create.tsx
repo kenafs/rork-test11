@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, TextInput, Alert, Platform, TouchableOpacity, KeyboardAvoidingView } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TextInput, Alert, Platform, TouchableOpacity } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useListings } from '@/hooks/useListings';
@@ -218,11 +218,7 @@ export default function CreateListingScreen() {
   const placeholders = getPlaceholders();
   
   return (
-    <KeyboardAvoidingView 
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-    >
+    <View style={styles.container}>
       <Stack.Screen options={{ 
         title: user.userType === 'business' ? "Publier une offre" : "Créer une annonce",
         headerStyle: { backgroundColor: Colors.primary },
@@ -323,7 +319,7 @@ export default function CreateListingScreen() {
             <Text style={styles.label}>📸 Photos (max 5)</Text>
             <View style={styles.imagesContainer}>
               {images.map((image, index) => (
-                <View key={index} style={styles.imageWrapper}>
+                <View key={`image-${index}`} style={styles.imageWrapper}>
                   <Image source={{ uri: image }} style={styles.imagePreview} />
                   <TouchableOpacity
                     style={styles.removeImageButton}
@@ -370,7 +366,7 @@ export default function CreateListingScreen() {
             </View>
             <View style={styles.tagsContainer}>
               {tags.map((tag, index) => (
-                <View key={index} style={styles.tag}>
+                <View key={`tag-${index}`} style={styles.tag}>
                   <Text style={styles.tagText}>{tag}</Text>
                   <TouchableOpacity onPress={() => removeTag(index)}>
                     <X size={14} color={Colors.textLight} />
@@ -394,29 +390,29 @@ export default function CreateListingScreen() {
               </Text>
             </View>
           </View>
+
+          {/* CRITICAL FIX: Submit Button moved to bottom of form */}
+          <View style={styles.submitContainer}>
+            <LinearGradient
+              colors={[Colors.primary, Colors.secondary] as const}
+              style={styles.submitGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <TouchableOpacity
+                style={styles.submitButton}
+                onPress={handleSubmit}
+                disabled={isLoading}
+              >
+                <Text style={styles.submitButtonText}>
+                  {isLoading ? '🚀 Publication...' : `🚀 Publier ${user.userType === 'business' ? "l'offre" : "l'annonce"}`}
+                </Text>
+              </TouchableOpacity>
+            </LinearGradient>
+          </View>
         </View>
       </ScrollView>
-      
-      {/* CRITICAL FIX: Submit Button moved to bottom with proper keyboard handling */}
-      <View style={styles.submitContainer}>
-        <LinearGradient
-          colors={[Colors.primary, Colors.secondary] as const}
-          style={styles.submitGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
-          <TouchableOpacity
-            style={styles.submitButton}
-            onPress={handleSubmit}
-            disabled={isLoading}
-          >
-            <Text style={styles.submitButtonText}>
-              {isLoading ? '🚀 Publication...' : `🚀 Publier ${user.userType === 'business' ? "l'offre" : "l'annonce"}`}
-            </Text>
-          </TouchableOpacity>
-        </LinearGradient>
-      </View>
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 
@@ -475,7 +471,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 20,
-    paddingBottom: 20, // Reduced padding since submit button is now fixed
+    paddingBottom: 40,
   },
   formCard: {
     backgroundColor: '#fff',
@@ -639,16 +635,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   submitContainer: {
-    backgroundColor: '#fff',
-    padding: 20,
-    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
-    borderTopWidth: 1,
-    borderTopColor: Colors.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 10,
+    marginTop: 20,
   },
   submitGradient: {
     borderRadius: 20,

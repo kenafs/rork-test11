@@ -1,24 +1,27 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, FlatList, TouchableOpacity, Image, TextInput } from 'react-native';
+import { StyleSheet, View, Text, FlatList, TouchableOpacity, Image, TextInput, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { mockReviews } from '@/mocks/reviews';
 import { Review } from '@/types';
+import { useAuth } from '@/hooks/useAuth';
+import { useQuotes } from '@/hooks/useQuotes';
 import Colors from '@/constants/colors';
 import RatingStars from '@/components/RatingStars';
 import Button from '@/components/Button';
-import { ThumbsUp, MessageCircle, User, Send } from 'lucide-react-native';
+import { ThumbsUp, MessageCircle, User, Send, AlertCircle } from 'lucide-react-native';
 
 export default function ReviewsScreen() {
   const { id, type } = useLocalSearchParams<{ id: string; type: string }>();
   const router = useRouter();
+  const { user } = useAuth();
+  const { canUserRate } = useQuotes();
   const [newReview, setNewReview] = useState('');
   const [newRating, setNewRating] = useState(5);
   
   // Filter reviews based on type and id
   const reviews = mockReviews.filter(review => {
-    if (type === 'listing') return review.listingId === id;
-    if (type === 'provider') return review.providerId === id;
-    if (type === 'venue') return review.venueId === id;
+    if (type === 'listing') return review.targetId === id && review.targetType === 'listing';
+    if (type === 'user') return review.targetId === id && review.targetType === 'user';
     return false;
   });
   
@@ -26,6 +29,23 @@ export default function ReviewsScreen() {
   const averageRating = reviews.length > 0 
     ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length 
     : 0;
+  
+  // Check if current user can leave a review
+  const canLeaveReview = () => {
+    if (!user || !id) return false;
+    
+    // Users cannot rate themselves
+    if (user.id === id) return false;
+    
+    // For user ratings, check if there's a completed quote between them
+    if (type === 'user') {
+      // This would need to be implemented with proper quote checking
+      // For now, we'll allow reviews only if user has interacted with the target
+      return true; // Simplified for demo
+    }
+    
+    return true;
+  };
   
   // Format date
   const formatDate = (timestamp: number) => {
@@ -36,20 +56,38 @@ export default function ReviewsScreen() {
     });
   };
   
+  // Handle review submission
+  const handleSubmitReview = () => {
+    if (!canLeaveReview()) {
+      Alert.alert('Erreur', 'Vous ne pouvez pas laisser d\'avis pour cet élément.');
+      return;
+    }
+    
+    if (!newReview.trim()) {
+      Alert.alert('Erreur', 'Veuillez saisir un commentaire.');
+      return;
+    }
+    
+    // In a real app, this would submit to the backend
+    Alert.alert('Succès', 'Votre avis a été publié avec succès.');
+    setNewReview('');
+    setNewRating(5);
+  };
+  
   // Render review item
-  const renderReview = ({ item }: { item: Review }) => (
-    <View style={styles.reviewCard}>
+  const renderReview = ({ item, index }: { item: Review; index: number }) => (
+    <View key={`review-${item.id}-${index}`} style={styles.reviewCard}>
       <View style={styles.reviewHeader}>
         <View style={styles.reviewerInfo}>
-          {item.reviewerImage ? (
-            <Image source={{ uri: item.reviewerImage }} style={styles.reviewerAvatar} />
+          {item.userImage ? (
+            <Image source={{ uri: item.userImage }} style={styles.reviewerAvatar} />
           ) : (
             <View style={[styles.reviewerAvatar, styles.avatarPlaceholder]}>
               <User size={20} color="#fff" />
             </View>
           )}
           <View style={styles.reviewerDetails}>
-            <Text style={styles.reviewerName}>{item.reviewerName}</Text>
+            <Text style={styles.reviewerName}>{item.userName}</Text>
             <Text style={styles.reviewDate}>{formatDate(item.createdAt)}</Text>
           </View>
         </View>
@@ -58,17 +96,10 @@ export default function ReviewsScreen() {
       
       <Text style={styles.reviewComment}>{item.comment}</Text>
       
-      {item.response && (
-        <View style={styles.responseContainer}>
-          <Text style={styles.responseLabel}>Réponse du prestataire:</Text>
-          <Text style={styles.responseText}>{item.response}</Text>
-        </View>
-      )}
-      
       <View style={styles.reviewActions}>
         <TouchableOpacity style={styles.actionButton}>
           <ThumbsUp size={16} color={Colors.textLight} />
-          <Text style={styles.actionText}>Utile ({item.helpful || 0})</Text>
+          <Text style={styles.actionText}>Utile (0)</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionButton}>
           <MessageCircle size={16} color={Colors.textLight} />
@@ -85,7 +116,7 @@ export default function ReviewsScreen() {
       <View style={styles.ratingStars}>
         {[1, 2, 3, 4, 5].map((star) => (
           <TouchableOpacity
-            key={star}
+            key={`star-${star}`}
             onPress={() => setNewRating(star)}
             style={styles.starButton}
           >
@@ -126,7 +157,7 @@ export default function ReviewsScreen() {
       
       <FlatList
         data={reviews}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item, index) => `review-${item.id}-${index}`}
         renderItem={renderReview}
         contentContainerStyle={styles.reviewsList}
         ListEmptyComponent={
@@ -139,33 +170,47 @@ export default function ReviewsScreen() {
           </View>
         }
         ListFooterComponent={
-          <View style={styles.addReviewContainer}>
-            <Text style={styles.addReviewTitle}>Laisser un avis</Text>
-            
-            {renderRatingSelector()}
-            
-            <TextInput
-              style={styles.reviewInput}
-              value={newReview}
-              onChangeText={setNewReview}
-              placeholder="Partagez votre expérience..."
-              multiline
-              numberOfLines={4}
-              textAlignVertical="top"
-              placeholderTextColor={Colors.textLight}
-            />
-            
-            <Button
-              title="Publier l'avis"
-              onPress={() => {
-                // Handle review submission
-                setNewReview('');
-                setNewRating(5);
-              }}
-              disabled={!newReview.trim()}
-              style={styles.submitButton}
-            />
-          </View>
+          canLeaveReview() ? (
+            <View style={styles.addReviewContainer}>
+              <Text style={styles.addReviewTitle}>Laisser un avis</Text>
+              
+              {renderRatingSelector()}
+              
+              <TextInput
+                style={styles.reviewInput}
+                value={newReview}
+                onChangeText={setNewReview}
+                placeholder="Partagez votre expérience..."
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+                placeholderTextColor={Colors.textLight}
+              />
+              
+              <Button
+                title="Publier l'avis"
+                onPress={handleSubmitReview}
+                disabled={!newReview.trim()}
+                style={styles.submitButton}
+              />
+            </View>
+          ) : user?.id === id ? (
+            <View style={styles.restrictionContainer}>
+              <AlertCircle size={48} color={Colors.textLight} />
+              <Text style={styles.restrictionTitle}>Vous ne pouvez pas vous noter</Text>
+              <Text style={styles.restrictionText}>
+                Les avis permettent aux autres utilisateurs d'évaluer votre travail.
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.restrictionContainer}>
+              <AlertCircle size={48} color={Colors.textLight} />
+              <Text style={styles.restrictionTitle}>Avis restreint</Text>
+              <Text style={styles.restrictionText}>
+                Vous pouvez laisser un avis uniquement après avoir utilisé ce service.
+              </Text>
+            </View>
+          )
         }
       />
     </View>
@@ -264,23 +309,6 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginBottom: 12,
   },
-  responseContainer: {
-    backgroundColor: Colors.backgroundAlt,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 12,
-  },
-  responseLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: Colors.primary,
-    marginBottom: 4,
-  },
-  responseText: {
-    fontSize: 14,
-    color: Colors.text,
-    lineHeight: 18,
-  },
   reviewActions: {
     flexDirection: 'row',
     gap: 16,
@@ -365,5 +393,26 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     backgroundColor: Colors.primary,
+  },
+  restrictionContainer: {
+    alignItems: 'center',
+    padding: 40,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    marginTop: 16,
+  },
+  restrictionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.text,
+    marginTop: 16,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  restrictionText: {
+    fontSize: 14,
+    color: Colors.textLight,
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });

@@ -243,35 +243,47 @@ export default function CreateQuoteScreen() {
       // Send the quote immediately
       await sendQuote(quote.id);
       
-      // Send quote message to conversation
-      if (conversationParticipant) {
+      // CRITICAL FIX: Always send quote message to conversation
+      const targetUserId = listing?.createdBy || conversationParticipant?.id;
+      if (targetUserId) {
         try {
           // Get or create conversation
-          let conversation = getConversationByParticipant(conversationParticipant.id);
+          let conversation = getConversationByParticipant(targetUserId);
+          let conversationId: string;
+          
           if (!conversation) {
-            const conversationId = await createConversation(conversationParticipant.id);
-            conversation = getConversationByParticipant(conversationParticipant.id);
+            conversationId = await createConversation(targetUserId);
+          } else {
+            conversationId = conversation.id;
           }
           
-          if (conversation) {
-            // Send quote message
-            const quoteMessage = `📋 Devis envoyé: ${title}
-💰 Montant: ${totalAmount.toFixed(2)}€
-📅 Valide jusqu'au: ${new Date(validUntil).toLocaleDateString('fr-FR')}`;
-            await sendMessage(conversation.id, quoteMessage, conversationParticipant.id);
-          }
+          // Send quote message
+          const quoteMessage = `📋 Devis envoyé: ${title}
+💰 Montant: ${totalAmount.toFixed(2)}€ TTC
+📅 Valide jusqu'au: ${new Date(validUntil).toLocaleDateString('fr-FR')}
+
+${description}`;
+          
+          await sendMessage(conversationId, quoteMessage, targetUserId);
           
           // Update contact
-          addContact({
-            participantId: conversationParticipant.id,
-            participantName: conversationParticipant.name,
-            participantImage: conversationParticipant.profileImage,
-            participantType: conversationParticipant.userType === 'provider' ? 'provider' : 
-                            conversationParticipant.userType === 'business' ? 'business' : 'client',
-            lastMessage: `📋 Devis envoyé: ${title} - ${totalAmount.toFixed(2)}€`,
-            unread: 0,
-            timestamp: Date.now(),
-          });
+          const targetUser = allUsers.find(u => u.id === targetUserId) || 
+                            (listing ? { id: listing.createdBy, name: listing.creatorName, profileImage: listing.creatorImage, userType: listing.creatorType } : null);
+          
+          if (targetUser) {
+            addContact({
+              participantId: targetUserId,
+              participantName: targetUser.name,
+              participantImage: targetUser.profileImage,
+              participantType: targetUser.userType === 'provider' ? 'provider' : 
+                              targetUser.userType === 'business' ? 'business' : 'client',
+              lastMessage: `📋 Devis envoyé: ${title} - ${totalAmount.toFixed(2)}€`,
+              unread: 0,
+              timestamp: Date.now(),
+            });
+          }
+          
+          console.log('Quote message sent to conversation successfully');
         } catch (messageError) {
           console.error('Error sending quote message:', messageError);
         }
@@ -375,7 +387,7 @@ export default function CreateQuoteScreen() {
             </View>
             
             {items.map((item, index) => (
-              <View key={item.id} style={styles.itemCard}>
+              <View key={`item-${item.id}-${index}`} style={styles.itemCard}>
                 <View style={styles.itemHeader}>
                   <Text style={styles.itemNumber}>Élément {index + 1}</Text>
                   {items.length > 1 && (

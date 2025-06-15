@@ -76,6 +76,8 @@ export const useListings = create<ListingsState>()(
             updatedAt: Date.now(),
           };
           
+          console.log('Creating new listing:', newListing);
+          
           // Add to user's listings
           set(state => {
             const userListings = state.listings[user.id] || [];
@@ -87,6 +89,9 @@ export const useListings = create<ListingsState>()(
               [user.id]: updatedUserListings,
             }).flat();
             const allListings = [...mockListings, ...allUserListings];
+            
+            console.log('Updated user listings:', updatedUserListings.length);
+            console.log('All listings after creation:', allListings.length);
             
             return {
               listings: {
@@ -263,7 +268,9 @@ export const useListings = create<ListingsState>()(
       
       getAllListings: () => {
         const allUserListings = Object.values(get().listings).flat();
-        return [...mockListings, ...allUserListings];
+        const allListings = [...mockListings, ...allUserListings];
+        console.log('Getting all listings:', allListings.length, 'mock:', mockListings.length, 'user:', allUserListings.length);
+        return allListings;
       },
       
       getUserListings: () => {
@@ -275,7 +282,12 @@ export const useListings = create<ListingsState>()(
       
       getListingById: (id: string) => {
         const allListings = get().getAllListings();
-        return allListings.find(listing => listing.id === id);
+        const listing = allListings.find(listing => listing.id === id);
+        console.log('Looking for listing with ID:', id, 'Found:', !!listing);
+        if (!listing) {
+          console.log('Available listing IDs:', allListings.map(l => l.id));
+        }
+        return listing;
       },
     }),
     {

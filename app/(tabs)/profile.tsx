@@ -83,7 +83,7 @@ export default function ProfileScreen() {
         router.push('/favorites');
         break;
       case 'rating':
-        router.push('/reviews');
+        router.push(`/reviews?id=${user?.id}&type=user`);
         break;
       case 'listings':
         router.push('/my-listings');
@@ -127,7 +127,7 @@ export default function ProfileScreen() {
       <Text style={styles.sectionTitle}>Services proposés</Text>
       <View style={styles.servicesList}>
         {provider.services && provider.services.length > 0 ? provider.services.map((service, index) => (
-          <View key={index} style={styles.serviceTag}>
+          <View key={`service-${index}`} style={styles.serviceTag}>
             <Text style={styles.serviceText}>{service}</Text>
           </View>
         )) : (
@@ -173,7 +173,7 @@ export default function ProfileScreen() {
           <Text style={styles.infoLabel}>Équipements:</Text>
           <View style={styles.servicesList}>
             {venue.amenities.map((amenity, index) => (
-              <View key={index} style={styles.serviceTag}>
+              <View key={`amenity-${index}`} style={styles.serviceTag}>
                 <Text style={styles.serviceText}>{amenity}</Text>
               </View>
             ))}
@@ -242,8 +242,8 @@ export default function ProfileScreen() {
         </View>
         
         {quotes.length > 0 ? (
-          quotes.map(quote => (
-            <View key={quote.id} style={styles.quoteCard}>
+          quotes.map((quote, index) => (
+            <View key={`quote-${quote.id}-${index}`} style={styles.quoteCard}>
               <View style={styles.quoteHeader}>
                 <FileText size={20} color={Colors.primary} />
                 <Text style={styles.quoteTitle}>Devis #{quote.id.slice(-6)}</Text>
@@ -273,6 +273,8 @@ export default function ProfileScreen() {
       case 'rejected': return '#EF4444';
       case 'pending': return '#F59E0B';
       case 'draft': return '#6B7280';
+      case 'paid': return '#8B5CF6';
+      case 'completed': return '#059669';
       default: return Colors.textLight;
     }
   };
@@ -283,6 +285,8 @@ export default function ProfileScreen() {
       case 'rejected': return 'Refusé';
       case 'pending': return 'En attente';
       case 'draft': return 'Brouillon';
+      case 'paid': return 'Payé';
+      case 'completed': return 'Terminé';
       default: return status;
     }
   };
@@ -296,6 +300,53 @@ export default function ProfileScreen() {
       default:
         return 'Créer une demande';
     }
+  };
+
+  const getStatCardData = () => {
+    const baseStats = [
+      {
+        type: 'favorites',
+        icon: Heart,
+        color: '#FF6B6B',
+        number: favorites?.length || 0,
+        label: 'Favoris'
+      },
+      {
+        type: 'rating',
+        icon: Star,
+        color: '#FFD700',
+        number: user.rating?.toFixed(1) || '4.8',
+        label: 'Note'
+      },
+      {
+        type: 'listings',
+        icon: TrendingUp,
+        color: '#10B981',
+        number: userListings.length,
+        label: user.userType === 'business' ? 'Offres' : 'Annonces'
+      }
+    ];
+
+    // Fourth stat depends on user type
+    if (user.userType === 'business') {
+      baseStats.push({
+        type: 'listings',
+        icon: Sparkles,
+        color: '#8B5CF6',
+        number: userListings.length,
+        label: 'En ligne'
+      });
+    } else {
+      baseStats.push({
+        type: 'quotes',
+        icon: Sparkles,
+        color: '#8B5CF6',
+        number: user.userType === 'provider' ? userQuotes.length : receivedQuotes.length,
+        label: 'Devis'
+      });
+    }
+
+    return baseStats;
   };
   
   return (
@@ -337,51 +388,18 @@ export default function ProfileScreen() {
       
       {/* Enhanced Stats Row - CRITICAL FIX: Make clickable */}
       <View style={styles.statsContainer}>
-        <TouchableOpacity 
-          style={styles.statCard}
-          onPress={() => handleStatCardPress('favorites')}
-          activeOpacity={0.7}
-        >
-          <Heart size={20} color="#FF6B6B" />
-          <Text style={styles.statCardNumber}>{favorites?.length || 0}</Text>
-          <Text style={styles.statCardLabel}>Favoris</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.statCard}
-          onPress={() => handleStatCardPress('rating')}
-          activeOpacity={0.7}
-        >
-          <Star size={20} color="#FFD700" />
-          <Text style={styles.statCardNumber}>{user.rating?.toFixed(1) || '4.8'}</Text>
-          <Text style={styles.statCardLabel}>Note</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.statCard}
-          onPress={() => handleStatCardPress('listings')}
-          activeOpacity={0.7}
-        >
-          <TrendingUp size={20} color="#10B981" />
-          <Text style={styles.statCardNumber}>{userListings.length}</Text>
-          <Text style={styles.statCardLabel}>
-            {user.userType === 'business' ? 'Offres' : 'Annonces'}
-          </Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.statCard}
-          onPress={() => handleStatCardPress('quotes')}
-          activeOpacity={0.7}
-        >
-          <Sparkles size={20} color="#8B5CF6" />
-          <Text style={styles.statCardNumber}>
-            {user.userType === 'provider' ? userQuotes.length : receivedQuotes.length}
-          </Text>
-          <Text style={styles.statCardLabel}>
-            {user.userType === 'business' ? 'En ligne' : 'Devis'}
-          </Text>
-        </TouchableOpacity>
+        {getStatCardData().map((stat, index) => (
+          <TouchableOpacity 
+            key={`stat-${stat.type}-${index}`}
+            style={styles.statCard}
+            onPress={() => handleStatCardPress(stat.type)}
+            activeOpacity={0.7}
+          >
+            <stat.icon size={20} color={stat.color} />
+            <Text style={styles.statCardNumber}>{stat.number}</Text>
+            <Text style={styles.statCardLabel}>{stat.label}</Text>
+          </TouchableOpacity>
+        ))}
       </View>
       
       <View style={styles.actionsContainer}>

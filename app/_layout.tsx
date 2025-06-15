@@ -6,10 +6,11 @@ import { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { trpc, trpcClient } from "@/lib/trpc";
+import { useAuth } from "@/hooks/useAuth";
 import Colors from "@/constants/colors";
 
 export const unstable_settings = {
-  initialRouteName: "(tabs)",
+  initialRouteName: "index",
 };
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -62,7 +63,18 @@ function RootLayoutNav() {
             },
           }}
         >
+          {/* Landing page - always show first */}
+          <Stack.Screen 
+            name="index" 
+            options={{ 
+              headerShown: false,
+            }} 
+          />
+          
+          {/* Tabs - show if authenticated */}
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          
+          {/* Auth screens */}
           <Stack.Screen 
             name="(auth)/login" 
             options={{ 
@@ -78,6 +90,15 @@ function RootLayoutNav() {
             }} 
           />
           <Stack.Screen 
+            name="(auth)/demo" 
+            options={{ 
+              title: "Comptes démo",
+              headerShown: false,
+            }} 
+          />
+          
+          {/* Other screens */}
+          <Stack.Screen 
             name="listing/[id]" 
             options={{ 
               title: "Détail de l'annonce",
@@ -92,11 +113,68 @@ function RootLayoutNav() {
             }} 
           />
           <Stack.Screen 
-            name="create-listing" 
+            name="create-quote/[listingId]" 
             options={{ 
-              title: "Créer une annonce",
+              title: "Créer un devis",
               headerBackTitle: "Retour",
               presentation: "modal",
+            }} 
+          />
+          <Stack.Screen 
+            name="conversation/[id]" 
+            options={{ 
+              title: "Conversation",
+              headerBackTitle: "Retour",
+            }} 
+          />
+          <Stack.Screen 
+            name="conversation/new" 
+            options={{ 
+              title: "Nouvelle conversation",
+              headerBackTitle: "Retour",
+              presentation: "modal",
+            }} 
+          />
+          <Stack.Screen 
+            name="favorites" 
+            options={{ 
+              title: "Mes favoris",
+              headerBackTitle: "Retour",
+            }} 
+          />
+          <Stack.Screen 
+            name="quotes" 
+            options={{ 
+              title: "Mes devis",
+              headerBackTitle: "Retour",
+            }} 
+          />
+          <Stack.Screen 
+            name="my-listings" 
+            options={{ 
+              title: "Mes annonces",
+              headerBackTitle: "Retour",
+            }} 
+          />
+          <Stack.Screen 
+            name="reviews" 
+            options={{ 
+              title: "Avis et notes",
+              headerBackTitle: "Retour",
+            }} 
+          />
+          <Stack.Screen 
+            name="settings" 
+            options={{ 
+              title: "Paramètres",
+              headerBackTitle: "Retour",
+            }} 
+          />
+          <Stack.Screen 
+            name="edit-profile" 
+            options={{ 
+              title: "Modifier le profil",
+              headerBackTitle: "Retour",
             }} 
           />
         </Stack>

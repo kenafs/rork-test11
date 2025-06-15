@@ -8,13 +8,15 @@ interface RatingStarsProps {
   reviewCount?: number;
   size?: 'small' | 'medium' | 'large';
   showNumber?: boolean;
+  showCount?: boolean;
 }
 
 export default function RatingStars({ 
   rating, 
   reviewCount, 
   size = 'medium',
-  showNumber = true
+  showNumber = true,
+  showCount = true
 }: RatingStarsProps) {
   const starSize = size === 'small' ? 12 : size === 'medium' ? 16 : 20;
   const fontSize = size === 'small' ? 12 : size === 'medium' ? 14 : 16;
@@ -28,7 +30,7 @@ export default function RatingStars({
     for (let i = 0; i < fullStars; i++) {
       stars.push(
         <Star
-          key={i}
+          key={`full-${i}`}
           size={starSize}
           color="#FFD700"
           fill="#FFD700"
@@ -73,7 +75,7 @@ export default function RatingStars({
       {showNumber && (
         <Text style={[styles.ratingText, { fontSize }]}>
           {rating.toFixed(1)}
-          {reviewCount !== undefined && (
+          {showCount && reviewCount !== undefined && (
             <Text style={[styles.reviewCount, { fontSize: fontSize - 2 }]}>
               {' '}({reviewCount})
             </Text>
