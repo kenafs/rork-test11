@@ -3,6 +3,7 @@ import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Linking, Alert } 
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { useAuth } from '@/hooks/useAuth';
+import { useQuotes } from '@/hooks/useQuotes';
 import { mockProviders, mockVenues } from '@/mocks/users';
 import { mockListings } from '@/mocks/listings';
 import { mockReviews, getReviewsForUser } from '@/mocks/reviews';
@@ -17,6 +18,7 @@ export default function ProfileDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user: currentUser, isAuthenticated } = useAuth();
+  const { getCompletedQuotesBetweenUsers } = useQuotes();
   
   // Find the user by ID
   const allUsers = [...mockProviders, ...mockVenues];
@@ -27,6 +29,15 @@ export default function ProfileDetailScreen() {
   
   // Get reviews for this user
   const reviews = getReviewsForUser(id || '');
+  
+  // Check if current user can review this user
+  const canReview = () => {
+    if (!currentUser || !user || currentUser.id === user.id) return false;
+    
+    // Check if there are completed quotes between users
+    const completedQuotes = getCompletedQuotesBetweenUsers(currentUser.id, user.id);
+    return completedQuotes.length > 0;
+  };
   
   // Format date
   const formatDate = (timestamp: number) => {
@@ -72,18 +83,15 @@ export default function ProfileDetailScreen() {
   // Check if this is the current user's profile
   const isOwnProfile = currentUser && currentUser.id === id;
   
-  // Mock social links for demo
-  const socialLinks = user.socialLinks || {
-    instagram: 'https://instagram.com/example',
-    website: 'https://example.com',
-  };
+  // Get social links
+  const socialLinks = user.socialLinks || {};
   
   // Render provider-specific info
   const renderProviderInfo = (provider: Provider) => (
     <View style={styles.infoSection}>
       <Text style={styles.sectionTitle}>Services proposés</Text>
       <View style={styles.servicesList}>
-        {provider.services.map((service, index) => (
+        {(provider.services || []).map((service, index) => (
           <View key={`service-${provider.id}-${index}`} style={styles.serviceTag}>
             <Text style={styles.serviceText}>{service}</Text>
           </View>
@@ -192,11 +200,7 @@ export default function ProfileDetailScreen() {
   
   // Render portfolio
   const renderPortfolio = () => {
-    const portfolio = user.portfolio || [
-      'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&auto=format&fit=crop',
-    ];
+    const portfolio = user.portfolio || [];
     
     if (portfolio.length === 0) return null;
     
@@ -205,7 +209,7 @@ export default function ProfileDetailScreen() {
         <Text style={styles.sectionTitle}>Portfolio</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View style={styles.portfolioGrid}>
-            {portfolio.map((imageUrl, index) => (
+            {portfolio.map((imageUrl: string, index: number) => (
               <TouchableOpacity key={`portfolio-${index}`} style={styles.portfolioItem}>
                 <Image source={{ uri: imageUrl }} style={styles.portfolioImage} />
               </TouchableOpacity>
@@ -269,9 +273,7 @@ export default function ProfileDetailScreen() {
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>Description</Text>
         <Text style={styles.description}>
-          {user.userType === 'provider' 
-            ? (user as Provider).description 
-            : (user as Venue).description}
+          {user.description || 'Aucune description disponible.'}
         </Text>
       </View>
       
@@ -308,7 +310,7 @@ export default function ProfileDetailScreen() {
       <View style={styles.reviewsSection}>
         <View style={styles.reviewsHeader}>
           <Text style={styles.sectionTitle}>Avis ({reviews.length})</Text>
-          {isAuthenticated && !isOwnProfile && (
+          {isAuthenticated && !isOwnProfile && canReview() && (
             <TouchableOpacity 
               style={styles.writeReviewButton}
               onPress={() => router.push(`/reviews?id=${user.id}&type=${user.userType}`)}

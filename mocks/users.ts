@@ -107,7 +107,7 @@ export const mockVenues: Venue[] = [
     email: 'events@jardinsecret.fr',
     phone: '+33712345678',
     profileImage: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=800&auto=format&fit=crop',
-    userType: 'venue',
+    userType: 'business',
     location: {
       latitude: 48.8744,
       longitude: 2.3526,
@@ -141,7 +141,7 @@ export const mockVenues: Venue[] = [
     email: 'bookings@loftindustriel.com',
     phone: '+33787654321',
     profileImage: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=800&auto=format&fit=crop',
-    userType: 'venue',
+    userType: 'business',
     location: {
       latitude: 48.8566,
       longitude: 2.3522,
@@ -173,7 +173,7 @@ export const mockVenues: Venue[] = [
     email: 'events@chateaudeslumieres.fr',
     phone: '+33723456789',
     profileImage: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=800&auto=format&fit=crop',
-    userType: 'venue',
+    userType: 'business',
     location: {
       latitude: 43.2965,
       longitude: 5.3698,

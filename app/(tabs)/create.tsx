@@ -391,7 +391,6 @@ export default function CreateListingScreen() {
             </View>
           </View>
 
-          {/* CRITICAL FIX: Submit Button moved below location */}
           <View style={styles.submitContainer}>
             <LinearGradient
               colors={[Colors.primary, Colors.secondary] as const}

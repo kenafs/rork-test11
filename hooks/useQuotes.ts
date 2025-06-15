@@ -5,43 +5,37 @@ import { Quote, QuoteItem } from '@/types';
 import { useAuth } from './useAuth';
 
 interface QuotesState {
-  quotes: { [userId: string]: Quote[] };
+  quotes: Quote[];
   isLoading: boolean;
   
   fetchQuotes: () => Promise<void>;
-  createQuote: (quoteData: Omit<Quote, 'id' | 'createdAt' | 'updatedAt' | 'currency' | 'subtotal' | 'tax' | 'total'>) => Promise<Quote>;
+  createQuote: (quoteData: Omit<Quote, 'id' | 'createdAt' | 'updatedAt' | 'subtotal' | 'tax' | 'total' | 'currency'>) => Promise<Quote>;
   updateQuote: (id: string, updates: Partial<Quote>) => Promise<boolean>;
   deleteQuote: (id: string) => Promise<boolean>;
+  sendQuote: (id: string) => Promise<boolean>;
   acceptQuote: (id: string) => Promise<boolean>;
   rejectQuote: (id: string) => Promise<boolean>;
-  sendQuote: (id: string) => Promise<boolean>;
   payQuote: (id: string) => Promise<boolean>;
   completeQuote: (id: string) => Promise<boolean>;
-  getQuotesByUser: (userId: string) => Quote[];
+  getQuoteById: (id: string) => Quote | undefined;
   getQuotesForUser: (userId: string) => Quote[];
-  getUserQuotes: () => Quote[];
-  getAllQuotes: () => Quote[];
+  getQuotesByProvider: (providerId: string) => Quote[];
+  getQuotesByClient: (clientId: string) => Quote[];
   canReview: (quoteId: string) => boolean;
+  getCompletedQuotesBetweenUsers: (userId1: string, userId2: string) => Quote[];
 }
 
 export const useQuotes = create<QuotesState>()(
   persist(
     (set, get) => ({
-      quotes: {},
+      quotes: [],
       isLoading: false,
       
       fetchQuotes: async () => {
         set({ isLoading: true });
         
         try {
-          await new Promise(resolve => setTimeout(resolve, 500));
-          
-          const user = useAuth.getState().user;
-          if (!user) {
-            set({ isLoading: false });
-            return;
-          }
-          
+          await new Promise(resolve => setTimeout(resolve, 1000));
           set({ isLoading: false });
         } catch (error) {
           console.error('Error fetching quotes:', error);
@@ -53,38 +47,30 @@ export const useQuotes = create<QuotesState>()(
         set({ isLoading: true });
         
         try {
-          await new Promise(resolve => setTimeout(resolve, 800));
+          await new Promise(resolve => setTimeout(resolve, 1500));
           
-          const user = useAuth.getState().user;
-          if (!user) throw new Error('User must be logged in to create a quote');
-          
-          const subtotal = quoteData.items.reduce((sum, item) => sum + (item.total || 0), 0);
-          const tax = subtotal * 0.2;
+          // Calculate totals
+          const subtotal = quoteData.items.reduce((sum, item) => sum + item.total, 0);
+          const tax = subtotal * 0.2; // 20% VAT
           const total = subtotal + tax;
           
           const newQuote: Quote = {
             ...quoteData,
-            id: `quote-${Date.now()}-${Math.random()}`,
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-            currency: 'EUR',
+            id: `quote-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             subtotal,
             tax,
             total,
+            currency: 'EUR',
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
           };
           
-          set(state => {
-            const userQuotes = state.quotes[user.id] || [];
-            return {
-              quotes: {
-                ...state.quotes,
-                [user.id]: [...userQuotes, newQuote],
-              },
-              isLoading: false,
-            };
-          });
+          set(state => ({
+            quotes: [...state.quotes, newQuote],
+            isLoading: false,
+          }));
           
-          console.log('Devis créé avec succès:', newQuote);
+          console.log('Quote created successfully:', newQuote);
           return newQuote;
         } catch (error) {
           console.error('Error creating quote:', error);
@@ -97,48 +83,18 @@ export const useQuotes = create<QuotesState>()(
         set({ isLoading: true });
         
         try {
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await new Promise(resolve => setTimeout(resolve, 1000));
           
-          const user = useAuth.getState().user;
-          if (!user) {
-            set({ isLoading: false });
-            return false;
-          }
+          set(state => ({
+            quotes: state.quotes.map(quote =>
+              quote.id === id
+                ? { ...quote, ...updates, updatedAt: Date.now() }
+                : quote
+            ),
+            isLoading: false,
+          }));
           
-          // Find quote in any user's quotes (for cross-user updates)
-          const allQuotes = get().quotes;
-          let foundQuote = false;
-          
-          Object.keys(allQuotes).forEach(userId => {
-            const userQuotes = allQuotes[userId] || [];
-            const quoteIndex = userQuotes.findIndex(q => q.id === id);
-            
-            if (quoteIndex !== -1) {
-              const updatedQuotes = [...userQuotes];
-              updatedQuotes[quoteIndex] = {
-                ...updatedQuotes[quoteIndex],
-                ...updates,
-                updatedAt: Date.now(),
-              };
-              
-              set(state => ({
-                quotes: {
-                  ...state.quotes,
-                  [userId]: updatedQuotes,
-                },
-                isLoading: false,
-              }));
-              
-              foundQuote = true;
-              console.log('Devis mis à jour:', updatedQuotes[quoteIndex]);
-            }
-          });
-          
-          if (!foundQuote) {
-            set({ isLoading: false });
-            return false;
-          }
-          
+          console.log('Quote updated successfully');
           return true;
         } catch (error) {
           console.error('Error updating quote:', error);
@@ -153,24 +109,12 @@ export const useQuotes = create<QuotesState>()(
         try {
           await new Promise(resolve => setTimeout(resolve, 500));
           
-          const user = useAuth.getState().user;
-          if (!user) {
-            set({ isLoading: false });
-            return false;
-          }
-          
-          const userQuotes = get().quotes[user.id] || [];
-          const updatedQuotes = userQuotes.filter(q => q.id !== id);
-          
           set(state => ({
-            quotes: {
-              ...state.quotes,
-              [user.id]: updatedQuotes,
-            },
+            quotes: state.quotes.filter(quote => quote.id !== id),
             isLoading: false,
           }));
           
-          console.log('Devis supprimé:', id);
+          console.log('Quote deleted successfully');
           return true;
         } catch (error) {
           console.error('Error deleting quote:', error);
@@ -180,78 +124,65 @@ export const useQuotes = create<QuotesState>()(
       },
       
       sendQuote: async (id: string) => {
-        const result = await get().updateQuote(id, { status: 'pending' });
-        if (result) {
-          console.log('Devis envoyé:', id);
-        }
-        return result;
+        return get().updateQuote(id, { status: 'pending' });
       },
       
       acceptQuote: async (id: string) => {
-        const result = await get().updateQuote(id, { status: 'accepted' });
-        if (result) {
-          console.log('Devis accepté:', id);
-        }
-        return result;
+        return get().updateQuote(id, { status: 'accepted' });
       },
       
       rejectQuote: async (id: string) => {
-        const result = await get().updateQuote(id, { status: 'rejected' });
-        if (result) {
-          console.log('Devis rejeté:', id);
-        }
-        return result;
+        return get().updateQuote(id, { status: 'rejected' });
       },
       
       payQuote: async (id: string) => {
-        const result = await get().updateQuote(id, { status: 'paid' });
-        if (result) {
-          console.log('Devis payé:', id);
-        }
-        return result;
+        return get().updateQuote(id, { 
+          status: 'paid',
+          paidAt: Date.now()
+        });
       },
       
       completeQuote: async (id: string) => {
-        const result = await get().updateQuote(id, { status: 'completed' });
-        if (result) {
-          console.log('Devis terminé:', id);
-        }
-        return result;
+        return get().updateQuote(id, { 
+          status: 'completed',
+          completedAt: Date.now()
+        });
       },
       
-      canReview: (quoteId: string) => {
-        const allQuotes = Object.values(get().quotes).flat();
-        const quote = allQuotes.find(q => q.id === quoteId);
-        return quote ? quote.status === 'completed' : false;
-      },
-      
-      getUserQuotes: () => {
-        const user = useAuth.getState().user;
-        if (!user) return [];
-        
-        return get().quotes[user.id] || [];
-      },
-      
-      getQuotesByUser: (userId: string) => {
-        return get().quotes[userId] || [];
+      getQuoteById: (id: string) => {
+        return get().quotes.find(quote => quote.id === id);
       },
       
       getQuotesForUser: (userId: string) => {
-        // Get all quotes where this user is the client
-        const allQuotes = Object.values(get().quotes).flat();
-        return allQuotes.filter(quote => quote.clientId === userId);
+        return get().quotes.filter(quote => 
+          quote.providerId === userId || quote.clientId === userId
+        );
       },
       
-      getAllQuotes: () => {
-        return Object.values(get().quotes).flat();
+      getQuotesByProvider: (providerId: string) => {
+        return get().quotes.filter(quote => quote.providerId === providerId);
+      },
+      
+      getQuotesByClient: (clientId: string) => {
+        return get().quotes.filter(quote => quote.clientId === clientId);
+      },
+      
+      canReview: (quoteId: string) => {
+        const quote = get().getQuoteById(quoteId);
+        return quote?.status === 'completed';
+      },
+      
+      getCompletedQuotesBetweenUsers: (userId1: string, userId2: string) => {
+        return get().quotes.filter(quote => 
+          quote.status === 'completed' &&
+          ((quote.providerId === userId1 && quote.clientId === userId2) ||
+           (quote.providerId === userId2 && quote.clientId === userId1))
+        );
       },
     }),
     {
       name: 'quotes-storage',
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: (state) => ({
-        quotes: state.quotes,
-      }),
     }
   )
 );

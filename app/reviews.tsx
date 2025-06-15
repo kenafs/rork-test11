@@ -14,7 +14,7 @@ export default function ReviewsScreen() {
   const { id, type, quoteId } = useLocalSearchParams<{ id: string; type: string; quoteId?: string }>();
   const router = useRouter();
   const { user } = useAuth();
-  const { canReview } = useQuotes();
+  const { getCompletedQuotesBetweenUsers } = useQuotes();
   const [newReview, setNewReview] = useState('');
   const [newRating, setNewRating] = useState(5);
   
@@ -33,18 +33,14 @@ export default function ReviewsScreen() {
   
   // Check if user can review
   const canUserReview = () => {
-    if (!user) return false;
+    if (!user || !id) return false;
     
     // Prevent self-reviews
     if (user.id === id) return false;
     
-    // If quoteId is provided, check if quote is completed
-    if (quoteId) {
-      return canReview(quoteId);
-    }
-    
-    // For general reviews, allow if user is authenticated and not reviewing themselves
-    return true;
+    // Check if there are completed quotes between users
+    const completedQuotes = getCompletedQuotesBetweenUsers(user.id, id);
+    return completedQuotes.length > 0;
   };
   
   // Format date
@@ -69,13 +65,11 @@ export default function ReviewsScreen() {
         return;
       }
       
-      if (quoteId && !canReview(quoteId)) {
-        Alert.alert(
-          'Avis non autorisé', 
-          'Vous ne pouvez laisser un avis que lorsque la prestation est terminée et payée'
-        );
-        return;
-      }
+      Alert.alert(
+        'Avis non autorisé', 
+        'Vous ne pouvez laisser un avis que lorsque vous avez terminé une prestation avec ce prestataire'
+      );
+      return;
     }
     
     if (!newReview.trim()) {
@@ -190,16 +184,14 @@ export default function ReviewsScreen() {
         );
       }
       
-      if (quoteId && !canReview(quoteId)) {
-        return (
-          <View style={styles.restrictionNotice}>
-            <AlertCircle size={24} color={Colors.textLight} />
-            <Text style={styles.restrictionText}>
-              Vous pourrez laisser un avis une fois la prestation terminée et payée
-            </Text>
-          </View>
-        );
-      }
+      return (
+        <View style={styles.restrictionNotice}>
+          <AlertCircle size={24} color={Colors.textLight} />
+          <Text style={styles.restrictionText}>
+            Vous pourrez laisser un avis une fois que vous aurez terminé une prestation avec ce prestataire
+          </Text>
+        </View>
+      );
     }
     
     return (

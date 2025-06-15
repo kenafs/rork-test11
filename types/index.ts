@@ -18,6 +18,13 @@ export interface User {
   reviewCount?: number;
   location?: Location;
   city?: string;
+  socialLinks?: {
+    instagram?: string;
+    website?: string;
+    facebook?: string;
+    linkedin?: string;
+  };
+  portfolio?: string[];
   createdAt: number;
 }
 
@@ -38,6 +45,7 @@ export interface Venue extends User {
   venueType?: string;
   capacity?: number;
   amenities?: string[];
+  photos?: string[];
 }
 
 export interface Client extends User {
@@ -67,13 +75,18 @@ export interface Listing {
 
 export interface Review {
   id: string;
-  userId: string;
-  userName: string;
-  userImage?: string;
+  reviewerId: string;
+  reviewerName: string;
+  reviewerImage?: string;
   targetId: string;
-  targetType: 'user' | 'listing';
+  targetType?: 'user' | 'listing';
+  listingId?: string;
+  providerId?: string;
+  venueId?: string;
   rating: number;
   comment: string;
+  response?: string;
+  helpful?: number;
   createdAt: number;
 }
 
