@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { trpc, trpcClient } from "@/lib/trpc";
+import { useAuth } from "@/hooks/useAuth";
 import Colors from "@/constants/colors";
 
 export const unstable_settings = {
@@ -42,6 +43,7 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const [queryClient] = useState(() => new QueryClient());
+  const { isAuthenticated, isLoading } = useAuth();
 
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
@@ -62,7 +64,7 @@ function RootLayoutNav() {
             },
           }}
         >
-          {/* Landing page - always show first */}
+          {/* Landing page - show if not authenticated and not loading */}
           <Stack.Screen 
             name="index" 
             options={{ 

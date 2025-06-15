@@ -319,7 +319,7 @@ export default function CreateListingScreen() {
             <Text style={styles.label}>📸 Photos (max 5)</Text>
             <View style={styles.imagesContainer}>
               {images.map((image, index) => (
-                <View key={`image-${index}`} style={styles.imageWrapper}>
+                <View key={index} style={styles.imageWrapper}>
                   <Image source={{ uri: image }} style={styles.imagePreview} />
                   <TouchableOpacity
                     style={styles.removeImageButton}
@@ -366,7 +366,7 @@ export default function CreateListingScreen() {
             </View>
             <View style={styles.tagsContainer}>
               {tags.map((tag, index) => (
-                <View key={`tag-${index}`} style={styles.tag}>
+                <View key={index} style={styles.tag}>
                   <Text style={styles.tagText}>{tag}</Text>
                   <TouchableOpacity onPress={() => removeTag(index)}>
                     <X size={14} color={Colors.textLight} />
@@ -391,7 +391,7 @@ export default function CreateListingScreen() {
             </View>
           </View>
 
-          {/* CRITICAL FIX: Submit Button moved to bottom of form */}
+          {/* CRITICAL FIX: Submit Button moved inside the form card */}
           <View style={styles.submitContainer}>
             <LinearGradient
               colors={[Colors.primary, Colors.secondary] as const}

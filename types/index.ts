@@ -16,7 +16,7 @@ export interface User {
   instagram?: string;
   rating?: number;
   reviewCount?: number;
-  location?: string;
+  location?: Location;
   city?: string;
   createdAt: number;
 }
@@ -111,7 +111,7 @@ export interface Contact {
 export interface QuoteItem {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   quantity: number;
   unitPrice: number;
   total: number;
@@ -119,26 +119,20 @@ export interface QuoteItem {
 
 export interface Quote {
   id: string;
+  listingId?: string;
+  providerId: string;
+  clientId: string;
   title: string;
   description: string;
-  listingId?: string;
-  listingTitle?: string;
-  clientId: string;
-  clientName: string;
-  providerId: string;
-  providerName: string;
   items: QuoteItem[];
-  validityDays: number;
-  notes?: string;
   subtotal: number;
   tax: number;
   total: number;
-  status: 'draft' | 'pending' | 'accepted' | 'rejected' | 'paid' | 'completed';
+  currency: string;
+  status: 'draft' | 'pending' | 'accepted' | 'rejected';
   validUntil: number;
   createdAt: number;
   updatedAt: number;
-  paidAt?: number;
-  completedAt?: number;
 }
 
 export interface DemoAccount {

@@ -69,20 +69,14 @@ export const useListings = create<ListingsState>()(
           const user = useAuth.getState().user;
           if (!user) throw new Error('User must be logged in to create a listing');
           
-          // Generate a unique ID with timestamp and random string
-          const timestamp = Date.now();
-          const randomId = Math.random().toString(36).substr(2, 9);
-          const uniqueId = `listing-${timestamp}-${randomId}`;
-          
           const newListing: Listing = {
             ...listingData,
-            id: uniqueId,
-            createdAt: timestamp,
-            updatedAt: timestamp,
+            id: `listing-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
           };
           
-          console.log('Creating new listing with ID:', uniqueId);
-          console.log('Listing data:', newListing);
+          console.log('Creating new listing:', newListing);
           
           // Add to user's listings
           set(state => {
@@ -96,9 +90,8 @@ export const useListings = create<ListingsState>()(
             }).flat();
             const allListings = [...mockListings, ...allUserListings];
             
-            console.log('Updated user listings count:', updatedUserListings.length);
+            console.log('Updated user listings:', updatedUserListings.length);
             console.log('All listings after creation:', allListings.length);
-            console.log('New listing stored with ID:', newListing.id);
             
             return {
               listings: {
@@ -109,13 +102,6 @@ export const useListings = create<ListingsState>()(
               isLoading: false,
             };
           });
-          
-          // Verify the listing was stored correctly
-          const storedListing = get().getListingById(uniqueId);
-          console.log('Verification - stored listing found:', !!storedListing);
-          if (storedListing) {
-            console.log('Stored listing ID matches:', storedListing.id === uniqueId);
-          }
           
           console.log('Listing created successfully:', newListing);
           return newListing;
@@ -297,13 +283,9 @@ export const useListings = create<ListingsState>()(
       getListingById: (id: string) => {
         const allListings = get().getAllListings();
         const listing = allListings.find(listing => listing.id === id);
-        console.log('Looking for listing with ID:', id);
-        console.log('Found listing:', !!listing);
+        console.log('Looking for listing with ID:', id, 'Found:', !!listing);
         if (!listing) {
           console.log('Available listing IDs:', allListings.map(l => l.id));
-          console.log('Total listings available:', allListings.length);
-        } else {
-          console.log('Found listing title:', listing.title);
         }
         return listing;
       },

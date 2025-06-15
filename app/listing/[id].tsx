@@ -1,98 +1,118 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Image, Alert, Linking, Platform } from 'react-native';
-import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
-import { useListings } from '@/hooks/useListings';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Image } from 'expo-image';
 import { useAuth } from '@/hooks/useAuth';
 import { useFavorites } from '@/hooks/useFavorites';
+import { useMessages } from '@/hooks/useMessages';
+import { useListings } from '@/hooks/useListings';
 import { mockProviders, mockVenues } from '@/mocks/users';
 import Colors from '@/constants/colors';
-import Button from '@/components/Button';
 import RatingStars from '@/components/RatingStars';
-import { MapPin, Calendar, Heart, Share, MessageCircle, Star, Phone, Mail, Globe, Instagram, FileText, User, ArrowLeft } from 'lucide-react-native';
+import Button from '@/components/Button';
+import { MapPin, Star, Clock, ChevronLeft, Share, Heart, MessageCircle, Calculator } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 
 export default function ListingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { isAuthenticated, user } = useAuth();
+  const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
+  const { createConversation } = useMessages();
   const { getListingById } = useListings();
-  const { user } = useAuth();
-  const { favorites, addToFavorites, removeFromFavorites } = useFavorites();
   
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  
+  // Find the listing by ID using the new method
   const listing = getListingById(id as string);
   
   if (!listing) {
     return (
-      <View style={styles.container}>
-        <Stack.Screen options={{ 
-          title: "Annonce non trouvée",
-          headerLeft: () => (
-            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-              <ArrowLeft size={24} color={Colors.primary} />
-            </TouchableOpacity>
-          )
-        }} />
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorTitle}>Annonce non trouvée</Text>
-          <Text style={styles.errorText}>
-            Cette annonce n'existe pas ou a été supprimée.
-          </Text>
-          <Button 
-            title="Retour aux annonces"
-            onPress={() => router.push('/(tabs)')}
-            style={styles.backToListingsButton}
-          />
-        </View>
+      <View style={styles.notFoundContainer}>
+        <Text style={styles.notFoundText}>Annonce non trouvée</Text>
+        <Button 
+          title="Retour aux annonces" 
+          onPress={() => router.back()}
+          style={styles.backButtonStyle}
+        />
       </View>
     );
   }
   
-  // Find the creator in mock data
+  // Find the creator user
   const allUsers = [...mockProviders, ...mockVenues];
-  const creator = allUsers.find(u => u.id === listing.createdBy);
+  const creatorUser = allUsers.find(u => u.id === listing.createdBy);
   
-  const isFavorite = favorites.includes(listing.id);
-  const isOwnListing = user?.id === listing.createdBy;
+  // Format price
+  const formattedPrice = listing.price 
+    ? `${listing.price.toLocaleString('fr-FR')}€${listing.category === 'Catering' ? '/pers' : ''}`
+    : 'Prix sur demande';
   
-  const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    });
-  };
-  
-  const handleFavoriteToggle = async () => {
-    if (Platform.OS !== 'web') {
-      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  // Handle favorite toggle
+  const toggleFavorite = () => {
+    if (!isAuthenticated) {
+      router.push('/(auth)/login');
+      return;
     }
     
-    if (isFavorite) {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    
+    if (isFavorite(listing.id)) {
       removeFromFavorites(listing.id);
     } else {
       addToFavorites(listing.id);
     }
   };
   
-  const handleShare = async () => {
+  // Handle share
+  const handleShare = () => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    Alert.alert('Partager', 'Fonctionnalité de partage à implémenter');
+  };
+  
+  // Handle contact - with proper user information
+  const handleContact = async () => {
+    if (!isAuthenticated) {
+      Alert.alert(
+        'Connexion requise',
+        'Vous devez être connecté pour contacter ce prestataire ou établissement.',
+        [
+          { text: 'Annuler', style: 'cancel' },
+          { text: 'Se connecter', onPress: () => router.push('/(auth)/login') }
+        ]
+      );
+      return;
+    }
+
+    if (!user || !creatorUser) {
+      Alert.alert('Erreur', 'Impossible de créer la conversation');
+      return;
+    }
+
     try {
-      if (Platform.OS !== 'web') {
-        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      }
+      console.log('Creating conversation with creator:', creatorUser.id, creatorUser.name);
       
-      // In a real app, you would use Expo Sharing
-      Alert.alert('Partager', 'Fonctionnalité de partage à implémenter');
+      // Create conversation without initial message
+      const conversationId = await createConversation(creatorUser.id);
+      
+      console.log('Conversation created:', conversationId);
+      
+      // Navigate to the conversation with the correct participant ID
+      router.push(`/conversation/${creatorUser.id}`);
     } catch (error) {
-      console.error('Error sharing:', error);
+      console.error('Error creating conversation:', error);
+      Alert.alert('Erreur', 'Impossible de créer la conversation');
     }
   };
   
-  const handleContact = () => {
-    if (!user) {
+  // Handle quote request
+  const handleQuoteRequest = async () => {
+    if (!isAuthenticated) {
       Alert.alert(
         'Connexion requise',
-        'Vous devez être connecté pour contacter ce prestataire.',
+        'Vous devez être connecté pour demander un devis.',
         [
           { text: 'Annuler', style: 'cancel' },
           { text: 'Se connecter', onPress: () => router.push('/(auth)/login') }
@@ -101,263 +121,197 @@ export default function ListingDetailScreen() {
       return;
     }
     
-    if (isOwnListing) {
-      Alert.alert('Information', 'Vous ne pouvez pas vous contacter vous-même.');
+    if (!user || !creatorUser) {
+      Alert.alert('Erreur', 'Impossible de créer la demande de devis');
       return;
     }
-    
-    // Navigate to conversation
-    router.push(`/conversation/${listing.createdBy}`);
-  };
-  
-  const handleCreateQuote = () => {
-    if (!user) {
-      Alert.alert(
-        'Connexion requise',
-        'Vous devez être connecté pour créer un devis.',
-        [
-          { text: 'Annuler', style: 'cancel' },
-          { text: 'Se connecter', onPress: () => router.push('/(auth)/login') }
-        ]
-      );
-      return;
-    }
-    
-    if (user.userType !== 'provider') {
-      Alert.alert('Accès restreint', 'Seuls les prestataires peuvent créer des devis.');
-      return;
-    }
-    
-    if (isOwnListing) {
-      Alert.alert('Information', 'Vous ne pouvez pas créer un devis pour votre propre annonce.');
-      return;
-    }
-    
-    router.push(`/create-quote/${listing.id}`);
-  };
-  
-  const handleCallCreator = () => {
-    if (creator?.phone) {
-      Linking.openURL(`tel:${creator.phone}`);
+
+    // Only providers can send quotes, clients can request quotes
+    if (user.userType === 'provider') {
+      // Provider can create a quote
+      router.push(`/create-quote/${listing.id}`);
+    } else if (user.userType === 'client') {
+      // Client can request a quote via message
+      try {
+        console.log('Requesting quote via message for listing:', listing.id);
+        
+        const conversationId = await createConversation(
+          creatorUser.id,
+          `Bonjour, je souhaiterais recevoir un devis pour votre annonce "${listing.title}". Pourriez-vous me faire une proposition ?`,
+          listing.id
+        );
+        
+        console.log('Quote request conversation created:', conversationId);
+        
+        // Navigate to the conversation with the correct participant ID
+        router.push(`/conversation/${creatorUser.id}`);
+      } catch (error) {
+        console.error('Error creating quote request conversation:', error);
+        Alert.alert('Erreur', 'Impossible de créer la demande de devis');
+      }
     } else {
-      Alert.alert('Information', 'Numéro de téléphone non disponible.');
+      // Business accounts cannot request quotes
+      Alert.alert('Non disponible', 'Cette fonctionnalité n\'est pas disponible pour les établissements.');
     }
   };
   
-  const handleEmailCreator = () => {
-    if (creator?.email) {
-      Linking.openURL(`mailto:${creator.email}`);
-    } else {
-      Alert.alert('Information', 'Adresse email non disponible.');
-    }
-  };
-  
-  const handleVisitWebsite = () => {
-    if (creator?.website) {
-      const url = creator.website.startsWith('http') ? creator.website : `https://${creator.website}`;
-      Linking.openURL(url);
-    }
-  };
-  
-  const handleVisitInstagram = () => {
-    if (creator?.instagram) {
-      const username = creator.instagram.replace('@', '');
-      Linking.openURL(`https://instagram.com/${username}`);
-    }
-  };
-  
-  const handleViewProfile = () => {
-    if (creator) {
-      router.push(`/profile/${creator.id}`);
-    }
-  };
-  
-  const handleViewReviews = () => {
-    router.push(`/reviews?id=${listing.createdBy}&type=user`);
-  };
+  // Check if the listing belongs to the current user
+  const isOwnListing = user && listing.createdBy === user.id;
+  const isListingFavorite = isAuthenticated && isFavorite(listing.id);
   
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ 
-        title: listing.title,
-        headerRight: () => (
-          <View style={styles.headerActions}>
-            <TouchableOpacity onPress={handleShare} style={styles.headerButton}>
-              <Share size={24} color={Colors.primary} />
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* Image Gallery */}
+        <View style={styles.imageContainer}>
+          {listing.images && listing.images.length > 0 ? (
+            <Image 
+              source={{ uri: listing.images[0] }} 
+              style={styles.image}
+              contentFit="cover"
+            />
+          ) : (
+            <View style={[styles.image, styles.placeholderImage]}>
+              <Text style={styles.placeholderText}>{listing.category}</Text>
+            </View>
+          )}
+          
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
+            <ChevronLeft size={24} color="#fff" />
+          </TouchableOpacity>
+          
+          <View style={styles.imageActions}>
+            <TouchableOpacity 
+              style={styles.imageActionButton}
+              onPress={handleShare}
+            >
+              <Share size={20} color="#fff" />
             </TouchableOpacity>
-            <TouchableOpacity onPress={handleFavoriteToggle} style={styles.headerButton}>
+            
+            <TouchableOpacity 
+              style={styles.imageActionButton}
+              onPress={toggleFavorite}
+            >
               <Heart 
-                size={24} 
-                color={isFavorite ? '#FF6B6B' : Colors.primary}
-                fill={isFavorite ? '#FF6B6B' : 'transparent'}
+                size={20} 
+                color="#fff" 
+                fill={isListingFavorite ? '#fff' : 'transparent'} 
               />
             </TouchableOpacity>
           </View>
-        )
-      }} />
-      
-      <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
-        {/* Images */}
-        {listing.images && listing.images.length > 0 && (
-          <View style={styles.imageContainer}>
-            <ScrollView 
-              horizontal 
-              pagingEnabled 
-              showsHorizontalScrollIndicator={false}
-              onMomentumScrollEnd={(event) => {
-                const index = Math.round(event.nativeEvent.contentOffset.x / event.nativeEvent.layoutMeasurement.width);
-                setSelectedImageIndex(index);
-              }}
-            >
-              {listing.images.map((image, index) => (
+          
+          <View style={styles.categoryBadge}>
+            <Text style={styles.categoryText}>{listing.category}</Text>
+          </View>
+        </View>
+        
+        {/* Listing Details */}
+        <View style={styles.detailsContainer}>
+          <Text style={styles.title}>{listing.title}</Text>
+          
+          <TouchableOpacity 
+            style={styles.creatorContainer}
+            onPress={() => router.push(`/profile/${listing.createdBy}`)}
+          >
+            <View style={styles.creatorInfo}>
+              {listing.creatorImage ? (
                 <Image 
-                  key={`listing-image-${listing.id}-${index}`}
-                  source={{ uri: image }} 
-                  style={styles.listingImage} 
+                  source={{ uri: listing.creatorImage }} 
+                  style={styles.creatorImage}
                 />
-              ))}
-            </ScrollView>
-            {listing.images.length > 1 && (
-              <View style={styles.imageIndicators}>
-                {listing.images.map((_, index) => (
-                  <View 
-                    key={`image-indicator-${listing.id}-${index}`}
-                    style={[
-                      styles.imageIndicator,
-                      selectedImageIndex === index && styles.activeImageIndicator
-                    ]} 
+              ) : (
+                <View style={[styles.creatorImage, styles.creatorImagePlaceholder]}>
+                  <Text style={styles.creatorImageText}>
+                    {listing.creatorName.charAt(0)}
+                  </Text>
+                </View>
+              )}
+              
+              <View>
+                <Text style={styles.creatorName}>{listing.creatorName}</Text>
+                {listing.creatorRating && (
+                  <RatingStars 
+                    rating={listing.creatorRating} 
+                    size="small" 
+                    showNumber={false}
                   />
+                )}
+              </View>
+            </View>
+            
+            <View style={styles.typeBadge}>
+              <Text style={styles.typeText}>
+                {listing.creatorType === 'provider' ? 'Prestataire' : 
+                 listing.creatorType === 'business' ? 'Établissement' : 'Client'}
+              </Text>
+            </View>
+          </TouchableOpacity>
+          
+          <View style={styles.infoContainer}>
+            {listing.location && listing.location.city && (
+              <View style={styles.infoItem}>
+                <MapPin size={18} color={Colors.primary} style={styles.infoIcon} />
+                <Text style={styles.infoText}>{listing.location.city}</Text>
+              </View>
+            )}
+            
+            {listing.tags && listing.tags.length > 0 && (
+              <View style={styles.tagsContainer}>
+                {listing.tags.map((tag, index) => (
+                  <View key={index} style={styles.tag}>
+                    <Text style={styles.tagText}>{tag}</Text>
+                  </View>
                 ))}
               </View>
             )}
           </View>
-        )}
-        
-        {/* Header Info */}
-        <View style={styles.headerInfo}>
-          <View style={styles.titleContainer}>
-            <Text style={styles.title}>{listing.title}</Text>
-            {listing.price && (
-              <Text style={styles.price}>{listing.price}€</Text>
-            )}
-          </View>
           
-          <View style={styles.metaInfo}>
-            <View style={styles.metaItem}>
-              <MapPin size={16} color={Colors.textLight} />
-              <Text style={styles.metaText}>{listing.location.city}</Text>
-            </View>
-            <View style={styles.metaItem}>
-              <Calendar size={16} color={Colors.textLight} />
-              <Text style={styles.metaText}>
-                Publié le {formatDate(listing.createdAt)}
-              </Text>
-            </View>
-          </View>
+          <View style={styles.divider} />
           
-          {/* Tags */}
-          {listing.tags && listing.tags.length > 0 && (
-            <View style={styles.tagsContainer}>
-              {listing.tags.map((tag, index) => (
-                <View key={`listing-tag-${listing.id}-${index}`} style={styles.tag}>
-                  <Text style={styles.tagText}>{tag}</Text>
-                </View>
-              ))}
-            </View>
-          )}
-        </View>
-        
-        {/* Creator Info */}
-        <View style={styles.creatorSection}>
-          <Text style={styles.sectionTitle}>
-            {listing.creatorType === 'provider' ? 'Prestataire' : 
-             listing.creatorType === 'business' ? 'Établissement' : 'Publié par'}
-          </Text>
-          
-          <TouchableOpacity style={styles.creatorCard} onPress={handleViewProfile}>
-            <View style={styles.creatorInfo}>
-              {listing.creatorImage ? (
-                <Image source={{ uri: listing.creatorImage }} style={styles.creatorAvatar} />
-              ) : (
-                <View style={[styles.creatorAvatar, styles.avatarPlaceholder]}>
-                  <User size={24} color="#fff" />
-                </View>
-              )}
-              
-              <View style={styles.creatorDetails}>
-                <Text style={styles.creatorName}>{listing.creatorName}</Text>
-                {listing.creatorRating && (
-                  <TouchableOpacity onPress={handleViewReviews}>
-                    <RatingStars 
-                      rating={listing.creatorRating} 
-                      reviewCount={listing.creatorReviewCount}
-                      size="small"
-                    />
-                  </TouchableOpacity>
-                )}
-                <Text style={styles.creatorType}>
-                  {listing.creatorType === 'provider' ? 'Prestataire' : 
-                   listing.creatorType === 'business' ? 'Établissement' : 'Client'}
-                </Text>
-              </View>
-            </View>
-            
-            <View style={styles.creatorActions}>
-              {creator?.phone && (
-                <TouchableOpacity style={styles.contactButton} onPress={handleCallCreator}>
-                  <Phone size={20} color={Colors.primary} />
-                </TouchableOpacity>
-              )}
-              {creator?.email && (
-                <TouchableOpacity style={styles.contactButton} onPress={handleEmailCreator}>
-                  <Mail size={20} color={Colors.primary} />
-                </TouchableOpacity>
-              )}
-              {creator?.website && (
-                <TouchableOpacity style={styles.contactButton} onPress={handleVisitWebsite}>
-                  <Globe size={20} color={Colors.primary} />
-                </TouchableOpacity>
-              )}
-              {creator?.instagram && (
-                <TouchableOpacity style={styles.contactButton} onPress={handleVisitInstagram}>
-                  <Instagram size={20} color="#E4405F" />
-                </TouchableOpacity>
-              )}
-            </View>
-          </TouchableOpacity>
-        </View>
-        
-        {/* Description */}
-        <View style={styles.descriptionSection}>
           <Text style={styles.sectionTitle}>Description</Text>
           <Text style={styles.description}>{listing.description}</Text>
-        </View>
-        
-        {/* Category */}
-        <View style={styles.categorySection}>
-          <Text style={styles.sectionTitle}>Catégorie</Text>
-          <View style={styles.categoryTag}>
-            <Text style={styles.categoryText}>{listing.category}</Text>
+          
+          <View style={styles.divider} />
+          
+          <View style={styles.priceContainer}>
+            <Text style={styles.priceLabel}>Prix</Text>
+            <Text style={styles.price}>{formattedPrice}</Text>
           </View>
         </View>
       </ScrollView>
       
       {/* Action Buttons */}
       {!isOwnListing && (
-        <View style={styles.actionButtons}>
+        <View style={styles.actionContainer}>
           <Button
             title="💬 Contacter"
             onPress={handleContact}
-            variant="outline"
-            style={styles.contactActionButton}
+            style={styles.contactButton}
           />
-          {user?.userType === 'provider' && (
+          
+          {/* Only show quote button for providers or when requesting quotes from providers */}
+          {(user?.userType === 'provider' || (listing.creatorType === 'provider' && user?.userType === 'client')) && (
             <Button
-              title="📋 Devis"
-              onPress={handleCreateQuote}
+              title={user?.userType === 'provider' ? "📋 Créer devis" : "📋 Demander devis"}
+              variant="outline"
+              onPress={handleQuoteRequest}
               style={styles.quoteButton}
             />
           )}
+        </View>
+      )}
+      
+      {/* Edit Button for Own Listings */}
+      {isOwnListing && (
+        <View style={styles.actionContainer}>
+          <Button
+            title="Modifier l'annonce"
+            onPress={() => router.push(`/edit-listing/${listing.id}`)}
+            fullWidth
+          />
         </View>
       )}
     </View>
@@ -367,96 +321,145 @@ export default function ListingDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.backgroundAlt,
-  },
-  backButton: {
-    padding: 8,
-    marginLeft: -8,
-  },
-  headerActions: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  headerButton: {
-    padding: 8,
-  },
-  content: {
-    flex: 1,
+    backgroundColor: '#fff',
   },
   scrollContent: {
-    paddingBottom: 100,
+    paddingBottom: 120,
   },
   imageContainer: {
     position: 'relative',
-    height: 250,
+    height: 280,
   },
-  listingImage: {
+  image: {
     width: '100%',
-    height: 250,
+    height: '100%',
   },
-  imageIndicators: {
-    position: 'absolute',
-    bottom: 16,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
+  placeholderImage: {
+    backgroundColor: Colors.secondary,
     justifyContent: 'center',
-    gap: 8,
+    alignItems: 'center',
   },
-  imageIndicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+  placeholderText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 18,
   },
-  activeImageIndicator: {
-    backgroundColor: '#fff',
+  backButton: {
+    position: 'absolute',
+    top: 50,
+    left: 16,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  headerInfo: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-  },
-  titleContainer: {
+  imageActions: {
+    position: 'absolute',
+    top: 50,
+    right: 16,
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
+  },
+  imageActionButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 8,
+  },
+  categoryBadge: {
+    position: 'absolute',
+    bottom: 20,
+    left: 16,
+    backgroundColor: 'rgba(99, 102, 241, 0.9)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  categoryText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  detailsContainer: {
+    padding: 24,
   },
   title: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: '700',
     color: Colors.text,
-    flex: 1,
-    marginRight: 12,
+    marginBottom: 20,
+    lineHeight: 32,
   },
-  price: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: Colors.primary,
-  },
-  metaInfo: {
+  creatorContainer: {
     flexDirection: 'row',
-    gap: 16,
-    marginBottom: 16,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 24,
   },
-  metaItem: {
+  creatorInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
   },
-  metaText: {
-    fontSize: 14,
-    color: Colors.textLight,
+  creatorImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    marginRight: 12,
+  },
+  creatorImagePlaceholder: {
+    backgroundColor: Colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  creatorImageText: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  creatorName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.text,
+    marginBottom: 4,
+  },
+  typeBadge: {
+    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  typeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: Colors.primary,
+  },
+  infoContainer: {
+    marginBottom: 24,
+  },
+  infoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  infoIcon: {
+    marginRight: 12,
+  },
+  infoText: {
+    fontSize: 16,
+    color: Colors.text,
   },
   tagsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
+    marginTop: 8,
   },
   tag: {
-    backgroundColor: 'rgba(10, 36, 99, 0.1)',
+    backgroundColor: 'rgba(99, 102, 241, 0.1)',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
@@ -466,139 +469,78 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     fontWeight: '500',
   },
-  creatorSection: {
-    backgroundColor: '#fff',
-    padding: 20,
-    marginTop: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+  divider: {
+    height: 1,
+    backgroundColor: Colors.border,
+    marginVertical: 24,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '600',
     color: Colors.text,
     marginBottom: 16,
   },
-  creatorCard: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  creatorInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  creatorAvatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 12,
-  },
-  avatarPlaceholder: {
-    backgroundColor: Colors.textLight,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  creatorDetails: {
-    flex: 1,
-  },
-  creatorName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.text,
-    marginBottom: 4,
-  },
-  creatorType: {
-    fontSize: 12,
-    color: Colors.textLight,
-    marginTop: 4,
-  },
-  creatorActions: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  contactButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: Colors.backgroundAlt,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  descriptionSection: {
-    backgroundColor: '#fff',
-    padding: 20,
-    marginTop: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-  },
   description: {
     fontSize: 16,
     color: Colors.text,
-    lineHeight: 24,
+    lineHeight: 26,
   },
-  categorySection: {
-    backgroundColor: '#fff',
+  priceContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: 'rgba(99, 102, 241, 0.05)',
     padding: 20,
-    marginTop: 8,
+    borderRadius: 16,
   },
-  categoryTag: {
-    backgroundColor: 'rgba(62, 146, 204, 0.1)',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    alignSelf: 'flex-start',
+  priceLabel: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: Colors.text,
   },
-  categoryText: {
-    fontSize: 14,
-    color: Colors.secondary,
-    fontWeight: '500',
+  price: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: Colors.primary,
   },
-  actionButtons: {
+  actionContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     padding: 20,
     paddingBottom: Platform.OS === 'ios' ? 34 : 20,
     backgroundColor: '#fff',
     borderTopWidth: 1,
     borderTopColor: Colors.border,
-    gap: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 10,
   },
-  contactActionButton: {
+  contactButton: {
     flex: 1,
+    marginRight: 8,
   },
   quoteButton: {
     flex: 1,
-    backgroundColor: Colors.primary,
+    marginLeft: 8,
   },
-  errorContainer: {
+  notFoundContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 40,
+    padding: 20,
   },
-  errorTitle: {
-    fontSize: 24,
-    fontWeight: '700',
+  notFoundText: {
+    fontSize: 18,
+    fontWeight: '600',
     color: Colors.text,
-    marginBottom: 12,
-    textAlign: 'center',
+    marginBottom: 16,
   },
-  errorText: {
-    fontSize: 16,
-    color: Colors.textLight,
-    textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 24,
-  },
-  backToListingsButton: {
-    backgroundColor: Colors.primary,
+  backButtonStyle: {
+    marginTop: 16,
   },
 });

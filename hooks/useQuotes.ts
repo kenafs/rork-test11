@@ -9,19 +9,16 @@ interface QuotesState {
   isLoading: boolean;
   
   fetchQuotes: () => Promise<void>;
-  createQuote: (quoteData: Omit<Quote, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Quote>;
+  createQuote: (quoteData: Omit<Quote, 'id' | 'createdAt' | 'updatedAt' | 'currency' | 'subtotal' | 'tax' | 'total'>) => Promise<Quote>;
   updateQuote: (id: string, updates: Partial<Quote>) => Promise<boolean>;
   deleteQuote: (id: string) => Promise<boolean>;
   acceptQuote: (id: string) => Promise<boolean>;
   rejectQuote: (id: string) => Promise<boolean>;
   sendQuote: (id: string) => Promise<boolean>;
-  payQuote: (id: string) => Promise<boolean>;
-  completeQuote: (id: string) => Promise<boolean>;
   getQuotesByUser: (userId: string) => Quote[];
   getQuotesForUser: (userId: string) => Quote[];
   getUserQuotes: () => Quote[];
   getAllQuotes: () => Quote[];
-  canUserRate: (quoteId: string, userId: string) => boolean;
 }
 
 export const useQuotes = create<QuotesState>()(
@@ -67,6 +64,7 @@ export const useQuotes = create<QuotesState>()(
             id: `quote-${Date.now()}-${Math.random()}`,
             createdAt: Date.now(),
             updatedAt: Date.now(),
+            currency: 'EUR',
             subtotal,
             tax,
             total,
@@ -190,45 +188,6 @@ export const useQuotes = create<QuotesState>()(
           console.log('Devis rejeté:', id);
         }
         return result;
-      },
-      
-      payQuote: async (id: string) => {
-        const result = await get().updateQuote(id, { 
-          status: 'paid',
-          paidAt: Date.now()
-        });
-        if (result) {
-          console.log('Devis payé:', id);
-        }
-        return result;
-      },
-      
-      completeQuote: async (id: string) => {
-        const result = await get().updateQuote(id, { 
-          status: 'completed',
-          completedAt: Date.now()
-        });
-        if (result) {
-          console.log('Devis terminé:', id);
-        }
-        return result;
-      },
-      
-      canUserRate: (quoteId: string, userId: string) => {
-        const allQuotes = get().getAllQuotes();
-        const quote = allQuotes.find(q => q.id === quoteId);
-        
-        if (!quote) return false;
-        
-        // Only allow rating if:
-        // 1. Quote is completed
-        // 2. User is either the client or provider (not rating themselves)
-        // 3. User is not the same as the other party
-        const isCompleted = quote.status === 'completed';
-        const isParticipant = quote.clientId === userId || quote.providerId === userId;
-        const isNotSelfRating = quote.clientId !== quote.providerId;
-        
-        return isCompleted && isParticipant && isNotSelfRating;
       },
       
       getUserQuotes: () => {
