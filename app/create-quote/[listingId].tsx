@@ -252,11 +252,9 @@ export default function CreateQuoteScreen() {
           let conversationId: string;
           
           if (!conversation) {
-            console.log('Creating new conversation for quote with user:', targetUserId);
             conversationId = await createConversation(targetUserId);
           } else {
             conversationId = conversation.id;
-            console.log('Using existing conversation for quote:', conversationId);
           }
           
           // Send quote message with proper formatting
@@ -271,7 +269,6 @@ ${description}
 Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
 
           await sendMessage(conversationId, quoteMessage, targetUserId);
-          console.log('Quote message sent successfully to conversation:', conversationId);
           
           // Update contact
           const targetUser = allUsers.find(u => u.id === targetUserId);
@@ -286,11 +283,9 @@ Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
               unread: 0,
               timestamp: Date.now(),
             });
-            console.log('Contact updated for quote recipient:', targetUser.name);
           }
         } catch (messageError) {
           console.error('Error sending quote message:', messageError);
-          Alert.alert('Attention', 'Le devis a été créé mais le message n\'a pas pu être envoyé automatiquement.');
         }
       }
       
@@ -392,7 +387,7 @@ Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
             </View>
             
             {items.map((item, index) => (
-              <View key={`item-${item.id}-${index}`} style={styles.itemCard}>
+              <View key={item.id} style={styles.itemCard}>
                 <View style={styles.itemHeader}>
                   <Text style={styles.itemNumber}>Élément {index + 1}</Text>
                   {items.length > 1 && (

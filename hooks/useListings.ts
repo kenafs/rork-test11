@@ -69,19 +69,14 @@ export const useListings = create<ListingsState>()(
           const user = useAuth.getState().user;
           if (!user) throw new Error('User must be logged in to create a listing');
           
-          // Generate a more unique ID
-          const timestamp = Date.now();
-          const randomId = Math.random().toString(36).substr(2, 9);
-          const uniqueId = `listing-${timestamp}-${randomId}`;
-          
           const newListing: Listing = {
             ...listingData,
-            id: uniqueId,
-            createdAt: timestamp,
-            updatedAt: timestamp,
+            id: `listing-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
           };
           
-          console.log('Creating new listing with ID:', uniqueId);
+          console.log('Creating new listing:', newListing);
           
           // Add to user's listings
           set(state => {
