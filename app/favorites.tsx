@@ -1,27 +1,36 @@
-import React from 'react';
-import { StyleSheet, View, Text, FlatList, TouchableOpacity } from 'react-native';
+import React, { useEffect } from 'react';
+import { StyleSheet, View, Text, FlatList } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
-import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/hooks/useAuth';
+import { useFavorites } from '@/hooks/useFavorites';
+import Colors from '@/constants/colors';
 import ListingCard from '@/components/ListingCard';
 import Button from '@/components/Button';
-import Colors from '@/constants/colors';
-import { Heart, Trash2 } from 'lucide-react-native';
+import { Heart, User } from 'lucide-react-native';
 
 export default function FavoritesScreen() {
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
-  const { favoriteListings, clearFavorites } = useFavorites();
+  const { user, isAuthenticated } = useAuth();
+  const { getFavoriteListings, setCurrentUser } = useFavorites();
   
-  if (!isAuthenticated) {
+  // Set current user when component mounts or user changes
+  useEffect(() => {
+    if (user) {
+      setCurrentUser(user.id);
+    }
+  }, [user, setCurrentUser]);
+  
+  const favoriteListings = getFavoriteListings();
+  
+  if (!isAuthenticated || !user) {
     return (
       <View style={styles.container}>
-        <Stack.Screen options={{ title: 'Favoris' }} />
+        <Stack.Screen options={{ title: "Favoris" }} />
         <View style={styles.loginPrompt}>
-          <Heart size={64} color={Colors.textLight} />
-          <Text style={styles.loginTitle}>Connectez-vous pour voir vos favoris</Text>
+          <User size={64} color={Colors.textLight} />
+          <Text style={styles.loginTitle}>Connexion requise</Text>
           <Text style={styles.loginDescription}>
-            Sauvegardez vos annonces préférées et retrouvez-les facilement.
+            Connectez-vous pour voir vos favoris
           </Text>
           <Button 
             title="Se connecter" 
@@ -33,27 +42,25 @@ export default function FavoritesScreen() {
     );
   }
   
+  const renderFavoriteItem = ({ item }: { item: any }) => (
+    <ListingCard listing={item} />
+  );
+  
   return (
     <View style={styles.container}>
-      <Stack.Screen 
-        options={{ 
-          title: 'Mes favoris',
-          headerRight: () => (
-            favoriteListings.length > 0 ? (
-              <TouchableOpacity onPress={clearFavorites} style={styles.clearButton}>
-                <Trash2 size={20} color={Colors.error} />
-              </TouchableOpacity>
-            ) : null
-          )
-        }} 
-      />
+      <Stack.Screen options={{ 
+        title: "Mes favoris",
+        headerStyle: { backgroundColor: Colors.primary },
+        headerTintColor: "#fff",
+        headerTitleStyle: { fontWeight: "700" }
+      }} />
       
       {favoriteListings.length > 0 ? (
         <FlatList
           data={favoriteListings}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <ListingCard listing={item} />}
-          contentContainerStyle={styles.listContent}
+          keyExtractor={(item) => `favorite-${item.id}`}
+          renderItem={renderFavoriteItem}
+          contentContainerStyle={styles.listContainer}
           showsVerticalScrollIndicator={false}
         />
       ) : (
@@ -62,14 +69,12 @@ export default function FavoritesScreen() {
           <Text style={styles.emptyTitle}>Aucun favori</Text>
           <Text style={styles.emptyText}>
             Vous n'avez pas encore ajouté d'annonces à vos favoris.
-          </Text>
-          <Text style={styles.emptyHint}>
-            Appuyez sur le ❤️ sur une annonce pour l'ajouter à vos favoris.
+            Explorez les annonces et ajoutez celles qui vous intéressent !
           </Text>
           <Button 
-            title="Découvrir les annonces" 
+            title="Explorer les annonces"
             onPress={() => router.push('/(tabs)/search')}
-            style={styles.discoverButton}
+            style={styles.exploreButton}
           />
         </View>
       )}
@@ -82,7 +87,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.backgroundAlt,
   },
-  listContent: {
+  listContainer: {
     padding: 16,
     paddingBottom: 100,
   },
@@ -96,25 +101,18 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '700',
     color: Colors.text,
-    marginTop: 20,
-    marginBottom: 12,
+    marginTop: 16,
+    marginBottom: 8,
   },
   emptyText: {
     fontSize: 16,
     color: Colors.textLight,
     textAlign: 'center',
-    marginBottom: 8,
     lineHeight: 24,
-  },
-  emptyHint: {
-    fontSize: 14,
-    color: Colors.textLight,
-    textAlign: 'center',
     marginBottom: 32,
-    fontStyle: 'italic',
   },
-  discoverButton: {
-    backgroundColor: Colors.primary,
+  exploreButton: {
+    paddingHorizontal: 32,
   },
   loginPrompt: {
     flex: 1,
@@ -126,9 +124,8 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '700',
     color: Colors.text,
-    marginTop: 20,
-    marginBottom: 12,
-    textAlign: 'center',
+    marginTop: 16,
+    marginBottom: 8,
   },
   loginDescription: {
     fontSize: 16,
@@ -138,10 +135,6 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   loginButton: {
-    backgroundColor: Colors.primary,
-  },
-  clearButton: {
-    padding: 8,
-    marginRight: 8,
+    paddingHorizontal: 32,
   },
 });

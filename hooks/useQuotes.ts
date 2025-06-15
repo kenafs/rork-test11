@@ -65,10 +65,11 @@ export const useQuotes = create<QuotesState>()(
             updatedAt: Date.now(),
           };
           
-          set(state => ({
-            quotes: Array.isArray(state.quotes) ? [...state.quotes, newQuote] : [newQuote],
+          const currentQuotes = get().quotes || [];
+          set({
+            quotes: [...currentQuotes, newQuote],
             isLoading: false,
-          }));
+          });
           
           console.log('Quote created successfully:', newQuote);
           return newQuote;
@@ -85,16 +86,17 @@ export const useQuotes = create<QuotesState>()(
         try {
           await new Promise(resolve => setTimeout(resolve, 1000));
           
-          set(state => ({
-            quotes: Array.isArray(state.quotes) 
-              ? state.quotes.map(quote =>
-                  quote.id === id
-                    ? { ...quote, ...updates, updatedAt: Date.now() }
-                    : quote
-                )
-              : [],
+          const currentQuotes = get().quotes || [];
+          const updatedQuotes = currentQuotes.map(quote =>
+            quote.id === id
+              ? { ...quote, ...updates, updatedAt: Date.now() }
+              : quote
+          );
+          
+          set({
+            quotes: updatedQuotes,
             isLoading: false,
-          }));
+          });
           
           console.log('Quote updated successfully');
           return true;
@@ -111,12 +113,13 @@ export const useQuotes = create<QuotesState>()(
         try {
           await new Promise(resolve => setTimeout(resolve, 500));
           
-          set(state => ({
-            quotes: Array.isArray(state.quotes) 
-              ? state.quotes.filter(quote => quote.id !== id)
-              : [],
+          const currentQuotes = get().quotes || [];
+          const filteredQuotes = currentQuotes.filter(quote => quote.id !== id);
+          
+          set({
+            quotes: filteredQuotes,
             isLoading: false,
-          }));
+          });
           
           console.log('Quote deleted successfully');
           return true;
@@ -154,35 +157,29 @@ export const useQuotes = create<QuotesState>()(
       },
       
       getQuoteById: (id: string) => {
-        const state = get();
-        const quotes = Array.isArray(state.quotes) ? state.quotes : [];
+        const quotes = get().quotes || [];
         return quotes.find(quote => quote.id === id);
       },
       
       getQuotesForUser: (userId: string) => {
-        const state = get();
-        const quotes = Array.isArray(state.quotes) ? state.quotes : [];
+        const quotes = get().quotes || [];
         return quotes.filter(quote => 
           quote.providerId === userId || quote.clientId === userId
         );
       },
       
       getQuotesByProvider: (providerId: string) => {
-        const state = get();
-        const quotes = Array.isArray(state.quotes) ? state.quotes : [];
+        const quotes = get().quotes || [];
         return quotes.filter(quote => quote.providerId === providerId);
       },
       
       getQuotesByClient: (clientId: string) => {
-        const state = get();
-        const quotes = Array.isArray(state.quotes) ? state.quotes : [];
+        const quotes = get().quotes || [];
         return quotes.filter(quote => quote.clientId === clientId);
       },
       
       getUserQuotes: () => {
-        const state = get();
-        const quotes = Array.isArray(state.quotes) ? state.quotes : [];
-        return quotes;
+        return get().quotes || [];
       },
       
       canReview: (quoteId: string) => {
@@ -191,8 +188,7 @@ export const useQuotes = create<QuotesState>()(
       },
       
       getCompletedQuotesBetweenUsers: (userId1: string, userId2: string) => {
-        const state = get();
-        const quotes = Array.isArray(state.quotes) ? state.quotes : [];
+        const quotes = get().quotes || [];
         return quotes.filter(quote => 
           quote.status === 'completed' &&
           ((quote.providerId === userId1 && quote.clientId === userId2) ||

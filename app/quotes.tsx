@@ -1,11 +1,12 @@
-import React, { useEffect } from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Alert, Platform, Modal } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuotes } from '@/hooks/useQuotes';
 import Colors from '@/constants/colors';
 import Button from '@/components/Button';
-import { FileText, Calendar, Euro, CheckCircle, XCircle, Clock, Eye, CreditCard, CheckSquare } from 'lucide-react-native';
+import QuotePreview from '@/components/QuotePreview';
+import { FileText, Calendar, Euro, CheckCircle, XCircle, Clock, Eye, CreditCard, CheckSquare, X } from 'lucide-react-native';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 
@@ -13,6 +14,8 @@ export default function QuotesScreen() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
   const { getQuotesForUser, acceptQuote, rejectQuote, payQuote, completeQuote, fetchQuotes } = useQuotes();
+  const [selectedQuote, setSelectedQuote] = useState<any>(null);
+  const [showPreview, setShowPreview] = useState(false);
   
   useEffect(() => {
     fetchQuotes();
@@ -128,6 +131,11 @@ export default function QuotesScreen() {
         }
       ]
     );
+  };
+
+  const handleViewQuote = (quote: any) => {
+    setSelectedQuote(quote);
+    setShowPreview(true);
   };
 
   // CRITICAL FIX: Improved PDF generation with better error handling
@@ -331,11 +339,19 @@ export default function QuotesScreen() {
                 
                 <View style={styles.quoteActions}>
                   <TouchableOpacity 
+                    style={styles.viewButton}
+                    onPress={() => handleViewQuote(quote)}
+                  >
+                    <Eye size={16} color={Colors.primary} />
+                    <Text style={styles.viewButtonText}>Voir</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
                     style={styles.pdfButton}
                     onPress={() => generatePDF(quote)}
                   >
-                    <Eye size={16} color={Colors.primary} />
-                    <Text style={styles.pdfButtonText}>Voir PDF</Text>
+                    <FileText size={16} color={Colors.primary} />
+                    <Text style={styles.pdfButtonText}>PDF</Text>
                   </TouchableOpacity>
                   
                   {user.userType === 'client' && quote.status === 'pending' && (
@@ -413,6 +429,27 @@ export default function QuotesScreen() {
           </View>
         )}
       </ScrollView>
+
+      {/* Quote Preview Modal */}
+      <Modal
+        visible={showPreview}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowPreview(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Aperçu du devis</Text>
+            <TouchableOpacity 
+              style={styles.closeButton}
+              onPress={() => setShowPreview(false)}
+            >
+              <X size={24} color={Colors.text} />
+            </TouchableOpacity>
+          </View>
+          {selectedQuote && <QuotePreview quote={selectedQuote} />}
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -520,6 +557,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
     flexWrap: 'wrap',
+  },
+  viewButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+    gap: 4,
+  },
+  viewButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.primary,
   },
   pdfButton: {
     flexDirection: 'row',
@@ -653,5 +704,25 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     paddingHorizontal: 32,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.text,
+  },
+  closeButton: {
+    padding: 4,
   },
 });

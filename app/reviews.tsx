@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, FlatList, TouchableOpacity, Image, TextInput, Alert } from 'react-native';
+import { StyleSheet, View, Text, FlatList, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
+import { Image } from 'expo-image';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuotes } from '@/hooks/useQuotes';
 import { mockReviews } from '@/mocks/reviews';

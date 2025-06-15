@@ -29,7 +29,7 @@ export default function ProfileScreen() {
   const { user, logout, isAuthenticated } = useAuth();
   const { getUserListings } = useListings();
   const { getQuotesForUser } = useQuotes();
-  const { favorites } = useFavorites();
+  const { getFavorites } = useFavorites();
   
   if (!isAuthenticated || !user) {
     return (
@@ -54,7 +54,7 @@ export default function ProfileScreen() {
   const userListings = getUserListings();
   const userQuotes = getQuotesForUser(user.id);
   const userReviews = getReviewsByUser(user.id);
-  const userFavorites = favorites;
+  const userFavorites = getFavorites();
   
   // Calculate average rating from reviews user has received
   const receivedReviews = userReviews.filter(review => review.targetId === user.id);
@@ -71,8 +71,8 @@ export default function ProfileScreen() {
         { 
           text: 'Déconnecter', 
           style: 'destructive',
-          onPress: () => {
-            logout();
+          onPress: async () => {
+            await logout();
             router.replace('/');
           }
         }
@@ -480,6 +480,6 @@ const styles = StyleSheet.create({
     color: '#F44336',
   },
   bottomSpacer: {
-    height: 40,
+    height: 120,
   },
 });

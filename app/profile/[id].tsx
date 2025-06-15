@@ -241,7 +241,7 @@ export default function ProfileDetailScreen() {
             </Text>
           </View>
           
-          {user.rating && (
+          {user.rating !== undefined && (
             <View style={styles.ratingContainer}>
               <RatingStars 
                 rating={user.rating} 

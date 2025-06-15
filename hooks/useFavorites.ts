@@ -4,64 +4,103 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Listing } from '@/types';
 import { mockListings } from '@/mocks/listings';
 
+interface UserFavorites {
+  [userId: string]: string[];
+}
+
 interface FavoritesState {
-  favorites: string[];
-  favoriteListings: Listing[];
+  userFavorites: UserFavorites;
+  currentUserId: string | null;
   
+  setCurrentUser: (userId: string | null) => void;
   addToFavorites: (listingId: string) => void;
   removeFromFavorites: (listingId: string) => void;
   isFavorite: (listingId: string) => boolean;
-  loadFavoriteListings: () => void;
-  clearFavorites: () => void;
+  getFavoriteListings: () => Listing[];
+  getFavorites: () => string[];
+  clearUserFavorites: (userId: string) => void;
+  clearAllFavorites: () => void;
 }
 
 export const useFavorites = create<FavoritesState>()(
   persist(
     (set, get) => ({
-      favorites: [],
-      favoriteListings: [],
+      userFavorites: {},
+      currentUserId: null,
+      
+      setCurrentUser: (userId: string | null) => {
+        set({ currentUserId: userId });
+      },
       
       addToFavorites: (listingId: string) => {
-        const currentFavorites = get().favorites;
+        const { currentUserId, userFavorites } = get();
+        if (!currentUserId) return;
+        
+        const currentFavorites = userFavorites[currentUserId] || [];
         if (!currentFavorites.includes(listingId)) {
-          const newFavorites = [...currentFavorites, listingId];
-          set({ favorites: newFavorites });
-          get().loadFavoriteListings();
+          set({
+            userFavorites: {
+              ...userFavorites,
+              [currentUserId]: [...currentFavorites, listingId]
+            }
+          });
         }
       },
       
       removeFromFavorites: (listingId: string) => {
-        const currentFavorites = get().favorites;
+        const { currentUserId, userFavorites } = get();
+        if (!currentUserId) return;
+        
+        const currentFavorites = userFavorites[currentUserId] || [];
         const newFavorites = currentFavorites.filter(id => id !== listingId);
-        set({ favorites: newFavorites });
-        get().loadFavoriteListings();
+        
+        set({
+          userFavorites: {
+            ...userFavorites,
+            [currentUserId]: newFavorites
+          }
+        });
       },
       
       isFavorite: (listingId: string) => {
-        return get().favorites.includes(listingId);
+        const { currentUserId, userFavorites } = get();
+        if (!currentUserId) return false;
+        
+        const currentFavorites = userFavorites[currentUserId] || [];
+        return currentFavorites.includes(listingId);
       },
       
-      loadFavoriteListings: () => {
-        const favoriteIds = get().favorites;
-        const favoriteListings = mockListings.filter(listing => 
-          favoriteIds.includes(listing.id)
-        );
-        set({ favoriteListings });
+      getFavoriteListings: () => {
+        const { currentUserId, userFavorites } = get();
+        if (!currentUserId) return [];
+        
+        const favoriteIds = userFavorites[currentUserId] || [];
+        return mockListings.filter(listing => favoriteIds.includes(listing.id));
       },
       
-      clearFavorites: () => {
-        set({ favorites: [], favoriteListings: [] });
+      getFavorites: () => {
+        const { currentUserId, userFavorites } = get();
+        if (!currentUserId) return [];
+        
+        return userFavorites[currentUserId] || [];
+      },
+      
+      clearUserFavorites: (userId: string) => {
+        const { userFavorites } = get();
+        const newUserFavorites = { ...userFavorites };
+        delete newUserFavorites[userId];
+        
+        set({ userFavorites: newUserFavorites });
+      },
+      
+      clearAllFavorites: () => {
+        set({ userFavorites: {}, currentUserId: null });
       },
     }),
     {
       name: 'favorites-storage',
       storage: createJSONStorage(() => AsyncStorage),
-      onRehydrateStorage: () => (state) => {
-        if (state) {
-          state.loadFavoriteListings();
-        }
-      },
-      partialize: (state) => ({ favorites: state.favorites }),
+      partialize: (state) => ({ userFavorites: state.userFavorites }),
     }
   )
 );
