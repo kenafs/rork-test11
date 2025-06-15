@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, TextInput, Alert, Platform, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TextInput, Alert, Platform, TouchableOpacity, KeyboardAvoidingView } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useListings } from '@/hooks/useListings';
@@ -218,7 +218,11 @@ export default function CreateListingScreen() {
   const placeholders = getPlaceholders();
   
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+    >
       <Stack.Screen options={{ 
         title: user.userType === 'business' ? "Publier une offre" : "Créer une annonce",
         headerStyle: { backgroundColor: Colors.primary },
@@ -390,29 +394,29 @@ export default function CreateListingScreen() {
               </Text>
             </View>
           </View>
-          
-          {/* Submit Button moved here - CRITICAL FIX */}
-          <View style={styles.submitSection}>
-            <LinearGradient
-              colors={[Colors.primary, Colors.secondary] as const}
-              style={styles.submitGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <TouchableOpacity
-                style={styles.submitButton}
-                onPress={handleSubmit}
-                disabled={isLoading}
-              >
-                <Text style={styles.submitButtonText}>
-                  {isLoading ? '🚀 Publication...' : `🚀 Publier ${user.userType === 'business' ? "l'offre" : "l'annonce"}`}
-                </Text>
-              </TouchableOpacity>
-            </LinearGradient>
-          </View>
         </View>
       </ScrollView>
-    </View>
+      
+      {/* CRITICAL FIX: Submit Button moved to bottom with proper keyboard handling */}
+      <View style={styles.submitContainer}>
+        <LinearGradient
+          colors={[Colors.primary, Colors.secondary] as const}
+          style={styles.submitGradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        >
+          <TouchableOpacity
+            style={styles.submitButton}
+            onPress={handleSubmit}
+            disabled={isLoading}
+          >
+            <Text style={styles.submitButtonText}>
+              {isLoading ? '🚀 Publication...' : `🚀 Publier ${user.userType === 'business' ? "l'offre" : "l'annonce"}`}
+            </Text>
+          </TouchableOpacity>
+        </LinearGradient>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -471,7 +475,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 20,
-    paddingBottom: 40, // Extra space at bottom
+    paddingBottom: 20, // Reduced padding since submit button is now fixed
   },
   formCard: {
     backgroundColor: '#fff',
@@ -634,9 +638,17 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     fontWeight: '700',
   },
-  submitSection: {
-    marginTop: 20,
-    marginBottom: 10,
+  submitContainer: {
+    backgroundColor: '#fff',
+    padding: 20,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 10,
   },
   submitGradient: {
     borderRadius: 20,

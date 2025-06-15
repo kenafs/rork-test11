@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuotes } from '@/hooks/useQuotes';
@@ -86,6 +86,7 @@ export default function QuotesScreen() {
     );
   };
 
+  // CRITICAL FIX: Improved PDF generation with better error handling
   const generatePDF = async (quote: any) => {
     try {
       const htmlContent = `
@@ -161,22 +162,35 @@ export default function QuotesScreen() {
         </html>
       `;
       
+      console.log('Generating PDF for quote:', quote.id);
+      
       const result = await Print.printToFileAsync({
         html: htmlContent,
         base64: false
       });
       
-      if (result && result.uri && await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(result.uri, {
-          mimeType: 'application/pdf',
-          dialogTitle: `Devis ${quote.id.slice(-6)}`
-        });
+      console.log('PDF generation result:', result);
+      
+      if (result && result.uri) {
+        console.log('PDF generated successfully, checking sharing availability...');
+        
+        if (await Sharing.isAvailableAsync()) {
+          console.log('Sharing is available, opening share dialog...');
+          await Sharing.shareAsync(result.uri, {
+            mimeType: 'application/pdf',
+            dialogTitle: `Devis ${quote.id.slice(-6)}`
+          });
+        } else {
+          console.log('Sharing not available, showing success message');
+          Alert.alert('PDF généré', `Le PDF du devis ${quote.id.slice(-6)} a été généré avec succès.`);
+        }
       } else {
-        Alert.alert('Succès', 'PDF généré avec succès');
+        console.error('PDF generation failed - no URI returned');
+        Alert.alert('Erreur', 'Impossible de générer le PDF');
       }
     } catch (error) {
       console.error('Error generating PDF:', error);
-      Alert.alert('Erreur', 'Impossible de générer le PDF');
+      Alert.alert('Erreur', `Impossible de générer le PDF: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
     }
   };
   

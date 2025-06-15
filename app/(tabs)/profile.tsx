@@ -76,7 +76,7 @@ export default function ProfileScreen() {
     Linking.openURL(`https://instagram.com/${cleanUsername}`);
   };
 
-  // Handle stat card navigation
+  // Handle stat card navigation - CRITICAL FIX
   const handleStatCardPress = (type: string) => {
     switch (type) {
       case 'favorites':
