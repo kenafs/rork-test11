@@ -37,6 +37,13 @@ export interface Provider extends User {
     max: number;
   };
   availability?: string[];
+  socialLinks?: {
+    instagram?: string;
+    website?: string;
+    facebook?: string;
+    linkedin?: string;
+  };
+  portfolio?: string[];
 }
 
 export interface Venue extends User {
@@ -46,6 +53,13 @@ export interface Venue extends User {
   capacity?: number;
   amenities?: string[];
   photos?: string[];
+  socialLinks?: {
+    instagram?: string;
+    website?: string;
+    facebook?: string;
+    linkedin?: string;
+  };
+  portfolio?: string[];
 }
 
 export interface Client extends User {
@@ -88,6 +102,7 @@ export interface Review {
   response?: string;
   helpful?: number;
   createdAt: number;
+  quoteId?: string; // Link to the completed quote that allows this review
 }
 
 export interface Message {

@@ -265,7 +265,7 @@ export default function CreateQuoteScreen() {
 **${title}**
 ${description}
 
-💰 **Montant total:** ${totalAmount.toFixed(2)}€
+💰 **Montant total:** ${quote.total.toFixed(2)}€ TTC
 📅 **Valide jusqu'au:** ${new Date(validUntil).toLocaleDateString('fr-FR')}
 
 Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
@@ -282,7 +282,7 @@ Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
               participantImage: targetUser.profileImage,
               participantType: targetUser.userType === 'provider' ? 'provider' : 
                               targetUser.userType === 'business' ? 'business' : 'client',
-              lastMessage: `📋 Devis envoyé: ${title} - ${totalAmount.toFixed(2)}€`,
+              lastMessage: `📋 Devis envoyé: ${title} - ${quote.total.toFixed(2)}€`,
               unread: 0,
               timestamp: Date.now(),
             });

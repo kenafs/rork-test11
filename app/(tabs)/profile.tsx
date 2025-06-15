@@ -73,7 +73,7 @@ export default function ProfileScreen() {
           style: 'destructive',
           onPress: () => {
             logout();
-            router.replace('/(auth)/login');
+            router.replace('/');
           }
         }
       ]
@@ -170,7 +170,7 @@ export default function ProfileScreen() {
           <StatCard
             icon={TrendingUp}
             value={userQuotes.length}
-            label="En ligne"
+            label="Devis"
             color="#2196F3"
             onPress={() => router.push('/quotes')}
           />

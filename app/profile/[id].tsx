@@ -83,7 +83,7 @@ export default function ProfileDetailScreen() {
   // Check if this is the current user's profile
   const isOwnProfile = currentUser && currentUser.id === id;
   
-  // Get social links
+  // Get social links safely
   const socialLinks = user.socialLinks || {};
   
   // Render provider-specific info

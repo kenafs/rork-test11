@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Quote, QuoteItem } from '@/types';
-import { useAuth } from './useAuth';
 
 interface QuotesState {
   quotes: Quote[];
@@ -66,7 +65,7 @@ export const useQuotes = create<QuotesState>()(
           };
           
           set(state => ({
-            quotes: [...state.quotes, newQuote],
+            quotes: Array.isArray(state.quotes) ? [...state.quotes, newQuote] : [newQuote],
             isLoading: false,
           }));
           
@@ -86,11 +85,13 @@ export const useQuotes = create<QuotesState>()(
           await new Promise(resolve => setTimeout(resolve, 1000));
           
           set(state => ({
-            quotes: state.quotes.map(quote =>
-              quote.id === id
-                ? { ...quote, ...updates, updatedAt: Date.now() }
-                : quote
-            ),
+            quotes: Array.isArray(state.quotes) 
+              ? state.quotes.map(quote =>
+                  quote.id === id
+                    ? { ...quote, ...updates, updatedAt: Date.now() }
+                    : quote
+                )
+              : [],
             isLoading: false,
           }));
           
@@ -110,7 +111,9 @@ export const useQuotes = create<QuotesState>()(
           await new Promise(resolve => setTimeout(resolve, 500));
           
           set(state => ({
-            quotes: state.quotes.filter(quote => quote.id !== id),
+            quotes: Array.isArray(state.quotes) 
+              ? state.quotes.filter(quote => quote.id !== id)
+              : [],
             isLoading: false,
           }));
           
@@ -150,21 +153,29 @@ export const useQuotes = create<QuotesState>()(
       },
       
       getQuoteById: (id: string) => {
-        return get().quotes.find(quote => quote.id === id);
+        const state = get();
+        const quotes = Array.isArray(state.quotes) ? state.quotes : [];
+        return quotes.find(quote => quote.id === id);
       },
       
       getQuotesForUser: (userId: string) => {
-        return get().quotes.filter(quote => 
+        const state = get();
+        const quotes = Array.isArray(state.quotes) ? state.quotes : [];
+        return quotes.filter(quote => 
           quote.providerId === userId || quote.clientId === userId
         );
       },
       
       getQuotesByProvider: (providerId: string) => {
-        return get().quotes.filter(quote => quote.providerId === providerId);
+        const state = get();
+        const quotes = Array.isArray(state.quotes) ? state.quotes : [];
+        return quotes.filter(quote => quote.providerId === providerId);
       },
       
       getQuotesByClient: (clientId: string) => {
-        return get().quotes.filter(quote => quote.clientId === clientId);
+        const state = get();
+        const quotes = Array.isArray(state.quotes) ? state.quotes : [];
+        return quotes.filter(quote => quote.clientId === clientId);
       },
       
       canReview: (quoteId: string) => {
@@ -173,7 +184,9 @@ export const useQuotes = create<QuotesState>()(
       },
       
       getCompletedQuotesBetweenUsers: (userId1: string, userId2: string) => {
-        return get().quotes.filter(quote => 
+        const state = get();
+        const quotes = Array.isArray(state.quotes) ? state.quotes : [];
+        return quotes.filter(quote => 
           quote.status === 'completed' &&
           ((quote.providerId === userId1 && quote.clientId === userId2) ||
            (quote.providerId === userId2 && quote.clientId === userId1))
