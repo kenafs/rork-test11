@@ -5,7 +5,7 @@ import { Quote, QuoteItem } from '@/types';
 import { useAuth } from './useAuth';
 
 interface QuotesState {
-  quotes: Quote[];
+  quotes: { [userId: string]: Quote[] };
   isLoading: boolean;
   
   fetchQuotes: () => Promise<void>;
@@ -17,12 +17,13 @@ interface QuotesState {
   sendQuote: (id: string) => Promise<boolean>;
   getQuotesByUser: (userId: string) => Quote[];
   getQuotesForUser: (userId: string) => Quote[];
+  getUserQuotes: () => Quote[];
 }
 
 export const useQuotes = create<QuotesState>()(
   persist(
     (set, get) => ({
-      quotes: [],
+      quotes: {},
       isLoading: false,
       
       fetchQuotes: async () => {
@@ -37,12 +38,7 @@ export const useQuotes = create<QuotesState>()(
             return;
           }
           
-          const existingQuotes = get().quotes;
-          
-          set({ 
-            quotes: existingQuotes,
-            isLoading: false 
-          });
+          set({ isLoading: false });
         } catch (error) {
           console.error('Error fetching quotes:', error);
           set({ isLoading: false });
@@ -73,10 +69,16 @@ export const useQuotes = create<QuotesState>()(
             total,
           };
           
-          set(state => ({
-            quotes: [...state.quotes, newQuote],
-            isLoading: false 
-          }));
+          set(state => {
+            const userQuotes = state.quotes[user.id] || [];
+            return {
+              quotes: {
+                ...state.quotes,
+                [user.id]: [...userQuotes, newQuote],
+              },
+              isLoading: false,
+            };
+          });
           
           console.log('Devis créé avec succès:', newQuote);
           return newQuote;
@@ -93,25 +95,34 @@ export const useQuotes = create<QuotesState>()(
         try {
           await new Promise(resolve => setTimeout(resolve, 500));
           
-          const { quotes } = get();
-          const quoteIndex = quotes.findIndex(q => q.id === id);
+          const user = useAuth.getState().user;
+          if (!user) {
+            set({ isLoading: false });
+            return false;
+          }
+          
+          const userQuotes = get().quotes[user.id] || [];
+          const quoteIndex = userQuotes.findIndex(q => q.id === id);
           
           if (quoteIndex === -1) {
             set({ isLoading: false });
             return false;
           }
           
-          const updatedQuotes = [...quotes];
+          const updatedQuotes = [...userQuotes];
           updatedQuotes[quoteIndex] = {
             ...updatedQuotes[quoteIndex],
             ...updates,
             updatedAt: Date.now(),
           };
           
-          set({ 
-            quotes: updatedQuotes,
-            isLoading: false 
-          });
+          set(state => ({
+            quotes: {
+              ...state.quotes,
+              [user.id]: updatedQuotes,
+            },
+            isLoading: false,
+          }));
           
           console.log('Devis mis à jour:', updatedQuotes[quoteIndex]);
           return true;
@@ -128,13 +139,22 @@ export const useQuotes = create<QuotesState>()(
         try {
           await new Promise(resolve => setTimeout(resolve, 500));
           
-          const { quotes } = get();
-          const updatedQuotes = quotes.filter(q => q.id !== id);
+          const user = useAuth.getState().user;
+          if (!user) {
+            set({ isLoading: false });
+            return false;
+          }
           
-          set({ 
-            quotes: updatedQuotes,
-            isLoading: false 
-          });
+          const userQuotes = get().quotes[user.id] || [];
+          const updatedQuotes = userQuotes.filter(q => q.id !== id);
+          
+          set(state => ({
+            quotes: {
+              ...state.quotes,
+              [user.id]: updatedQuotes,
+            },
+            isLoading: false,
+          }));
           
           console.log('Devis supprimé:', id);
           return true;
@@ -169,12 +189,21 @@ export const useQuotes = create<QuotesState>()(
         return result;
       },
       
+      getUserQuotes: () => {
+        const user = useAuth.getState().user;
+        if (!user) return [];
+        
+        return get().quotes[user.id] || [];
+      },
+      
       getQuotesByUser: (userId: string) => {
-        return get().quotes.filter(quote => quote.providerId === userId);
+        return get().quotes[userId] || [];
       },
       
       getQuotesForUser: (userId: string) => {
-        return get().quotes.filter(quote => quote.clientId === userId);
+        // Get all quotes where this user is the client
+        const allQuotes = Object.values(get().quotes).flat();
+        return allQuotes.filter(quote => quote.clientId === userId);
       },
     }),
     {

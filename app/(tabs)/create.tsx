@@ -146,6 +146,15 @@ export default function CreateListingScreen() {
       
       console.log('Listing created successfully:', newListing);
       
+      // Clear form
+      setTitle('');
+      setDescription('');
+      setCategory('');
+      setPrice('');
+      setImages([]);
+      setTags([]);
+      setTagInput('');
+      
       Alert.alert(
         'Succès', 
         'Votre annonce a été publiée avec succès.', 
@@ -153,15 +162,6 @@ export default function CreateListingScreen() {
           { 
             text: 'Voir l\'annonce', 
             onPress: () => {
-              // Clear form
-              setTitle('');
-              setDescription('');
-              setCategory('');
-              setPrice('');
-              setImages([]);
-              setTags([]);
-              setTagInput('');
-              
               // Navigate to the created listing
               router.push(`/listing/${newListing.id}`);
             }
@@ -169,15 +169,6 @@ export default function CreateListingScreen() {
           { 
             text: 'Retour à l\'accueil', 
             onPress: () => {
-              // Clear form
-              setTitle('');
-              setDescription('');
-              setCategory('');
-              setPrice('');
-              setImages([]);
-              setTags([]);
-              setTagInput('');
-              
               router.push('/(tabs)');
             }
           }
@@ -495,7 +486,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 120, // Extra space for submit button
   },
   formCard: {
     backgroundColor: '#fff',
@@ -659,12 +650,15 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   submitContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     backgroundColor: '#fff',
     padding: 20,
-    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
-    marginBottom: Platform.OS === 'ios' ? 90 : 75,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,

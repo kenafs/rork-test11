@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, Share } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuotes } from '@/hooks/useQuotes';
@@ -9,7 +9,7 @@ import { mockProviders, mockVenues } from '@/mocks/users';
 import { QuoteItem } from '@/types';
 import Colors from '@/constants/colors';
 import Button from '@/components/Button';
-import { Plus, Trash2, Calculator, Send, FileText, Download } from 'lucide-react-native';
+import { Plus, Trash2, Calculator, FileText } from 'lucide-react-native';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 
@@ -25,7 +25,6 @@ export default function CreateQuoteScreen() {
   const [items, setItems] = useState<QuoteItem[]>([
     {
       id: '1',
-      name: '',
       description: '',
       quantity: 1,
       unitPrice: 0,
@@ -74,7 +73,6 @@ export default function CreateQuoteScreen() {
   const addItem = () => {
     const newItem: QuoteItem = {
       id: Date.now().toString(),
-      name: '',
       description: '',
       quantity: 1,
       unitPrice: 0,
@@ -165,10 +163,7 @@ export default function CreateQuoteScreen() {
             <tbody>
               ${quote.items.map((item: QuoteItem) => `
                 <tr>
-                  <td>
-                    <strong>${item.name}</strong>
-                    ${item.description ? `<br><small>${item.description}</small>` : ''}
-                  </td>
+                  <td>${item.description}</td>
                   <td>${item.quantity}</td>
                   <td>${item.unitPrice.toFixed(2)}€</td>
                   <td>${item.total.toFixed(2)}€</td>
@@ -221,7 +216,7 @@ export default function CreateQuoteScreen() {
       return;
     }
     
-    if (items.some(item => !item.name.trim() || item.unitPrice <= 0)) {
+    if (items.some(item => !item.description.trim() || item.unitPrice <= 0)) {
       Alert.alert('Erreur', 'Veuillez remplir tous les éléments du devis');
       return;
     }
@@ -391,23 +386,12 @@ export default function CreateQuoteScreen() {
                 </View>
                 
                 <View style={styles.formGroup}>
-                  <Text style={styles.label}>Nom *</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={item.name}
-                    onChangeText={(value) => updateItem(item.id, 'name', value)}
-                    placeholder="Ex: Animation musicale"
-                    placeholderTextColor={Colors.textLight}
-                  />
-                </View>
-                
-                <View style={styles.formGroup}>
-                  <Text style={styles.label}>Description</Text>
+                  <Text style={styles.label}>Description *</Text>
                   <TextInput
                     style={styles.input}
                     value={item.description}
                     onChangeText={(value) => updateItem(item.id, 'description', value)}
-                    placeholder="Détails optionnels"
+                    placeholder="Ex: Animation musicale"
                     placeholderTextColor={Colors.textLight}
                   />
                 </View>
@@ -507,7 +491,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 40,
+    paddingBottom: 120, // Extra space for submit button
   },
   section: {
     marginBottom: 32,
@@ -645,12 +629,20 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   footer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     backgroundColor: '#fff',
     padding: 20,
-    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
-    marginBottom: Platform.OS === 'ios' ? 90 : 75,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 10,
   },
   submitButton: {
     backgroundColor: Colors.primary,

@@ -80,7 +80,7 @@ export default function ListingDetailScreen() {
     Alert.alert('Partager', 'Fonctionnalité de partage à implémenter');
   };
   
-  // Handle contact - simplified without initial message
+  // Handle contact - with proper user information
   const handleContact = async () => {
     if (!isAuthenticated) {
       Alert.alert(
@@ -100,15 +100,15 @@ export default function ListingDetailScreen() {
     }
 
     try {
-      console.log('Creating conversation with:', listing.createdBy);
+      console.log('Creating conversation with creator:', creatorUser.id, creatorUser.name);
       
       // Create conversation without initial message
-      const conversationId = await createConversation(listing.createdBy);
+      const conversationId = await createConversation(creatorUser.id);
       
       console.log('Conversation created:', conversationId);
       
-      // Navigate to the conversation with the participant ID
-      router.push(`/conversation/${listing.createdBy}`);
+      // Navigate to the conversation with the correct participant ID
+      router.push(`/conversation/${creatorUser.id}`);
     } catch (error) {
       console.error('Error creating conversation:', error);
       Alert.alert('Erreur', 'Impossible de créer la conversation');
@@ -144,15 +144,15 @@ export default function ListingDetailScreen() {
         console.log('Requesting quote via message for listing:', listing.id);
         
         const conversationId = await createConversation(
-          listing.createdBy,
+          creatorUser.id,
           `Bonjour, je souhaiterais recevoir un devis pour votre annonce "${listing.title}". Pourriez-vous me faire une proposition ?`,
           listing.id
         );
         
         console.log('Quote request conversation created:', conversationId);
         
-        // Navigate to the conversation with the participant ID
-        router.push(`/conversation/${listing.createdBy}`);
+        // Navigate to the conversation with the correct participant ID
+        router.push(`/conversation/${creatorUser.id}`);
       } catch (error) {
         console.error('Error creating quote request conversation:', error);
         Alert.alert('Erreur', 'Impossible de créer la demande de devis');
@@ -525,7 +525,7 @@ const styles = StyleSheet.create({
     right: 0,
     flexDirection: 'row',
     padding: 20,
-    paddingBottom: 34,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
     backgroundColor: '#fff',
     borderTopWidth: 1,
     borderTopColor: Colors.border,

@@ -1,141 +1,146 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, FlatList, ActivityIndicator } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, View, Text, ScrollView, RefreshControl } from 'react-native';
 import { useListings } from '@/hooks/useListings';
 import { useLocation } from '@/hooks/useLocation';
-import SearchBar from '@/components/SearchBar';
-import ListingCard from '@/components/ListingCard';
-import CategoryFilter from '@/components/CategoryFilter';
-import Button from '@/components/Button';
+import { useFavorites } from '@/hooks/useFavorites';
 import Colors from '@/constants/colors';
+import SearchBar from '@/components/SearchBar';
+import CategoryFilter from '@/components/CategoryFilter';
+import ListingCard from '@/components/ListingCard';
+import LocationPermissionRequest from '@/components/LocationPermissionRequest';
 
 export default function SearchScreen() {
-  const { category: initialCategory } = useLocalSearchParams<{ category?: string }>();
   const { 
-    listings, 
     filteredListings = [], 
     isLoading, 
     fetchListings, 
+    refreshListings,
     filterByCategory, 
-    filterBySearch,
+    filterBySearch, 
     filterByLocation,
     selectedCategory,
-    searchQuery: storeSearchQuery,
+    searchQuery 
   } = useListings();
-  
   const { 
     latitude, 
     longitude, 
     city, 
-    requestPermission, 
+    hasPermission,
+    requestPermission 
   } = useLocation();
+  const { favorites = [] } = useFavorites();
   
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   
-  // Fetch listings on mount if not already loaded
   useEffect(() => {
-    if (listings.length === 0) {
-      fetchListings();
-    }
+    fetchListings();
   }, []);
   
-  // Apply initial category filter if provided
-  useEffect(() => {
-    if (initialCategory && initialCategory !== 'all') {
-      filterByCategory(initialCategory);
-    }
-  }, [initialCategory]);
-  
-  // Update local search query when store search query changes
-  useEffect(() => {
-    setSearchQuery(storeSearchQuery || '');
-  }, [storeSearchQuery]);
-  
-  // Handle search
-  const handleSearch = (text: string) => {
-    setSearchQuery(text);
-    setIsSearching(true);
-    
-    // Debounce search to avoid too many updates
-    const debounce = setTimeout(() => {
-      filterBySearch(text);
-      setIsSearching(false);
-    }, 300);
-    
-    return () => clearTimeout(debounce);
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await refreshListings();
+    setRefreshing(false);
   };
   
-  // Handle category selection
-  const handleCategorySelect = (category: string | null) => {
-    filterByCategory(category);
-  };
-  
-  // Handle location filter
-  const handleLocationFilter = () => {
-    if (latitude && longitude) {
-      filterByLocation(latitude, longitude);
-    } else {
+  const handleLocationPress = () => {
+    if (!hasPermission) {
       requestPermission();
+    } else if (latitude && longitude) {
+      filterByLocation(latitude, longitude);
     }
   };
   
-  // Ensure filteredListings is always an array
+  const handleSearch = (query: string) => {
+    filterBySearch(query);
+  };
+  
+  const handleClearSearch = () => {
+    filterBySearch('');
+  };
+  
+  // Ensure arrays are always defined
   const safeFilteredListings = Array.isArray(filteredListings) ? filteredListings : [];
+  const safeFavorites = Array.isArray(favorites) ? favorites : [];
   
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <ScrollView 
+        style={styles.content}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>🔍 Rechercher</Text>
+          <Text style={styles.headerSubtitle}>
+            Trouvez le prestataire ou établissement parfait
+          </Text>
+        </View>
+        
+        {/* Search Bar */}
         <SearchBar
-          value={searchQuery}
+          value={searchQuery || ''}
           onChangeText={handleSearch}
-          onClear={() => handleSearch('')}
-          onLocationPress={handleLocationFilter}
-          placeholder="Rechercher un service, un lieu..."
+          onClear={handleClearSearch}
+          onLocationPress={handleLocationPress}
+          placeholder="Rechercher un prestataire..."
         />
-      </View>
-      
-      <View style={styles.categorySection}>
+        
+        {/* Location Permission Request */}
+        {!hasPermission && (
+          <LocationPermissionRequest onRequestPermission={requestPermission} />
+        )}
+        
+        {/* Category Filter */}
         <CategoryFilter
           selectedCategory={selectedCategory}
-          onSelectCategory={handleCategorySelect}
+          onSelectCategory={filterByCategory}
         />
-      </View>
-      
-      {city && (
-        <View style={styles.locationContainer}>
-          <Text style={styles.locationText}>
-            Résultats près de <Text style={styles.cityText}>{city}</Text>
-          </Text>
-          <Button 
-            title="Modifier" 
-            variant="outline" 
-            size="small" 
-            onPress={requestPermission}
-            style={styles.locationButton}
-          />
-        </View>
-      )}
-      
-      <FlatList
-        data={safeFilteredListings}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <ListingCard listing={item} />}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          isLoading || isSearching ? (
-            <ActivityIndicator color={Colors.primary} size="large" style={styles.loader} />
+        
+        {/* Results */}
+        <View style={styles.resultsContainer}>
+          <View style={styles.resultsHeader}>
+            <Text style={styles.resultsTitle}>
+              {selectedCategory && selectedCategory !== 'all' 
+                ? `Résultats pour "${selectedCategory}"` 
+                : searchQuery 
+                ? `Résultats pour "${searchQuery}"`
+                : 'Toutes les annonces'
+              }
+            </Text>
+            <Text style={styles.resultsCount}>
+              {safeFilteredListings.length} résultat{safeFilteredListings.length > 1 ? 's' : ''}
+            </Text>
+          </View>
+          
+          {safeFilteredListings.length > 0 ? (
+            safeFilteredListings.map((listing) => (
+              <ListingCard
+                key={listing.id}
+                listing={listing}
+              />
+            ))
           ) : (
-            <View style={styles.emptyContainer}>
+            <View style={styles.emptyState}>
               <Text style={styles.emptyTitle}>Aucun résultat trouvé</Text>
               <Text style={styles.emptyText}>
-                Essayez de modifier vos critères de recherche ou d'élargir votre zone géographique.
+                {selectedCategory && selectedCategory !== 'all'
+                  ? `Aucune annonce trouvée dans la catégorie "${selectedCategory}"`
+                  : searchQuery
+                  ? `Aucune annonce trouvée pour "${searchQuery}"`
+                  : 'Aucune annonce disponible pour le moment'
+                }
+              </Text>
+              <Text style={styles.emptyHint}>
+                💡 Essayez de modifier vos critères de recherche ou explorez d'autres catégories
               </Text>
             </View>
-          )
-        }
-      />
+          )}
+        </View>
+      </ScrollView>
     </View>
   );
 }
@@ -145,64 +150,76 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.backgroundAlt,
   },
-  header: {
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-    paddingBottom: 8,
-    paddingTop: 8,
+  content: {
+    flex: 1,
   },
-  categorySection: {
-    backgroundColor: '#fff',
-    paddingBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-  },
-  listContent: {
-    padding: 20,
-    paddingTop: 8,
+  scrollContent: {
     paddingBottom: 120,
   },
-  locationContainer: {
+  header: {
+    backgroundColor: Colors.primary,
+    paddingTop: 60,
+    paddingBottom: 24,
+    paddingHorizontal: 20,
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#fff',
+    marginBottom: 8,
+  },
+  headerSubtitle: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.9)',
+    lineHeight: 22,
+  },
+  resultsContainer: {
+    padding: 16,
+  },
+  resultsHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    marginBottom: 16,
   },
-  locationText: {
+  resultsTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.text,
+    flex: 1,
+    marginRight: 12,
+  },
+  resultsCount: {
     fontSize: 14,
     color: Colors.textLight,
+    fontWeight: '500',
   },
-  cityText: {
-    fontWeight: '600',
-    color: Colors.primary,
-  },
-  locationButton: {
-    paddingVertical: 4,
-    paddingHorizontal: 12,
-  },
-  loader: {
-    marginTop: 40,
-  },
-  emptyContainer: {
+  emptyState: {
     alignItems: 'center',
-    justifyContent: 'center',
     padding: 40,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    marginTop: 20,
   },
   emptyTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: '700',
     color: Colors.text,
-    marginBottom: 8,
+    marginBottom: 12,
     textAlign: 'center',
   },
   emptyText: {
+    fontSize: 16,
+    color: Colors.textLight,
+    textAlign: 'center',
+    marginBottom: 16,
+    lineHeight: 24,
+  },
+  emptyHint: {
     fontSize: 14,
     color: Colors.textLight,
     textAlign: 'center',
+    fontStyle: 'italic',
+    lineHeight: 20,
   },
 });
