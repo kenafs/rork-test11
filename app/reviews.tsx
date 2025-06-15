@@ -1,16 +1,20 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, FlatList, TouchableOpacity, Image, TextInput } from 'react-native';
+import { StyleSheet, View, Text, FlatList, TouchableOpacity, Image, TextInput, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
+import { useAuth } from '@/hooks/useAuth';
+import { useQuotes } from '@/hooks/useQuotes';
 import { mockReviews } from '@/mocks/reviews';
 import { Review } from '@/types';
 import Colors from '@/constants/colors';
 import RatingStars from '@/components/RatingStars';
 import Button from '@/components/Button';
-import { ThumbsUp, MessageCircle, User, Send } from 'lucide-react-native';
+import { ThumbsUp, MessageCircle, User, Send, AlertCircle } from 'lucide-react-native';
 
 export default function ReviewsScreen() {
   const { id, type } = useLocalSearchParams<{ id: string; type: string }>();
   const router = useRouter();
+  const { user } = useAuth();
+  const { getUserQuotes } = useQuotes();
   const [newReview, setNewReview] = useState('');
   const [newRating, setNewRating] = useState(5);
   
@@ -27,6 +31,26 @@ export default function ReviewsScreen() {
     ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length 
     : 0;
   
+  // Check if user can leave a review
+  const canLeaveReview = () => {
+    if (!user) return false;
+    
+    // Users cannot review themselves
+    if (user.id === id) return false;
+    
+    // Only allow reviews after a quote has been completed and paid
+    const userQuotes = getUserQuotes();
+    const completedQuotes = userQuotes.filter(quote => 
+      quote.status === 'accepted' && 
+      quote.clientId === id && 
+      quote.providerId === user.id
+    );
+    
+    // For now, we'll simulate that quotes are completed
+    // In a real app, you'd check payment status and service completion
+    return completedQuotes.length > 0;
+  };
+  
   // Format date
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleDateString('fr-FR', {
@@ -34,6 +58,31 @@ export default function ReviewsScreen() {
       month: 'long',
       year: 'numeric',
     });
+  };
+  
+  // Handle review submission
+  const handleSubmitReview = () => {
+    if (!canLeaveReview()) {
+      Alert.alert(
+        'Impossible de noter',
+        'Vous ne pouvez laisser un avis qu\'après avoir réalisé une prestation payée avec ce prestataire.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+    
+    if (!newReview.trim()) {
+      Alert.alert('Erreur', 'Veuillez saisir un commentaire.');
+      return;
+    }
+    
+    // In a real app, you would submit the review to your backend
+    Alert.alert('Succès', 'Votre avis a été publié avec succès.', [
+      { text: 'OK', onPress: () => {
+        setNewReview('');
+        setNewRating(5);
+      }}
+    ]);
   };
   
   // Render review item
@@ -85,7 +134,7 @@ export default function ReviewsScreen() {
       <View style={styles.ratingStars}>
         {[1, 2, 3, 4, 5].map((star) => (
           <TouchableOpacity
-            key={star}
+            key={`star-${star}`}
             onPress={() => setNewRating(star)}
             style={styles.starButton}
           >
@@ -126,7 +175,7 @@ export default function ReviewsScreen() {
       
       <FlatList
         data={reviews}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => `review-${item.id}`}
         renderItem={renderReview}
         contentContainerStyle={styles.reviewsList}
         ListEmptyComponent={
@@ -139,33 +188,47 @@ export default function ReviewsScreen() {
           </View>
         }
         ListFooterComponent={
-          <View style={styles.addReviewContainer}>
-            <Text style={styles.addReviewTitle}>Laisser un avis</Text>
-            
-            {renderRatingSelector()}
-            
-            <TextInput
-              style={styles.reviewInput}
-              value={newReview}
-              onChangeText={setNewReview}
-              placeholder="Partagez votre expérience..."
-              multiline
-              numberOfLines={4}
-              textAlignVertical="top"
-              placeholderTextColor={Colors.textLight}
-            />
-            
-            <Button
-              title="Publier l'avis"
-              onPress={() => {
-                // Handle review submission
-                setNewReview('');
-                setNewRating(5);
-              }}
-              disabled={!newReview.trim()}
-              style={styles.submitButton}
-            />
-          </View>
+          user && user.id !== id ? (
+            <View style={styles.addReviewContainer}>
+              <Text style={styles.addReviewTitle}>Laisser un avis</Text>
+              
+              {!canLeaveReview() && (
+                <View style={styles.warningContainer}>
+                  <AlertCircle size={20} color={Colors.warning} />
+                  <Text style={styles.warningText}>
+                    Vous ne pouvez laisser un avis qu'après avoir réalisé une prestation payée avec ce prestataire.
+                  </Text>
+                </View>
+              )}
+              
+              {renderRatingSelector()}
+              
+              <TextInput
+                style={[
+                  styles.reviewInput,
+                  !canLeaveReview() && styles.disabledInput
+                ]}
+                value={newReview}
+                onChangeText={setNewReview}
+                placeholder="Partagez votre expérience..."
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+                placeholderTextColor={Colors.textLight}
+                editable={canLeaveReview()}
+              />
+              
+              <Button
+                title="Publier l'avis"
+                onPress={handleSubmitReview}
+                disabled={!newReview.trim() || !canLeaveReview()}
+                style={[
+                  styles.submitButton,
+                  !canLeaveReview() && styles.disabledButton
+                ]}
+              />
+            </View>
+          ) : null
         }
       />
     </View>
@@ -327,6 +390,21 @@ const styles = StyleSheet.create({
     color: Colors.text,
     marginBottom: 16,
   },
+  warningContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEF3C7',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+  },
+  warningText: {
+    fontSize: 14,
+    color: '#92400E',
+    marginLeft: 8,
+    flex: 1,
+    lineHeight: 18,
+  },
   ratingSelector: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -363,7 +441,14 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
     marginBottom: 16,
   },
+  disabledInput: {
+    backgroundColor: Colors.backgroundAlt,
+    color: Colors.textLight,
+  },
   submitButton: {
     backgroundColor: Colors.primary,
+  },
+  disabledButton: {
+    backgroundColor: Colors.textLight,
   },
 });

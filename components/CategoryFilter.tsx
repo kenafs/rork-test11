@@ -1,50 +1,29 @@
 import React from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
+import { StyleSheet, View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { listingCategories } from '@/constants/categories';
 import Colors from '@/constants/colors';
 
 interface CategoryFilterProps {
   selectedCategory: string | null;
-  onSelectCategory: (category: string | null) => void;
+  onCategorySelect: (category: string | null) => void;
 }
 
-export default function CategoryFilter({ selectedCategory, onSelectCategory }: CategoryFilterProps) {
-  const router = useRouter();
-  
-  const handleCategoryPress = (category: any) => {
-    const categoryId = category.id === 'all' ? null : category.name;
-    onSelectCategory(categoryId);
-  };
-  
-  // Safety check for listingCategories with fallback
-  const categories = listingCategories && Array.isArray(listingCategories) && listingCategories.length > 0 
-    ? listingCategories 
-    : [
-        { id: 'all', name: 'Tous' },
-        { id: 'dj', name: 'DJ' },
-        { id: 'catering', name: 'Traiteur' },
-        { id: 'venue', name: 'Lieu' },
-        { id: 'photography', name: 'Photo' },
-        { id: 'decoration', name: 'Décoration' },
-      ];
-  
+export default function CategoryFilter({ selectedCategory, onCategorySelect }: CategoryFilterProps) {
   return (
-    <View style={styles.wrapper}>
-      <ScrollView
-        horizontal
+    <View style={styles.container}>
+      <ScrollView 
+        horizontal 
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.container}
+        contentContainerStyle={styles.scrollContainer}
       >
-        {categories.map((category) => (
+        {listingCategories.map((category) => (
           <TouchableOpacity
-            key={category.id}
+            key={`category-filter-${category.id}`}
             style={[
               styles.categoryButton,
               selectedCategory === category.name && styles.selectedCategory,
             ]}
-            onPress={() => handleCategoryPress(category)}
-            activeOpacity={0.7}
+            onPress={() => onCategorySelect(category.name === 'Tous' ? null : category.name)}
           >
             <Text
               style={[
@@ -62,21 +41,18 @@ export default function CategoryFilter({ selectedCategory, onSelectCategory }: C
 }
 
 const styles = StyleSheet.create({
-  wrapper: {
-    backgroundColor: '#fff',
-    paddingTop: 8,
-  },
   container: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 8,
+    paddingVertical: 16,
+  },
+  scrollContainer: {
+    paddingHorizontal: 20,
+    gap: 12,
   },
   categoryButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
     borderRadius: 20,
     backgroundColor: Colors.backgroundAlt,
-    marginRight: 8,
     borderWidth: 1,
     borderColor: Colors.border,
   },
@@ -86,11 +62,10 @@ const styles = StyleSheet.create({
   },
   categoryText: {
     fontSize: 14,
-    fontWeight: '500',
-    color: Colors.textLight,
+    fontWeight: '600',
+    color: Colors.text,
   },
   selectedCategoryText: {
     color: '#fff',
-    fontWeight: '600',
   },
 });

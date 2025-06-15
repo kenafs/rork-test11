@@ -110,7 +110,7 @@ export const useMessages = create<MessagesState>()(
             type: 'text',
           };
           
-          // CRITICAL FIX: Only add message to current user's messages, not to receiver's
+          // Add message to current user's messages
           set(state => {
             const userMessages = state.messages[user.id] || {};
             const conversationMessages = userMessages[conversationId] || [];
@@ -134,6 +134,7 @@ export const useMessages = create<MessagesState>()(
                 return {
                   ...conv,
                   lastMessage: newMessage,
+                  lastMessageTime: Date.now(),
                   updatedAt: Date.now(),
                 };
               }
@@ -208,7 +209,7 @@ export const useMessages = create<MessagesState>()(
           
           console.log('Creating new conversation:', newConversation);
           
-          // CRITICAL FIX: Only add conversation to current user, not to participant
+          // Add conversation to current user only
           set(state => {
             const userConversations = state.conversations[user.id] || [];
             const userMessages = state.messages[user.id] || {};

@@ -243,37 +243,54 @@ export default function CreateQuoteScreen() {
       // Send the quote immediately
       await sendQuote(quote.id);
       
-      // Send quote message to conversation
-      if (conversationParticipant) {
+      // CRITICAL FIX: Send quote message to conversation
+      const targetUserId = listing?.createdBy || conversationParticipant?.id;
+      if (targetUserId) {
         try {
           // Get or create conversation
-          let conversation = getConversationByParticipant(conversationParticipant.id);
+          let conversation = getConversationByParticipant(targetUserId);
+          let conversationId: string;
+          
           if (!conversation) {
-            const conversationId = await createConversation(conversationParticipant.id);
-            conversation = getConversationByParticipant(conversationParticipant.id);
+            console.log('Creating new conversation for quote with user:', targetUserId);
+            conversationId = await createConversation(targetUserId);
+          } else {
+            conversationId = conversation.id;
+            console.log('Using existing conversation for quote:', conversationId);
           }
           
-          if (conversation) {
-            // Send quote message
-            const quoteMessage = `📋 Devis envoyé: ${title}
-💰 Montant: ${totalAmount.toFixed(2)}€
-📅 Valide jusqu'au: ${new Date(validUntil).toLocaleDateString('fr-FR')}`;
-            await sendMessage(conversation.id, quoteMessage, conversationParticipant.id);
-          }
+          // Send quote message with proper formatting
+          const quoteMessage = `📋 **Nouveau devis reçu**
+
+**${title}**
+${description}
+
+💰 **Montant total:** ${totalAmount.toFixed(2)}€
+📅 **Valide jusqu'au:** ${new Date(validUntil).toLocaleDateString('fr-FR')}
+
+Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
+
+          await sendMessage(conversationId, quoteMessage, targetUserId);
+          console.log('Quote message sent successfully to conversation:', conversationId);
           
           // Update contact
-          addContact({
-            participantId: conversationParticipant.id,
-            participantName: conversationParticipant.name,
-            participantImage: conversationParticipant.profileImage,
-            participantType: conversationParticipant.userType === 'provider' ? 'provider' : 
-                            conversationParticipant.userType === 'business' ? 'business' : 'client',
-            lastMessage: `📋 Devis envoyé: ${title} - ${totalAmount.toFixed(2)}€`,
-            unread: 0,
-            timestamp: Date.now(),
-          });
+          const targetUser = allUsers.find(u => u.id === targetUserId);
+          if (targetUser) {
+            addContact({
+              participantId: targetUserId,
+              participantName: targetUser.name,
+              participantImage: targetUser.profileImage,
+              participantType: targetUser.userType === 'provider' ? 'provider' : 
+                              targetUser.userType === 'business' ? 'business' : 'client',
+              lastMessage: `📋 Devis envoyé: ${title} - ${totalAmount.toFixed(2)}€`,
+              unread: 0,
+              timestamp: Date.now(),
+            });
+            console.log('Contact updated for quote recipient:', targetUser.name);
+          }
         } catch (messageError) {
           console.error('Error sending quote message:', messageError);
+          Alert.alert('Attention', 'Le devis a été créé mais le message n\'a pas pu être envoyé automatiquement.');
         }
       }
       
@@ -375,7 +392,7 @@ export default function CreateQuoteScreen() {
             </View>
             
             {items.map((item, index) => (
-              <View key={item.id} style={styles.itemCard}>
+              <View key={`item-${item.id}-${index}`} style={styles.itemCard}>
                 <View style={styles.itemHeader}>
                   <Text style={styles.itemNumber}>Élément {index + 1}</Text>
                   {items.length > 1 && (
@@ -395,6 +412,17 @@ export default function CreateQuoteScreen() {
                     value={item.name}
                     onChangeText={(value) => updateItem(item.id, 'name', value)}
                     placeholder="Ex: Animation musicale"
+                    placeholderTextColor={Colors.textLight}
+                  />
+                </View>
+                
+                <View style={styles.formGroup}>
+                  <Text style={styles.label}>Description détaillée</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={item.description || ''}
+                    onChangeText={(value) => updateItem(item.id, 'description', value)}
+                    placeholder="Détails supplémentaires (optionnel)"
                     placeholderTextColor={Colors.textLight}
                   />
                 </View>

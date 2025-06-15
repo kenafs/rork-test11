@@ -129,10 +129,12 @@ export interface Quote {
   tax: number;
   total: number;
   currency: string;
-  status: 'draft' | 'pending' | 'accepted' | 'rejected';
+  status: 'draft' | 'pending' | 'accepted' | 'rejected' | 'paid' | 'completed';
   validUntil: number;
   createdAt: number;
   updatedAt: number;
+  paidAt?: number;
+  completedAt?: number;
 }
 
 export interface DemoAccount {

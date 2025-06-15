@@ -258,10 +258,17 @@ export default function ListingDetailScreen() {
               </View>
             )}
             
+            <View style={styles.infoItem}>
+              <Clock size={18} color={Colors.primary} style={styles.infoIcon} />
+              <Text style={styles.infoText}>
+                Publié le {new Date(listing.createdAt).toLocaleDateString('fr-FR')}
+              </Text>
+            </View>
+            
             {listing.tags && listing.tags.length > 0 && (
               <View style={styles.tagsContainer}>
                 {listing.tags.map((tag, index) => (
-                  <View key={index} style={styles.tag}>
+                  <View key={`tag-${listing.id}-${index}`} style={styles.tag}>
                     <Text style={styles.tagText}>{tag}</Text>
                   </View>
                 ))}

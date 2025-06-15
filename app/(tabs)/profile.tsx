@@ -1,40 +1,55 @@
 import React from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Image, Alert, Linking } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '@/hooks/useAuth';
-import { useQuotes } from '@/hooks/useQuotes';
-import { useListings } from '@/hooks/useListings';
 import { useFavorites } from '@/hooks/useFavorites';
-import { User, Provider, Venue } from '@/types';
+import { useListings } from '@/hooks/useListings';
+import { useQuotes } from '@/hooks/useQuotes';
 import Colors from '@/constants/colors';
-import Button from '@/components/Button';
 import RatingStars from '@/components/RatingStars';
-import { MapPin, Mail, Phone, Calendar, Settings, LogOut, Edit, Plus, Globe, Instagram, ExternalLink, FileText, Heart, Star, TrendingUp, Sparkles } from 'lucide-react-native';
-import ListingCard from '@/components/ListingCard';
+import Button from '@/components/Button';
+import { 
+  Settings, 
+  Heart, 
+  Star, 
+  FileText, 
+  Globe, 
+  Edit3, 
+  LogOut,
+  ChevronRight,
+  Award,
+  TrendingUp
+} from 'lucide-react-native';
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { user, isAuthenticated, logout, isLoading } = useAuth();
-  const { getUserQuotes, getQuotesForUser } = useQuotes();
-  const { getUserListings } = useListings();
+  const { user, logout } = useAuth();
   const { favorites } = useFavorites();
+  const { getUserListings } = useListings();
+  const { getUserQuotes } = useQuotes();
   
-  const userListings = getUserListings().slice(0, 3);
+  const userListings = getUserListings();
+  const userQuotes = getUserQuotes();
   
-  const userQuotes = user && user.userType === 'provider' 
-    ? getUserQuotes().slice(0, 3)
-    : [];
-  
-  const receivedQuotes = user && user.userType === 'client'
-    ? getQuotesForUser(user.id).slice(0, 3)
-    : [];
-  
-  const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleDateString('fr-FR', {
-      year: 'numeric',
-      month: 'long',
-    });
-  };
+  if (!user) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.loginPrompt}>
+          <Text style={styles.loginTitle}>Connexion requise</Text>
+          <Text style={styles.loginSubtitle}>
+            Connectez-vous pour accéder à votre profil
+          </Text>
+          <Button
+            title="Se connecter"
+            onPress={() => router.push('/(auth)/login')}
+            style={styles.loginButton}
+          />
+        </View>
+      </View>
+    );
+  }
   
   const handleLogout = () => {
     Alert.alert(
@@ -43,467 +58,195 @@ export default function ProfileScreen() {
       [
         { text: 'Annuler', style: 'cancel' },
         { 
-          text: 'Déconnexion', 
-          style: 'destructive', 
-          onPress: async () => {
-            try {
-              console.log('Starting logout from profile...');
-              await logout();
-              console.log('Logout completed successfully');
-              // Navigate to home after logout
-              router.replace('/');
-            } catch (error) {
-              console.error('Logout error:', error);
-              // Force navigation even if logout fails
-              router.replace('/');
-            }
+          text: 'Déconnecter', 
+          style: 'destructive',
+          onPress: () => {
+            logout();
+            router.replace('/');
           }
-        },
+        }
       ]
     );
   };
-
-  const handleExternalLink = (url: string) => {
-    if (url.startsWith('http')) {
-      Linking.openURL(url);
-    } else {
-      Linking.openURL(`https://${url}`);
-    }
-  };
-
-  const handleInstagramLink = (username: string) => {
-    const cleanUsername = username.replace('@', '');
-    Linking.openURL(`https://instagram.com/${cleanUsername}`);
-  };
-
-  // Handle stat card navigation - CRITICAL FIX
-  const handleStatCardPress = (type: string) => {
-    switch (type) {
-      case 'favorites':
-        router.push('/favorites');
-        break;
-      case 'rating':
-        router.push('/reviews');
-        break;
-      case 'listings':
-        router.push('/my-listings');
-        break;
-      case 'quotes':
-        router.push('/quotes');
-        break;
-      default:
-        break;
-    }
-  };
   
-  if (!isAuthenticated || !user) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.loginPrompt}>
-          <Text style={styles.loginTitle}>Connectez-vous pour accéder à votre profil</Text>
-          <Text style={styles.loginDescription}>
-            Créez un compte ou connectez-vous pour publier des annonces et contacter des prestataires ou établissements.
-          </Text>
-          <View style={styles.buttonContainer}>
-            <Button 
-              title="Se connecter" 
-              onPress={() => router.push('/(auth)/login')}
-              style={styles.loginButton}
-            />
-            <Button 
-              title="S'inscrire" 
-              variant="outline"
-              onPress={() => router.push('/(auth)/register')}
-              style={styles.registerButton}
-            />
-          </View>
-        </View>
-      </View>
-    );
-  }
-  
-  const renderProviderInfo = (provider: Provider) => (
-    <View style={styles.infoSection}>
-      <Text style={styles.sectionTitle}>Services proposés</Text>
-      <View style={styles.servicesList}>
-        {provider.services && provider.services.length > 0 ? provider.services.map((service, index) => (
-          <View key={`service-${index}`} style={styles.serviceTag}>
-            <Text style={styles.serviceText}>{service}</Text>
-          </View>
-        )) : (
-          <Text style={styles.emptyText}>Aucun service défini</Text>
-        )}
-      </View>
-      
-      {provider.priceRange && (
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Tarifs:</Text>
-          <Text style={styles.infoValue}>
-            {provider.priceRange.min}€ - {provider.priceRange.max}€
-          </Text>
-        </View>
-      )}
-      
-      {provider.availability && provider.availability.length > 0 && (
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Disponibilité:</Text>
-          <Text style={styles.infoValue}>{provider.availability.join(', ')}</Text>
-        </View>
-      )}
-    </View>
-  );
-  
-  const renderVenueInfo = (venue: Venue) => (
-    <View style={styles.infoSection}>
-      <Text style={styles.sectionTitle}>Informations sur l'établissement</Text>
-      <View style={styles.infoRow}>
-        <Text style={styles.infoLabel}>Type:</Text>
-        <Text style={styles.infoValue}>{venue.venueType || 'Non spécifié'}</Text>
-      </View>
-      
-      {venue.capacity && (
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Capacité:</Text>
-          <Text style={styles.infoValue}>{venue.capacity} personnes</Text>
-        </View>
-      )}
-      
-      {venue.amenities && venue.amenities.length > 0 && (
-        <View>
-          <Text style={styles.infoLabel}>Équipements:</Text>
-          <View style={styles.servicesList}>
-            {venue.amenities.map((amenity, index) => (
-              <View key={`amenity-${index}`} style={styles.serviceTag}>
-                <Text style={styles.serviceText}>{amenity}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-      )}
-    </View>
-  );
-
-  const renderSocialLinks = () => {
-    const hasWebsite = user.website;
-    const hasInstagram = user.instagram;
-    
-    if (!hasWebsite && !hasInstagram) return null;
-
-    return (
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Liens</Text>
-        
-        {hasWebsite && (
-          <TouchableOpacity 
-            style={styles.socialLink}
-            onPress={() => handleExternalLink(user.website!)}
-          >
-            <Globe size={20} color={Colors.primary} />
-            <Text style={styles.socialLinkText}>{user.website}</Text>
-            <ExternalLink size={16} color={Colors.textLight} />
-          </TouchableOpacity>
-        )}
-        
-        {hasInstagram && (
-          <TouchableOpacity 
-            style={styles.socialLink}
-            onPress={() => handleInstagramLink(user.instagram!)}
-          >
-            <Instagram size={20} color="#E4405F" />
-            <Text style={styles.socialLinkText}>{user.instagram}</Text>
-            <ExternalLink size={16} color={Colors.textLight} />
-          </TouchableOpacity>
-        )}
-      </View>
-    );
-  };
-
-  const renderQuotesSection = () => {
-    // Don't show quotes section for business accounts
-    if (user.userType === 'business') return null;
-    
-    const quotes = user.userType === 'provider' ? userQuotes : receivedQuotes;
-    const sectionTitle = user.userType === 'provider' ? 'Mes devis' : 'Devis reçus';
-    const emptyTitle = user.userType === 'provider' ? 'Aucun devis créé' : 'Aucun devis reçu';
-    const emptyText = user.userType === 'provider' 
-      ? "Vous n'avez pas encore créé de devis."
-      : "Vous n'avez pas encore reçu de devis.";
-    
-    return (
-      <View style={styles.listingsSection}>
-        <View style={styles.listingsHeader}>
-          <Text style={styles.sectionTitle}>{sectionTitle}</Text>
-          <TouchableOpacity 
-            style={styles.viewAllButton}
-            onPress={() => router.push('/quotes')}
-          >
-            <Text style={styles.viewAllText}>Voir tout</Text>
-          </TouchableOpacity>
-        </View>
-        
-        {quotes.length > 0 ? (
-          quotes.map((quote, index) => (
-            <View key={`quote-${quote.id}-${index}`} style={styles.quoteCard}>
-              <View style={styles.quoteHeader}>
-                <FileText size={20} color={Colors.primary} />
-                <Text style={styles.quoteTitle}>Devis #{quote.id.slice(-6)}</Text>
-                <View style={[styles.statusBadge, { backgroundColor: getStatusColor(quote.status) }]}>
-                  <Text style={styles.statusText}>{getStatusText(quote.status)}</Text>
-                </View>
-              </View>
-              <Text style={styles.quoteTotal}>{quote.total.toFixed(2)}€</Text>
-              <Text style={styles.quoteDate}>
-                {new Date(quote.createdAt).toLocaleDateString('fr-FR')}
-              </Text>
-            </View>
-          ))
-        ) : (
-          <View style={styles.emptyListings}>
-            <Text style={styles.emptyTitle}>{emptyTitle}</Text>
-            <Text style={styles.emptyText}>{emptyText}</Text>
-          </View>
-        )}
-      </View>
-    );
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'accepted': return '#10B981';
-      case 'rejected': return '#EF4444';
-      case 'pending': return '#F59E0B';
-      case 'draft': return '#6B7280';
-      default: return Colors.textLight;
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'accepted': return 'Accepté';
-      case 'rejected': return 'Refusé';
-      case 'pending': return 'En attente';
-      case 'draft': return 'Brouillon';
-      default: return status;
-    }
-  };
-
-  const getCreateButtonText = () => {
+  const getUserTypeLabel = () => {
     switch (user.userType) {
       case 'provider':
-        return 'Créer une annonce';
+        return 'Prestataire';
       case 'business':
-        return 'Publier une offre';
+        return 'Établissement';
       default:
-        return 'Créer une demande';
+        return 'Client';
     }
   };
+  
+  const getUserTypeColor = () => {
+    switch (user.userType) {
+      case 'provider':
+        return '#10B981';
+      case 'business':
+        return '#F59E0B';
+      default:
+        return '#6366F1';
+    }
+  };
+
+  // Calculate average rating from completed quotes (mock calculation)
+  const completedQuotes = userQuotes.filter(q => q.status === 'accepted');
+  const averageRating = user.rating || 4.8;
+  const totalReviews = user.reviewCount || completedQuotes.length;
+
+  const statsData = [
+    {
+      icon: Heart,
+      label: 'Favoris',
+      value: favorites.length.toString(),
+      color: '#EF4444',
+      onPress: () => router.push('/favorites')
+    },
+    {
+      icon: Star,
+      label: 'Note',
+      value: averageRating.toFixed(1),
+      color: '#F59E0B',
+      onPress: () => router.push(`/reviews?id=${user.id}&type=provider`)
+    },
+    {
+      icon: FileText,
+      label: user.userType === 'provider' ? 'Devis' : 'Offres',
+      value: user.userType === 'provider' ? userQuotes.length.toString() : userListings.length.toString(),
+      color: '#8B5CF6',
+      onPress: () => user.userType === 'provider' ? router.push('/quotes') : router.push('/my-listings')
+    },
+    {
+      icon: Globe,
+      label: 'En ligne',
+      value: '12',
+      color: '#10B981',
+      onPress: () => router.push('/my-listings')
+    }
+  ];
+  
+  const menuItems = [
+    {
+      icon: Edit3,
+      title: 'Modifier le profil',
+      subtitle: 'Informations personnelles',
+      onPress: () => router.push('/edit-profile')
+    },
+    {
+      icon: FileText,
+      title: user.userType === 'provider' ? 'Mes devis' : 'Mes annonces',
+      subtitle: user.userType === 'provider' ? 'Gérer vos devis' : 'Gérer vos annonces',
+      onPress: () => user.userType === 'provider' ? router.push('/quotes') : router.push('/my-listings')
+    },
+    {
+      icon: Heart,
+      title: 'Mes favoris',
+      subtitle: 'Annonces sauvegardées',
+      onPress: () => router.push('/favorites')
+    },
+    {
+      icon: Star,
+      title: 'Avis et notes',
+      subtitle: 'Voir tous les avis',
+      onPress: () => router.push(`/reviews?id=${user.id}&type=provider`)
+    },
+    {
+      icon: Settings,
+      title: 'Paramètres',
+      subtitle: 'Préférences et confidentialité',
+      onPress: () => router.push('/settings')
+    }
+  ];
   
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
-      <View style={styles.header}>
-        <View style={styles.profileImageContainer}>
-          {user.profileImage ? (
-            <Image source={{ uri: user.profileImage }} style={styles.profileImage} />
-          ) : (
-            <View style={[styles.profileImage, styles.profileImagePlaceholder]}>
-              <Text style={styles.profileImageText}>{user.name.charAt(0)}</Text>
+      {/* Profile Header */}
+      <LinearGradient
+        colors={[Colors.primary, Colors.secondary] as const}
+        style={styles.headerGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        <View style={styles.profileHeader}>
+          <View style={styles.avatarContainer}>
+            {user.profileImage ? (
+              <Image source={{ uri: user.profileImage }} style={styles.avatar} />
+            ) : (
+              <View style={styles.avatarPlaceholder}>
+                <Text style={styles.avatarText}>{user.name.charAt(0)}</Text>
+              </View>
+            )}
+            <View style={[styles.userTypeBadge, { backgroundColor: getUserTypeColor() }]}>
+              <Text style={styles.userTypeText}>{getUserTypeLabel()}</Text>
             </View>
-          )}
-          <TouchableOpacity style={styles.editImageButton}>
-            <Edit size={16} color="#fff" />
-          </TouchableOpacity>
-        </View>
-        
-        <View style={styles.profileInfo}>
-          <Text style={styles.name}>{user.name}</Text>
-          <View style={styles.typeContainer}>
-            <Text style={styles.typeText}>
-              {user.userType === 'provider' ? 'Prestataire' : 
-               user.userType === 'business' ? 'Établissement' : 'Client'}
-            </Text>
           </View>
+          
+          <Text style={styles.userName}>{user.name}</Text>
+          <Text style={styles.userEmail}>{user.email}</Text>
           
           {user.rating && (
             <View style={styles.ratingContainer}>
               <RatingStars 
                 rating={user.rating} 
-                reviewCount={user.reviewCount} 
-                size="medium"
+                reviewCount={totalReviews}
+                size="medium" 
               />
             </View>
           )}
         </View>
-      </View>
+      </LinearGradient>
       
-      {/* Enhanced Stats Row - CRITICAL FIX: Make clickable */}
+      {/* Stats Grid */}
       <View style={styles.statsContainer}>
-        <TouchableOpacity 
-          style={styles.statCard}
-          onPress={() => handleStatCardPress('favorites')}
-          activeOpacity={0.7}
-        >
-          <Heart size={20} color="#FF6B6B" />
-          <Text style={styles.statCardNumber}>{favorites?.length || 0}</Text>
-          <Text style={styles.statCardLabel}>Favoris</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.statCard}
-          onPress={() => handleStatCardPress('rating')}
-          activeOpacity={0.7}
-        >
-          <Star size={20} color="#FFD700" />
-          <Text style={styles.statCardNumber}>{user.rating?.toFixed(1) || '4.8'}</Text>
-          <Text style={styles.statCardLabel}>Note</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.statCard}
-          onPress={() => handleStatCardPress('listings')}
-          activeOpacity={0.7}
-        >
-          <TrendingUp size={20} color="#10B981" />
-          <Text style={styles.statCardNumber}>{userListings.length}</Text>
-          <Text style={styles.statCardLabel}>
-            {user.userType === 'business' ? 'Offres' : 'Annonces'}
-          </Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.statCard}
-          onPress={() => handleStatCardPress('quotes')}
-          activeOpacity={0.7}
-        >
-          <Sparkles size={20} color="#8B5CF6" />
-          <Text style={styles.statCardNumber}>
-            {user.userType === 'provider' ? userQuotes.length : receivedQuotes.length}
-          </Text>
-          <Text style={styles.statCardLabel}>
-            {user.userType === 'business' ? 'En ligne' : 'Devis'}
-          </Text>
-        </TouchableOpacity>
-      </View>
-      
-      <View style={styles.actionsContainer}>
-        <Button 
-          title="Modifier le profil" 
-          variant="outline"
-          onPress={() => router.push('/edit-profile')}
-          style={styles.actionButton}
-        />
-        <Button 
-          title={getCreateButtonText()}
-          onPress={() => router.push('/(tabs)/create')}
-          style={styles.actionButton}
-        />
-      </View>
-      
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Informations de contact</Text>
-        
-        <View style={styles.contactItem}>
-          <Mail size={20} color={Colors.primary} style={styles.contactIcon} />
-          <Text style={styles.contactText}>{user.email}</Text>
-        </View>
-        
-        {user.phone && (
-          <View style={styles.contactItem}>
-            <Phone size={20} color={Colors.primary} style={styles.contactIcon} />
-            <Text style={styles.contactText}>{user.phone}</Text>
-          </View>
-        )}
-        
-        {user.location && user.location.city && (
-          <View style={styles.contactItem}>
-            <MapPin size={20} color={Colors.primary} style={styles.contactIcon} />
-            <Text style={styles.contactText}>{user.location.city}</Text>
-          </View>
-        )}
-        
-        <View style={styles.contactItem}>
-          <Calendar size={20} color={Colors.primary} style={styles.contactIcon} />
-          <Text style={styles.contactText}>
-            Membre depuis {formatDate(user.createdAt)}
-          </Text>
-        </View>
-      </View>
-
-      {renderSocialLinks()}
-      
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Description</Text>
-        <Text style={styles.description}>
-          {user.description || 'Aucune description disponible.'}
-        </Text>
-      </View>
-      
-      {user.userType === 'provider' 
-        ? renderProviderInfo(user as Provider) 
-        : user.userType === 'business' && renderVenueInfo(user as Venue)}
-      
-      <View style={styles.listingsSection}>
-        <View style={styles.listingsHeader}>
-          <Text style={styles.sectionTitle}>
-            {user.userType === 'provider' ? 'Mes annonces' : 
-             user.userType === 'business' ? 'Mes offres' : 'Mes demandes'}
-          </Text>
-          <TouchableOpacity 
-            style={styles.viewAllButton}
-            onPress={() => router.push('/my-listings')}
-          >
-            <Text style={styles.viewAllText}>Voir tout</Text>
-          </TouchableOpacity>
-        </View>
-        
-        {userListings.length > 0 ? (
-          userListings.map((listing, index) => (
-            <ListingCard key={`user-listing-${listing.id}-${index}`} listing={listing} />
-          ))
-        ) : (
-          <View style={styles.emptyListings}>
-            <Text style={styles.emptyTitle}>
-              {user.userType === 'provider' ? 'Aucune annonce' : 
-               user.userType === 'business' ? 'Aucune offre' : 'Aucune demande'}
-            </Text>
-            <Text style={styles.emptyText}>
-              {user.userType === 'provider' 
-                ? "Vous n'avez pas encore publié d'annonces."
-                : user.userType === 'business'
-                ? "Vous n'avez pas encore publié d'offres."
-                : "Vous n'avez pas encore publié de demandes."
-              }
-            </Text>
-            <TouchableOpacity 
-              style={styles.createListingButton}
-              onPress={() => router.push('/(tabs)/create')}
+        <Text style={styles.sectionTitle}>Gérez vos annonces et développez votre activité</Text>
+        <View style={styles.statsGrid}>
+          {statsData.map((stat, index) => (
+            <TouchableOpacity
+              key={`stat-${index}-${stat.label}`}
+              style={styles.statCard}
+              onPress={stat.onPress}
+              activeOpacity={0.7}
             >
-              <Plus size={20} color="#fff" style={{ marginRight: 8 }} />
-              <Text style={styles.createListingText}>{getCreateButtonText()}</Text>
+              <View style={[styles.statIcon, { backgroundColor: `${stat.color}15` }]}>
+                <stat.icon size={24} color={stat.color} />
+              </View>
+              <Text style={styles.statValue}>{stat.value}</Text>
+              <Text style={styles.statLabel}>{stat.label}</Text>
             </TouchableOpacity>
-          </View>
-        )}
+          ))}
+        </View>
       </View>
       
-      {renderQuotesSection()}
+      {/* Menu Items */}
+      <View style={styles.menuContainer}>
+        {menuItems.map((item, index) => (
+          <TouchableOpacity
+            key={`menu-${index}-${item.title}`}
+            style={styles.menuItem}
+            onPress={item.onPress}
+            activeOpacity={0.7}
+          >
+            <View style={styles.menuItemLeft}>
+              <View style={styles.menuIcon}>
+                <item.icon size={20} color={Colors.primary} />
+              </View>
+              <View style={styles.menuText}>
+                <Text style={styles.menuTitle}>{item.title}</Text>
+                <Text style={styles.menuSubtitle}>{item.subtitle}</Text>
+              </View>
+            </View>
+            <ChevronRight size={20} color={Colors.textLight} />
+          </TouchableOpacity>
+        ))}
+      </View>
       
-      <View style={styles.settingsContainer}>
-        <TouchableOpacity 
-          style={styles.settingsButton}
-          onPress={() => router.push('/settings')}
-        >
-          <Settings size={20} color={Colors.text} style={styles.settingsIcon} />
-          <Text style={styles.settingsText}>Paramètres</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.logoutButton}
-          onPress={handleLogout}
-          disabled={isLoading}
-        >
-          <LogOut size={20} color={Colors.error} style={styles.settingsIcon} />
-          <Text style={styles.logoutText}>
-            {isLoading ? 'Déconnexion...' : 'Déconnexion'}
-          </Text>
+      {/* Logout Button */}
+      <View style={styles.logoutContainer}>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <LogOut size={20} color={Colors.error} />
+          <Text style={styles.logoutText}>Se déconnecter</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -516,338 +259,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.backgroundAlt,
   },
   scrollContent: {
-    paddingBottom: 120,
-  },
-  header: {
-    backgroundColor: '#fff',
-    padding: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-  },
-  profileImageContainer: {
-    position: 'relative',
-    marginRight: 16,
-  },
-  profileImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-  },
-  profileImagePlaceholder: {
-    backgroundColor: Colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  profileImageText: {
-    fontSize: 32,
-    fontWeight: '600',
-    color: '#fff',
-  },
-  editImageButton: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    backgroundColor: Colors.secondary,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#fff',
-  },
-  profileInfo: {
-    flex: 1,
-  },
-  name: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: Colors.text,
-    marginBottom: 4,
-  },
-  typeContainer: {
-    backgroundColor: 'rgba(10, 36, 99, 0.1)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 4,
-    alignSelf: 'flex-start',
-    marginBottom: 8,
-  },
-  typeText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: Colors.primary,
-  },
-  ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    padding: 16,
-    gap: 8,
-  },
-  statCard: {
-    flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  statCardNumber: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: Colors.text,
-    marginTop: 8,
-    marginBottom: 4,
-  },
-  statCardLabel: {
-    fontSize: 12,
-    color: Colors.textLight,
-    fontWeight: '500',
-    textAlign: 'center',
-  },
-  actionsContainer: {
-    flexDirection: 'row',
-    padding: 16,
-    paddingTop: 0,
-    gap: 12,
-  },
-  actionButton: {
-    flex: 1,
-  },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginHorizontal: 16,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: Colors.text,
-    marginBottom: 12,
-  },
-  contactItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  contactIcon: {
-    marginRight: 12,
-  },
-  contactText: {
-    fontSize: 16,
-    color: Colors.text,
-  },
-  socialLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 8,
-    marginBottom: 8,
-  },
-  socialLinkText: {
-    fontSize: 16,
-    color: Colors.primary,
-    marginLeft: 12,
-    flex: 1,
-  },
-  description: {
-    fontSize: 16,
-    color: Colors.text,
-    lineHeight: 24,
-  },
-  infoSection: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginHorizontal: 16,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    marginBottom: 8,
-  },
-  infoLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.text,
-    marginRight: 8,
-    width: 100,
-  },
-  infoValue: {
-    fontSize: 16,
-    color: Colors.text,
-    flex: 1,
-  },
-  servicesList: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 12,
-    gap: 8,
-  },
-  serviceTag: {
-    backgroundColor: 'rgba(62, 146, 204, 0.1)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-  },
-  serviceText: {
-    fontSize: 14,
-    color: Colors.secondary,
-    fontWeight: '500',
-  },
-  emptyText: {
-    fontSize: 14,
-    color: Colors.textLight,
-    fontStyle: 'italic',
-  },
-  listingsSection: {
-    padding: 16,
-    paddingTop: 0,
-  },
-  listingsHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  viewAllButton: {
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-  },
-  viewAllText: {
-    fontSize: 14,
-    color: Colors.primary,
-    fontWeight: '600',
-  },
-  emptyListings: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 24,
-    alignItems: 'center',
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: Colors.text,
-    marginBottom: 8,
-  },
-  createListingButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.primary,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-  },
-  createListingText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
-  },
-  quoteCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  quoteHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  quoteTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.text,
-    marginLeft: 8,
-    flex: 1,
-  },
-  statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#fff',
-  },
-  quoteTotal: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: Colors.primary,
-    marginBottom: 4,
-  },
-  quoteDate: {
-    fontSize: 14,
-    color: Colors.textLight,
-  },
-  settingsContainer: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    marginHorizontal: 16,
-    marginBottom: 40,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-    overflow: 'hidden',
-  },
-  settingsButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-  },
-  logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-  },
-  settingsIcon: {
-    marginRight: 12,
-  },
-  settingsText: {
-    fontSize: 16,
-    color: Colors.text,
-  },
-  logoutText: {
-    fontSize: 16,
-    color: Colors.error,
-    fontWeight: '500',
+    paddingBottom: 40,
   },
   loginPrompt: {
     flex: 1,
@@ -856,27 +268,197 @@ const styles = StyleSheet.create({
     padding: 40,
   },
   loginTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: '700',
     color: Colors.text,
     marginBottom: 12,
     textAlign: 'center',
   },
-  loginDescription: {
+  loginSubtitle: {
     fontSize: 16,
     color: Colors.textLight,
     textAlign: 'center',
-    marginBottom: 24,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    gap: 12,
-    width: '100%',
+    marginBottom: 32,
+    lineHeight: 24,
   },
   loginButton: {
+    paddingHorizontal: 32,
+  },
+  headerGradient: {
+    paddingTop: 60,
+    paddingBottom: 40,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+  },
+  profileHeader: {
+    alignItems: 'center',
+  },
+  avatarContainer: {
+    position: 'relative',
+    marginBottom: 16,
+  },
+  avatar: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    borderWidth: 4,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  avatarPlaceholder: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 4,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  avatarText: {
+    fontSize: 36,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  userTypeBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  userTypeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  userName: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#fff',
+    marginBottom: 4,
+  },
+  userEmail: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginBottom: 12,
+  },
+  ratingContainer: {
+    marginTop: 8,
+  },
+  statsContainer: {
+    padding: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.text,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  statCard: {
+    flex: 1,
+    minWidth: '45%',
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  statIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  statValue: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: Colors.text,
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 14,
+    color: Colors.textLight,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  menuContainer: {
+    backgroundColor: '#fff',
+    marginHorizontal: 20,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  menuItemLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
     flex: 1,
   },
-  registerButton: {
+  menuIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  menuText: {
     flex: 1,
+  },
+  menuTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.text,
+    marginBottom: 2,
+  },
+  menuSubtitle: {
+    fontSize: 14,
+    color: Colors.textLight,
+  },
+  logoutContainer: {
+    padding: 20,
+  },
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: Colors.error,
+  },
+  logoutText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.error,
+    marginLeft: 8,
   },
 });

@@ -28,7 +28,7 @@ export default function RatingStars({
     for (let i = 0; i < fullStars; i++) {
       stars.push(
         <Star
-          key={i}
+          key={`full-${i}`}
           size={starSize}
           color="#FFD700"
           fill="#FFD700"
