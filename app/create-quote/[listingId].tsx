@@ -207,7 +207,7 @@ export default function CreateQuoteScreen() {
     }
   };
   
-  // Handle submit - FIXED: Ensure quote appears in conversation history
+  // CRITICAL FIX: Handle submit with proper conversation history integration
   const handleSubmit = async () => {
     if (!title.trim()) {
       Alert.alert('Erreur', 'Veuillez saisir un titre pour le devis');
@@ -227,10 +227,19 @@ export default function CreateQuoteScreen() {
     try {
       const validUntil = Date.now() + (parseInt(validDays) * 24 * 60 * 60 * 1000);
       
+      // Determine the target user ID
+      const targetUserId = listing?.createdBy || conversationParticipant?.id;
+      
+      if (!targetUserId) {
+        Alert.alert('Erreur', 'Impossible de déterminer le destinataire du devis');
+        return;
+      }
+      
+      // Create the quote
       const quote = await createQuote({
         listingId: listing?.id,
         providerId: user.id,
-        clientId: listing?.createdBy || conversationParticipant?.id || 'unknown',
+        clientId: targetUserId,
         title,
         description,
         items,
@@ -243,24 +252,22 @@ export default function CreateQuoteScreen() {
       // Send the quote immediately
       await sendQuote(quote.id);
       
-      // CRITICAL FIX: Ensure quote message is properly added to conversation
-      const targetUserId = listing?.createdBy || conversationParticipant?.id;
-      if (targetUserId) {
-        try {
-          // Get or create conversation
-          let conversation = getConversationByParticipant(targetUserId);
-          let conversationId: string;
-          
-          if (!conversation) {
-            console.log('Creating new conversation for quote with user:', targetUserId);
-            conversationId = await createConversation(targetUserId);
-          } else {
-            conversationId = conversation.id;
-            console.log('Using existing conversation:', conversationId);
-          }
-          
-          // Send quote message with proper formatting
-          const quoteMessage = `📋 **Nouveau devis reçu**
+      // CRITICAL FIX: Ensure quote message is properly added to conversation history
+      try {
+        // Get or create conversation with the target user
+        let conversation = getConversationByParticipant(targetUserId);
+        let conversationId: string;
+        
+        if (!conversation) {
+          console.log('Creating new conversation for quote with user:', targetUserId);
+          conversationId = await createConversation(targetUserId);
+        } else {
+          conversationId = conversation.id;
+          console.log('Using existing conversation:', conversationId);
+        }
+        
+        // Send quote notification message with proper formatting
+        const quoteMessage = `📋 **Nouveau devis reçu**
 
 **${title}**
 ${description}
@@ -270,29 +277,29 @@ ${description}
 
 Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
 
-          console.log('Sending quote message to conversation:', conversationId);
-          await sendMessage(conversationId, quoteMessage, targetUserId);
-          
-          // Update contact with quote info
-          const targetUser = allUsers.find(u => u.id === targetUserId);
-          if (targetUser) {
-            addContact({
-              participantId: targetUserId,
-              participantName: targetUser.name,
-              participantImage: targetUser.profileImage,
-              participantType: targetUser.userType === 'provider' ? 'provider' : 
-                              targetUser.userType === 'business' ? 'business' : 'client',
-              lastMessage: `📋 Devis envoyé: ${title} - ${quote.total.toFixed(2)}€`,
-              unread: 0,
-              timestamp: Date.now(),
-            });
-          }
-          
-          console.log('Quote message sent successfully to conversation');
-        } catch (messageError) {
-          console.error('Error sending quote message:', messageError);
-          // Don't fail the whole process if message sending fails
+        console.log('Sending quote message to conversation:', conversationId);
+        await sendMessage(conversationId, quoteMessage, targetUserId);
+        
+        // Update contact with quote info
+        const targetUser = allUsers.find(u => u.id === targetUserId);
+        if (targetUser) {
+          addContact({
+            participantId: targetUserId,
+            participantName: targetUser.name,
+            participantImage: targetUser.profileImage,
+            participantType: targetUser.userType === 'provider' ? 'provider' : 
+                            targetUser.userType === 'business' ? 'business' : 'client',
+            lastMessage: `📋 Devis envoyé: ${title} - ${quote.total.toFixed(2)}€`,
+            unread: 0,
+            timestamp: Date.now(),
+          });
         }
+        
+        console.log('Quote message sent successfully to conversation');
+      } catch (messageError) {
+        console.error('Error sending quote message:', messageError);
+        // Don't fail the whole process if message sending fails
+        Alert.alert('Attention', 'Devis créé mais impossible d\'envoyer la notification. Le devis est disponible dans la section "Devis".');
       }
       
       Alert.alert('Succès', 'Devis créé et envoyé avec succès', [

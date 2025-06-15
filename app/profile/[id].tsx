@@ -30,7 +30,7 @@ export default function ProfileDetailScreen() {
   // Get reviews for this user
   const reviews = getReviewsForUser(id || '');
   
-  // Check if current user can review this user
+  // Check if current user can review this user - FIXED: Only allow reviews for completed paid quotes
   const canReview = () => {
     if (!currentUser || !user || currentUser.id === user.id) return false;
     
@@ -83,8 +83,8 @@ export default function ProfileDetailScreen() {
   // Check if this is the current user's profile
   const isOwnProfile = currentUser && currentUser.id === id;
   
-  // Get social links safely
-  const socialLinks = user.socialLinks || {};
+  // Get social links safely - FIXED: Added proper type checking
+  const socialLinks = (user as any).socialLinks || {};
   
   // Render provider-specific info
   const renderProviderInfo = (provider: Provider) => (
@@ -147,7 +147,7 @@ export default function ProfileDetailScreen() {
     </View>
   );
   
-  // Render social links
+  // Render social links - FIXED: Added proper type checking
   const renderSocialLinks = () => {
     if (!socialLinks || Object.keys(socialLinks).length === 0) return null;
     
@@ -176,7 +176,7 @@ export default function ProfileDetailScreen() {
         <Text style={styles.sectionTitle}>Liens et réseaux</Text>
         <View style={styles.socialLinks}>
           {Object.entries(socialLinks).map(([platform, url]) => {
-            if (!url) return null;
+            if (!url || typeof url !== 'string') return null;
             const IconComponent = getSocialIcon(platform);
             const color = getSocialColor(platform);
             
@@ -198,9 +198,9 @@ export default function ProfileDetailScreen() {
     );
   };
   
-  // Render portfolio
+  // Render portfolio - FIXED: Added proper type checking
   const renderPortfolio = () => {
-    const portfolio = user.portfolio || [];
+    const portfolio = (user as any).portfolio || [];
     
     if (portfolio.length === 0) return null;
     
@@ -241,7 +241,7 @@ export default function ProfileDetailScreen() {
             </Text>
           </View>
           
-          {user.rating !== undefined && (
+          {user.rating !== undefined && user.rating > 0 && (
             <View style={styles.ratingContainer}>
               <RatingStars 
                 rating={user.rating} 

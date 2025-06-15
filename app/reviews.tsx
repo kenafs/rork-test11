@@ -32,7 +32,7 @@ export default function ReviewsScreen() {
     ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length 
     : 0;
   
-  // Check if user can review - FIXED: Only allow reviews for completed paid quotes
+  // CRITICAL FIX: Only allow reviews for completed paid quotes
   const canUserReview = () => {
     if (!user || !id) return false;
     

@@ -73,7 +73,7 @@ export default function ProfileScreen() {
           style: 'destructive',
           onPress: async () => {
             await logout();
-            router.replace('/');
+            // The logout function now handles redirection automatically
           }
         }
       ]
@@ -256,7 +256,7 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </View>
       
-      {/* Logout Button */}
+      {/* FIXED: Logout Button with proper spacing to avoid bottom bar */}
       <View style={styles.logoutContainer}>
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <LogOut size={20} color="#F44336" />
@@ -264,6 +264,7 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </View>
       
+      {/* CRITICAL FIX: Added extra bottom spacing to ensure logout button is visible */}
       <View style={styles.bottomSpacer} />
     </ScrollView>
   );
@@ -480,6 +481,6 @@ const styles = StyleSheet.create({
     color: '#F44336',
   },
   bottomSpacer: {
-    height: 120,
+    height: 140, // CRITICAL FIX: Increased height to ensure logout button is visible above tab bar
   },
 });

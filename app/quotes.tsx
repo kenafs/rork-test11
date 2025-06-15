@@ -21,7 +21,7 @@ export default function QuotesScreen() {
     fetchQuotes();
   }, []);
   
-  // Get quotes based on user type
+  // FIXED: Get quotes based on user type
   const userQuotes = user ? getQuotesForUser(user.id) : [];
   
   const getStatusColor = (status: string) => {
@@ -430,7 +430,7 @@ export default function QuotesScreen() {
         )}
       </ScrollView>
 
-      {/* Quote Preview Modal */}
+      {/* Quote Preview Modal - FIXED: Added PDF preview functionality */}
       <Modal
         visible={showPreview}
         animationType="slide"

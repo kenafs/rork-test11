@@ -1,6 +1,7 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Image } from 'expo-image';
 import { Listing } from '@/types';
 import Colors from '@/constants/colors';
 import RatingStars from './RatingStars';
@@ -66,7 +67,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
           </View>
           <View style={styles.creatorDetails}>
             <Text style={styles.creatorName}>{listing.creatorName}</Text>
-            {listing.creatorRating && (
+            {listing.creatorRating !== undefined && listing.creatorRating > 0 && (
               <RatingStars 
                 rating={listing.creatorRating} 
                 size="small" 

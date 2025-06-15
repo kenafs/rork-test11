@@ -20,7 +20,6 @@ interface QuotesState {
   getQuotesForUser: (userId: string) => Quote[];
   getQuotesByProvider: (providerId: string) => Quote[];
   getQuotesByClient: (clientId: string) => Quote[];
-  getUserQuotes: () => Quote[];
   canReview: (quoteId: string) => boolean;
   getCompletedQuotesBetweenUsers: (userId1: string, userId2: string) => Quote[];
 }
@@ -163,6 +162,11 @@ export const useQuotes = create<QuotesState>()(
       
       getQuotesForUser: (userId: string) => {
         const quotes = get().quotes || [];
+        // FIXED: Ensure quotes is an array before filtering
+        if (!Array.isArray(quotes)) {
+          console.warn('Quotes is not an array:', quotes);
+          return [];
+        }
         return quotes.filter(quote => 
           quote.providerId === userId || quote.clientId === userId
         );
@@ -170,16 +174,18 @@ export const useQuotes = create<QuotesState>()(
       
       getQuotesByProvider: (providerId: string) => {
         const quotes = get().quotes || [];
+        if (!Array.isArray(quotes)) {
+          return [];
+        }
         return quotes.filter(quote => quote.providerId === providerId);
       },
       
       getQuotesByClient: (clientId: string) => {
         const quotes = get().quotes || [];
+        if (!Array.isArray(quotes)) {
+          return [];
+        }
         return quotes.filter(quote => quote.clientId === clientId);
-      },
-      
-      getUserQuotes: () => {
-        return get().quotes || [];
       },
       
       canReview: (quoteId: string) => {
@@ -189,6 +195,9 @@ export const useQuotes = create<QuotesState>()(
       
       getCompletedQuotesBetweenUsers: (userId1: string, userId2: string) => {
         const quotes = get().quotes || [];
+        if (!Array.isArray(quotes)) {
+          return [];
+        }
         return quotes.filter(quote => 
           quote.status === 'completed' &&
           ((quote.providerId === userId1 && quote.clientId === userId2) ||
