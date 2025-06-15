@@ -28,7 +28,7 @@ export default function RatingStars({
     for (let i = 0; i < fullStars; i++) {
       stars.push(
         <Star
-          key={`full-${i}`}
+          key={`full-star-${i}`}
           size={starSize}
           color="#FFD700"
           fill="#FFD700"
@@ -40,7 +40,7 @@ export default function RatingStars({
     if (hasHalfStar) {
       stars.push(
         <Star
-          key="half"
+          key="half-star"
           size={starSize}
           color="#FFD700"
           fill="#FFD700"
@@ -54,7 +54,7 @@ export default function RatingStars({
     for (let i = 0; i < emptyStars; i++) {
       stars.push(
         <Star
-          key={`empty-${i}`}
+          key={`empty-star-${i}`}
           size={starSize}
           color="#E5E7EB"
           fill="transparent"

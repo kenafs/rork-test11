@@ -84,7 +84,7 @@ export default function ProfileDetailScreen() {
       <Text style={styles.sectionTitle}>Services proposés</Text>
       <View style={styles.servicesList}>
         {provider.services.map((service, index) => (
-          <View key={index} style={styles.serviceTag}>
+          <View key={`service-${provider.id}-${index}`} style={styles.serviceTag}>
             <Text style={styles.serviceText}>{service}</Text>
           </View>
         ))}
@@ -129,7 +129,7 @@ export default function ProfileDetailScreen() {
           <Text style={styles.infoLabel}>Équipements:</Text>
           <View style={styles.servicesList}>
             {venue.amenities.map((amenity, index) => (
-              <View key={index} style={styles.serviceTag}>
+              <View key={`amenity-${venue.id}-${index}`} style={styles.serviceTag}>
                 <Text style={styles.serviceText}>{amenity}</Text>
               </View>
             ))}
@@ -174,7 +174,7 @@ export default function ProfileDetailScreen() {
             
             return (
               <TouchableOpacity
-                key={platform}
+                key={`social-${platform}`}
                 style={[styles.socialButton, { borderColor: color }]}
                 onPress={() => handleSocialLink(url)}
               >
@@ -206,7 +206,7 @@ export default function ProfileDetailScreen() {
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View style={styles.portfolioGrid}>
             {portfolio.map((imageUrl, index) => (
-              <TouchableOpacity key={index} style={styles.portfolioItem}>
+              <TouchableOpacity key={`portfolio-${index}`} style={styles.portfolioItem}>
                 <Image source={{ uri: imageUrl }} style={styles.portfolioImage} />
               </TouchableOpacity>
             ))}
@@ -291,7 +291,7 @@ export default function ProfileDetailScreen() {
         <View style={styles.listingsSection}>
           <Text style={styles.sectionTitle}>Annonces de {user.name}</Text>
           {userListings.slice(0, 3).map(listing => (
-            <ListingCard key={listing.id} listing={listing} />
+            <ListingCard key={`user-listing-${listing.id}`} listing={listing} />
           ))}
           {userListings.length > 3 && (
             <Button 
@@ -311,7 +311,7 @@ export default function ProfileDetailScreen() {
           {isAuthenticated && !isOwnProfile && (
             <TouchableOpacity 
               style={styles.writeReviewButton}
-              onPress={() => router.push(`/write-review/${user.id}`)}
+              onPress={() => router.push(`/reviews?id=${user.id}&type=${user.userType}`)}
             >
               <Star size={16} color={Colors.primary} />
               <Text style={styles.writeReviewText}>Écrire un avis</Text>
@@ -321,7 +321,7 @@ export default function ProfileDetailScreen() {
         
         {reviews.length > 0 ? (
           reviews.map(review => (
-            <View key={review.id} style={styles.reviewCard}>
+            <View key={`profile-review-${review.id}`} style={styles.reviewCard}>
               <View style={styles.reviewHeader}>
                 <View style={styles.reviewerInfo}>
                   {review.reviewerImage ? (
@@ -338,7 +338,7 @@ export default function ProfileDetailScreen() {
                   )}
                   <Text style={styles.reviewerName}>{review.reviewerName}</Text>
                 </View>
-                <RatingStars rating={review.rating} size="small" showCount={false} />
+                <RatingStars rating={review.rating} size="small" showNumber={false} />
               </View>
               <Text style={styles.reviewComment}>{review.comment}</Text>
               <Text style={styles.reviewDate}>

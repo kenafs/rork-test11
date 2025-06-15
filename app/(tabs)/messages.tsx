@@ -157,7 +157,7 @@ export default function MessagesScreen() {
       {conversations.length > 0 ? (
         <FlatList
           data={conversations}
-          keyExtractor={(item) => item.participantId}
+          keyExtractor={(item) => `conversation-${item.participantId}`}
           renderItem={renderConversation}
           style={styles.conversationsList}
           contentContainerStyle={styles.conversationsContent}

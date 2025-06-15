@@ -5,14 +5,14 @@ import { useAuth } from '@/hooks/useAuth';
 import { useQuotes } from '@/hooks/useQuotes';
 import Colors from '@/constants/colors';
 import Button from '@/components/Button';
-import { FileText, Calendar, Euro, CheckCircle, XCircle, Clock, Eye } from 'lucide-react-native';
+import { FileText, Calendar, Euro, CheckCircle, XCircle, Clock, Eye, CreditCard, CheckSquare } from 'lucide-react-native';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 
 export default function QuotesScreen() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
-  const { getUserQuotes, getQuotesForUser, acceptQuote, rejectQuote, fetchQuotes } = useQuotes();
+  const { getUserQuotes, getQuotesForUser, acceptQuote, rejectQuote, payQuote, completeQuote, fetchQuotes } = useQuotes();
   
   useEffect(() => {
     fetchQuotes();
@@ -31,6 +31,8 @@ export default function QuotesScreen() {
       case 'rejected': return '#EF4444';
       case 'pending': return '#F59E0B';
       case 'draft': return '#6B7280';
+      case 'paid': return '#8B5CF6';
+      case 'completed': return '#059669';
       default: return Colors.textLight;
     }
   };
@@ -41,6 +43,8 @@ export default function QuotesScreen() {
       case 'rejected': return 'Refusé';
       case 'pending': return 'En attente';
       case 'draft': return 'Brouillon';
+      case 'paid': return 'Payé';
+      case 'completed': return 'Terminé';
       default: return status;
     }
   };
@@ -51,6 +55,8 @@ export default function QuotesScreen() {
       case 'rejected': return XCircle;
       case 'pending': return Clock;
       case 'draft': return FileText;
+      case 'paid': return CreditCard;
+      case 'completed': return CheckSquare;
       default: return FileText;
     }
   };
@@ -79,6 +85,48 @@ export default function QuotesScreen() {
               Alert.alert('Devis refusé', 'Le devis a été refusé');
             } catch (error) {
               Alert.alert('Erreur', 'Impossible de refuser le devis');
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handlePayQuote = async (quoteId: string) => {
+    Alert.alert(
+      'Payer le devis',
+      'Confirmer le paiement de ce devis ?',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        { 
+          text: 'Payer', 
+          onPress: async () => {
+            try {
+              await payQuote(quoteId);
+              Alert.alert('Succès', 'Paiement effectué avec succès');
+            } catch (error) {
+              Alert.alert('Erreur', 'Impossible d\'effectuer le paiement');
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handleCompleteQuote = async (quoteId: string) => {
+    Alert.alert(
+      'Marquer comme terminé',
+      'Confirmer que la prestation est terminée ?',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        { 
+          text: 'Terminer', 
+          onPress: async () => {
+            try {
+              await completeQuote(quoteId);
+              Alert.alert('Succès', 'Prestation marquée comme terminée');
+            } catch (error) {
+              Alert.alert('Erreur', 'Impossible de marquer comme terminé');
             }
           }
         }
@@ -256,7 +304,7 @@ export default function QuotesScreen() {
             const StatusIcon = getStatusIcon(quote.status);
             
             return (
-              <View key={quote.id} style={styles.quoteCard}>
+              <View key={`quotes-screen-${quote.id}`} style={styles.quoteCard}>
                 <View style={styles.quoteHeader}>
                   <View style={styles.quoteInfo}>
                     <Text style={styles.quoteTitle}>Devis #{quote.id.slice(-6)}</Text>
@@ -312,6 +360,36 @@ export default function QuotesScreen() {
                         <Text style={styles.rejectButtonText}>Refuser</Text>
                       </TouchableOpacity>
                     </>
+                  )}
+                  
+                  {user.userType === 'client' && quote.status === 'accepted' && (
+                    <TouchableOpacity 
+                      style={styles.payButton}
+                      onPress={() => handlePayQuote(quote.id)}
+                    >
+                      <CreditCard size={16} color="#fff" />
+                      <Text style={styles.payButtonText}>Payer</Text>
+                    </TouchableOpacity>
+                  )}
+                  
+                  {user.userType === 'provider' && quote.status === 'paid' && (
+                    <TouchableOpacity 
+                      style={styles.completeButton}
+                      onPress={() => handleCompleteQuote(quote.id)}
+                    >
+                      <CheckSquare size={16} color="#fff" />
+                      <Text style={styles.completeButtonText}>Terminer</Text>
+                    </TouchableOpacity>
+                  )}
+                  
+                  {quote.status === 'completed' && (
+                    <TouchableOpacity 
+                      style={styles.reviewButton}
+                      onPress={() => router.push(`/reviews?id=${user.userType === 'client' ? quote.providerId : quote.clientId}&type=provider&quoteId=${quote.id}`)}
+                    >
+                      <CheckSquare size={16} color={Colors.primary} />
+                      <Text style={styles.reviewButtonText}>Laisser un avis</Text>
+                    </TouchableOpacity>
                   )}
                 </View>
               </View>
@@ -488,6 +566,48 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#fff',
+  },
+  payButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#8B5CF6',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+    gap: 4,
+  },
+  payButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  completeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#059669',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+    gap: 4,
+  },
+  completeButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  reviewButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+    gap: 4,
+  },
+  reviewButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.primary,
   },
   emptyState: {
     alignItems: 'center',

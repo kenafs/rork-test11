@@ -1,16 +1,20 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, FlatList, TouchableOpacity, Image, TextInput } from 'react-native';
+import { StyleSheet, View, Text, FlatList, TouchableOpacity, Image, TextInput, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
+import { useAuth } from '@/hooks/useAuth';
+import { useQuotes } from '@/hooks/useQuotes';
 import { mockReviews } from '@/mocks/reviews';
 import { Review } from '@/types';
 import Colors from '@/constants/colors';
 import RatingStars from '@/components/RatingStars';
 import Button from '@/components/Button';
-import { ThumbsUp, MessageCircle, User, Send } from 'lucide-react-native';
+import { ThumbsUp, MessageCircle, User, Send, AlertCircle } from 'lucide-react-native';
 
 export default function ReviewsScreen() {
-  const { id, type } = useLocalSearchParams<{ id: string; type: string }>();
+  const { id, type, quoteId } = useLocalSearchParams<{ id: string; type: string; quoteId?: string }>();
   const router = useRouter();
+  const { user } = useAuth();
+  const { canReview } = useQuotes();
   const [newReview, setNewReview] = useState('');
   const [newRating, setNewRating] = useState(5);
   
@@ -27,6 +31,22 @@ export default function ReviewsScreen() {
     ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length 
     : 0;
   
+  // Check if user can review
+  const canUserReview = () => {
+    if (!user) return false;
+    
+    // Prevent self-reviews
+    if (user.id === id) return false;
+    
+    // If quoteId is provided, check if quote is completed
+    if (quoteId) {
+      return canReview(quoteId);
+    }
+    
+    // For general reviews, allow if user is authenticated and not reviewing themselves
+    return true;
+  };
+  
   // Format date
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleDateString('fr-FR', {
@@ -34,6 +54,45 @@ export default function ReviewsScreen() {
       month: 'long',
       year: 'numeric',
     });
+  };
+  
+  // Handle review submission
+  const handleSubmitReview = () => {
+    if (!user) {
+      Alert.alert('Connexion requise', 'Vous devez être connecté pour laisser un avis');
+      return;
+    }
+    
+    if (!canUserReview()) {
+      if (user.id === id) {
+        Alert.alert('Action non autorisée', 'Vous ne pouvez pas vous noter vous-même');
+        return;
+      }
+      
+      if (quoteId && !canReview(quoteId)) {
+        Alert.alert(
+          'Avis non autorisé', 
+          'Vous ne pouvez laisser un avis que lorsque la prestation est terminée et payée'
+        );
+        return;
+      }
+    }
+    
+    if (!newReview.trim()) {
+      Alert.alert('Erreur', 'Veuillez saisir un commentaire');
+      return;
+    }
+    
+    // Here you would normally submit the review to your backend
+    Alert.alert('Succès', 'Votre avis a été publié avec succès', [
+      {
+        text: 'OK',
+        onPress: () => {
+          setNewReview('');
+          setNewRating(5);
+        }
+      }
+    ]);
   };
   
   // Render review item
@@ -85,7 +144,7 @@ export default function ReviewsScreen() {
       <View style={styles.ratingStars}>
         {[1, 2, 3, 4, 5].map((star) => (
           <TouchableOpacity
-            key={star}
+            key={`rating-star-${star}`}
             onPress={() => setNewRating(star)}
             style={styles.starButton}
           >
@@ -100,6 +159,75 @@ export default function ReviewsScreen() {
       </View>
     </View>
   );
+  
+  // Render review form
+  const renderReviewForm = () => {
+    if (!user) {
+      return (
+        <View style={styles.loginPrompt}>
+          <AlertCircle size={24} color={Colors.textLight} />
+          <Text style={styles.loginPromptText}>
+            Connectez-vous pour laisser un avis
+          </Text>
+          <Button
+            title="Se connecter"
+            onPress={() => router.push('/(auth)/login')}
+            style={styles.loginButton}
+          />
+        </View>
+      );
+    }
+    
+    if (!canUserReview()) {
+      if (user.id === id) {
+        return (
+          <View style={styles.restrictionNotice}>
+            <AlertCircle size={24} color={Colors.textLight} />
+            <Text style={styles.restrictionText}>
+              Vous ne pouvez pas vous noter vous-même
+            </Text>
+          </View>
+        );
+      }
+      
+      if (quoteId && !canReview(quoteId)) {
+        return (
+          <View style={styles.restrictionNotice}>
+            <AlertCircle size={24} color={Colors.textLight} />
+            <Text style={styles.restrictionText}>
+              Vous pourrez laisser un avis une fois la prestation terminée et payée
+            </Text>
+          </View>
+        );
+      }
+    }
+    
+    return (
+      <View style={styles.addReviewContainer}>
+        <Text style={styles.addReviewTitle}>Laisser un avis</Text>
+        
+        {renderRatingSelector()}
+        
+        <TextInput
+          style={styles.reviewInput}
+          value={newReview}
+          onChangeText={setNewReview}
+          placeholder="Partagez votre expérience..."
+          multiline
+          numberOfLines={4}
+          textAlignVertical="top"
+          placeholderTextColor={Colors.textLight}
+        />
+        
+        <Button
+          title="Publier l'avis"
+          onPress={handleSubmitReview}
+          disabled={!newReview.trim()}
+          style={styles.submitButton}
+        />
+      </View>
+    );
+  };
   
   return (
     <View style={styles.container}>
@@ -126,7 +254,7 @@ export default function ReviewsScreen() {
       
       <FlatList
         data={reviews}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => `review-${item.id}`}
         renderItem={renderReview}
         contentContainerStyle={styles.reviewsList}
         ListEmptyComponent={
@@ -138,35 +266,7 @@ export default function ReviewsScreen() {
             </Text>
           </View>
         }
-        ListFooterComponent={
-          <View style={styles.addReviewContainer}>
-            <Text style={styles.addReviewTitle}>Laisser un avis</Text>
-            
-            {renderRatingSelector()}
-            
-            <TextInput
-              style={styles.reviewInput}
-              value={newReview}
-              onChangeText={setNewReview}
-              placeholder="Partagez votre expérience..."
-              multiline
-              numberOfLines={4}
-              textAlignVertical="top"
-              placeholderTextColor={Colors.textLight}
-            />
-            
-            <Button
-              title="Publier l'avis"
-              onPress={() => {
-                // Handle review submission
-                setNewReview('');
-                setNewRating(5);
-              }}
-              disabled={!newReview.trim()}
-              style={styles.submitButton}
-            />
-          </View>
-        }
+        ListFooterComponent={renderReviewForm()}
       />
     </View>
   );
@@ -365,5 +465,45 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     backgroundColor: Colors.primary,
+  },
+  loginPrompt: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 20,
+    marginTop: 16,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  loginPromptText: {
+    fontSize: 16,
+    color: Colors.textLight,
+    marginVertical: 12,
+    textAlign: 'center',
+  },
+  loginButton: {
+    paddingHorizontal: 24,
+  },
+  restrictionNotice: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 20,
+    marginTop: 16,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  restrictionText: {
+    fontSize: 16,
+    color: Colors.textLight,
+    marginTop: 12,
+    textAlign: 'center',
+    lineHeight: 22,
   },
 });

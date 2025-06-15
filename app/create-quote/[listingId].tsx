@@ -74,7 +74,7 @@ export default function CreateQuoteScreen() {
   // Add new item
   const addItem = () => {
     const newItem: QuoteItem = {
-      id: Date.now().toString(),
+      id: `item-${Date.now()}-${Math.random()}`,
       name: '',
       description: '',
       quantity: 1,
@@ -243,7 +243,7 @@ export default function CreateQuoteScreen() {
       // Send the quote immediately
       await sendQuote(quote.id);
       
-      // CRITICAL FIX: Send quote message to conversation
+      // CRITICAL FIX: Ensure quote message is properly added to conversation
       const targetUserId = listing?.createdBy || conversationParticipant?.id;
       if (targetUserId) {
         try {
@@ -252,9 +252,11 @@ export default function CreateQuoteScreen() {
           let conversationId: string;
           
           if (!conversation) {
+            console.log('Creating new conversation for quote with user:', targetUserId);
             conversationId = await createConversation(targetUserId);
           } else {
             conversationId = conversation.id;
+            console.log('Using existing conversation:', conversationId);
           }
           
           // Send quote message with proper formatting
@@ -268,9 +270,10 @@ ${description}
 
 Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
 
+          console.log('Sending quote message to conversation:', conversationId);
           await sendMessage(conversationId, quoteMessage, targetUserId);
           
-          // Update contact
+          // Update contact with quote info
           const targetUser = allUsers.find(u => u.id === targetUserId);
           if (targetUser) {
             addContact({
@@ -284,8 +287,11 @@ Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
               timestamp: Date.now(),
             });
           }
+          
+          console.log('Quote message sent successfully to conversation');
         } catch (messageError) {
           console.error('Error sending quote message:', messageError);
+          // Don't fail the whole process if message sending fails
         }
       }
       
@@ -387,7 +393,7 @@ Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
             </View>
             
             {items.map((item, index) => (
-              <View key={item.id} style={styles.itemCard}>
+              <View key={`quote-item-${item.id}`} style={styles.itemCard}>
                 <View style={styles.itemHeader}>
                   <Text style={styles.itemNumber}>Élément {index + 1}</Text>
                   {items.length > 1 && (

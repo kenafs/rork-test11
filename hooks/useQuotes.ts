@@ -15,10 +15,13 @@ interface QuotesState {
   acceptQuote: (id: string) => Promise<boolean>;
   rejectQuote: (id: string) => Promise<boolean>;
   sendQuote: (id: string) => Promise<boolean>;
+  payQuote: (id: string) => Promise<boolean>;
+  completeQuote: (id: string) => Promise<boolean>;
   getQuotesByUser: (userId: string) => Quote[];
   getQuotesForUser: (userId: string) => Quote[];
   getUserQuotes: () => Quote[];
   getAllQuotes: () => Quote[];
+  canReview: (quoteId: string) => boolean;
 }
 
 export const useQuotes = create<QuotesState>()(
@@ -102,30 +105,40 @@ export const useQuotes = create<QuotesState>()(
             return false;
           }
           
-          const userQuotes = get().quotes[user.id] || [];
-          const quoteIndex = userQuotes.findIndex(q => q.id === id);
+          // Find quote in any user's quotes (for cross-user updates)
+          const allQuotes = get().quotes;
+          let foundQuote = false;
           
-          if (quoteIndex === -1) {
+          Object.keys(allQuotes).forEach(userId => {
+            const userQuotes = allQuotes[userId] || [];
+            const quoteIndex = userQuotes.findIndex(q => q.id === id);
+            
+            if (quoteIndex !== -1) {
+              const updatedQuotes = [...userQuotes];
+              updatedQuotes[quoteIndex] = {
+                ...updatedQuotes[quoteIndex],
+                ...updates,
+                updatedAt: Date.now(),
+              };
+              
+              set(state => ({
+                quotes: {
+                  ...state.quotes,
+                  [userId]: updatedQuotes,
+                },
+                isLoading: false,
+              }));
+              
+              foundQuote = true;
+              console.log('Devis mis à jour:', updatedQuotes[quoteIndex]);
+            }
+          });
+          
+          if (!foundQuote) {
             set({ isLoading: false });
             return false;
           }
           
-          const updatedQuotes = [...userQuotes];
-          updatedQuotes[quoteIndex] = {
-            ...updatedQuotes[quoteIndex],
-            ...updates,
-            updatedAt: Date.now(),
-          };
-          
-          set(state => ({
-            quotes: {
-              ...state.quotes,
-              [user.id]: updatedQuotes,
-            },
-            isLoading: false,
-          }));
-          
-          console.log('Devis mis à jour:', updatedQuotes[quoteIndex]);
           return true;
         } catch (error) {
           console.error('Error updating quote:', error);
@@ -188,6 +201,28 @@ export const useQuotes = create<QuotesState>()(
           console.log('Devis rejeté:', id);
         }
         return result;
+      },
+      
+      payQuote: async (id: string) => {
+        const result = await get().updateQuote(id, { status: 'paid' });
+        if (result) {
+          console.log('Devis payé:', id);
+        }
+        return result;
+      },
+      
+      completeQuote: async (id: string) => {
+        const result = await get().updateQuote(id, { status: 'completed' });
+        if (result) {
+          console.log('Devis terminé:', id);
+        }
+        return result;
+      },
+      
+      canReview: (quoteId: string) => {
+        const allQuotes = Object.values(get().quotes).flat();
+        const quote = allQuotes.find(q => q.id === quoteId);
+        return quote ? quote.status === 'completed' : false;
       },
       
       getUserQuotes: () => {

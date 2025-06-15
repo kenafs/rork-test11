@@ -83,7 +83,7 @@ export default function ProfileScreen() {
         router.push('/favorites');
         break;
       case 'rating':
-        router.push('/reviews');
+        router.push(`/reviews?id=${user?.id}&type=${user?.userType}`);
         break;
       case 'listings':
         router.push('/my-listings');
@@ -127,7 +127,7 @@ export default function ProfileScreen() {
       <Text style={styles.sectionTitle}>Services proposés</Text>
       <View style={styles.servicesList}>
         {provider.services && provider.services.length > 0 ? provider.services.map((service, index) => (
-          <View key={`service-${index}`} style={styles.serviceTag}>
+          <View key={`profile-service-${index}`} style={styles.serviceTag}>
             <Text style={styles.serviceText}>{service}</Text>
           </View>
         )) : (
@@ -173,7 +173,7 @@ export default function ProfileScreen() {
           <Text style={styles.infoLabel}>Équipements:</Text>
           <View style={styles.servicesList}>
             {venue.amenities.map((amenity, index) => (
-              <View key={`amenity-${index}`} style={styles.serviceTag}>
+              <View key={`profile-amenity-${index}`} style={styles.serviceTag}>
                 <Text style={styles.serviceText}>{amenity}</Text>
               </View>
             ))}
@@ -243,7 +243,7 @@ export default function ProfileScreen() {
         
         {quotes.length > 0 ? (
           quotes.map((quote, index) => (
-            <View key={`quote-${quote.id}-${index}`} style={styles.quoteCard}>
+            <View key={`profile-quote-${quote.id}-${index}`} style={styles.quoteCard}>
               <View style={styles.quoteHeader}>
                 <FileText size={20} color={Colors.primary} />
                 <Text style={styles.quoteTitle}>Devis #{quote.id.slice(-6)}</Text>
@@ -479,7 +479,7 @@ export default function ProfileScreen() {
         
         {userListings.length > 0 ? (
           userListings.map((listing, index) => (
-            <ListingCard key={`user-listing-${listing.id}-${index}`} listing={listing} />
+            <ListingCard key={`profile-user-listing-${listing.id}-${index}`} listing={listing} />
           ))
         ) : (
           <View style={styles.emptyListings}>
