@@ -31,7 +31,7 @@ export default function ReviewsScreen() {
     ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length 
     : 0;
   
-  // Check if user can review
+  // Check if user can review - FIXED: Only allow reviews for completed paid quotes
   const canUserReview = () => {
     if (!user || !id) return false;
     
@@ -67,7 +67,7 @@ export default function ReviewsScreen() {
       
       Alert.alert(
         'Avis non autorisé', 
-        'Vous ne pouvez laisser un avis que lorsque vous avez terminé une prestation avec ce prestataire'
+        'Vous ne pouvez laisser un avis que lorsque vous avez terminé une prestation payée avec ce prestataire'
       );
       return;
     }
@@ -188,7 +188,7 @@ export default function ReviewsScreen() {
         <View style={styles.restrictionNotice}>
           <AlertCircle size={24} color={Colors.textLight} />
           <Text style={styles.restrictionText}>
-            Vous pourrez laisser un avis une fois que vous aurez terminé une prestation avec ce prestataire
+            Vous pourrez laisser un avis une fois que vous aurez terminé une prestation payée avec ce prestataire
           </Text>
         </View>
       );

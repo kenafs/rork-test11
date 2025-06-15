@@ -20,6 +20,7 @@ interface QuotesState {
   getQuotesForUser: (userId: string) => Quote[];
   getQuotesByProvider: (providerId: string) => Quote[];
   getQuotesByClient: (clientId: string) => Quote[];
+  getUserQuotes: () => Quote[];
   canReview: (quoteId: string) => boolean;
   getCompletedQuotesBetweenUsers: (userId1: string, userId2: string) => Quote[];
 }
@@ -176,6 +177,12 @@ export const useQuotes = create<QuotesState>()(
         const state = get();
         const quotes = Array.isArray(state.quotes) ? state.quotes : [];
         return quotes.filter(quote => quote.clientId === clientId);
+      },
+      
+      getUserQuotes: () => {
+        const state = get();
+        const quotes = Array.isArray(state.quotes) ? state.quotes : [];
+        return quotes;
       },
       
       canReview: (quoteId: string) => {

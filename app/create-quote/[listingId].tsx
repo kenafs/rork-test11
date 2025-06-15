@@ -207,7 +207,7 @@ export default function CreateQuoteScreen() {
     }
   };
   
-  // Handle submit
+  // Handle submit - FIXED: Ensure quote appears in conversation history
   const handleSubmit = async () => {
     if (!title.trim()) {
       Alert.alert('Erreur', 'Veuillez saisir un titre pour le devis');

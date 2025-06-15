@@ -12,18 +12,14 @@ import * as Sharing from 'expo-sharing';
 export default function QuotesScreen() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
-  const { getUserQuotes, getQuotesForUser, acceptQuote, rejectQuote, payQuote, completeQuote, fetchQuotes } = useQuotes();
+  const { getQuotesForUser, acceptQuote, rejectQuote, payQuote, completeQuote, fetchQuotes } = useQuotes();
   
   useEffect(() => {
     fetchQuotes();
   }, []);
   
   // Get quotes based on user type
-  const userQuotes = user && user.userType === 'provider' 
-    ? getUserQuotes()
-    : user && user.userType === 'client'
-    ? getQuotesForUser(user.id)
-    : [];
+  const userQuotes = user ? getQuotesForUser(user.id) : [];
   
   const getStatusColor = (status: string) => {
     switch (status) {
