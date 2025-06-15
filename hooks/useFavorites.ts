@@ -1,18 +1,15 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Listing } from '@/types';
 import { useAuth } from './useAuth';
-import { useListings } from './useListings';
 
 interface FavoritesState {
   favorites: { [userId: string]: string[] };
   
   addToFavorites: (listingId: string) => void;
   removeFromFavorites: (listingId: string) => void;
-  isFavorite: (listingId: string) => boolean;
-  getUserFavorites: () => Listing[];
   getFavoriteIds: () => string[];
+  isFavorite: (listingId: string) => boolean;
 }
 
 export const useFavorites = create<FavoritesState>()(
@@ -26,17 +23,16 @@ export const useFavorites = create<FavoritesState>()(
         
         set(state => {
           const userFavorites = state.favorites[user.id] || [];
-          if (userFavorites.includes(listingId)) return state;
-          
-          return {
-            favorites: {
-              ...state.favorites,
-              [user.id]: [...userFavorites, listingId],
-            },
-          };
+          if (!userFavorites.includes(listingId)) {
+            return {
+              favorites: {
+                ...state.favorites,
+                [user.id]: [...userFavorites, listingId],
+              },
+            };
+          }
+          return state;
         });
-        
-        console.log('Added to favorites:', listingId);
       },
       
       removeFromFavorites: (listingId: string) => {
@@ -45,7 +41,6 @@ export const useFavorites = create<FavoritesState>()(
         
         set(state => {
           const userFavorites = state.favorites[user.id] || [];
-          
           return {
             favorites: {
               ...state.favorites,
@@ -53,16 +48,6 @@ export const useFavorites = create<FavoritesState>()(
             },
           };
         });
-        
-        console.log('Removed from favorites:', listingId);
-      },
-      
-      isFavorite: (listingId: string) => {
-        const user = useAuth.getState().user;
-        if (!user) return false;
-        
-        const userFavorites = get().favorites[user.id] || [];
-        return userFavorites.includes(listingId);
       },
       
       getFavoriteIds: () => {
@@ -72,15 +57,12 @@ export const useFavorites = create<FavoritesState>()(
         return get().favorites[user.id] || [];
       },
       
-      getUserFavorites: () => {
+      isFavorite: (listingId: string) => {
         const user = useAuth.getState().user;
-        if (!user) return [];
+        if (!user) return false;
         
-        const userFavoriteIds = get().favorites[user.id] || [];
-        const { getAllListings } = useListings.getState();
-        const allListings = getAllListings();
-        
-        return allListings.filter(listing => userFavoriteIds.includes(listing.id));
+        const userFavorites = get().favorites[user.id] || [];
+        return userFavorites.includes(listingId);
       },
     }),
     {

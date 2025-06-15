@@ -56,7 +56,7 @@ export default function ReviewsScreen() {
       return !hasReviewed;
     }
     
-    return true;
+    return false; // For now, only allow reviews after completed quotes
   };
   
   // Format date
@@ -88,7 +88,12 @@ export default function ReviewsScreen() {
   
   // Get restriction message
   const getRestrictionMessage = () => {
-    if (!user) return null;
+    if (!user) {
+      return {
+        title: "Connexion requise",
+        text: "Vous devez être connecté pour laisser un avis."
+      };
+    }
     
     if (user.id === id) {
       return {
@@ -122,7 +127,10 @@ export default function ReviewsScreen() {
       }
     }
     
-    return null;
+    return {
+      title: "Avis non disponible",
+      text: "Les avis ne sont disponibles qu'après avoir terminé une prestation payée."
+    };
   };
   
   // Render review item
@@ -142,7 +150,7 @@ export default function ReviewsScreen() {
             <Text style={styles.reviewDate}>{formatDate(item.createdAt)}</Text>
           </View>
         </View>
-        <RatingStars rating={item.rating} size="small" showNumber={false} />
+        <RatingStars rating={item.rating} size="small" showNumber={false} showCount={false} />
       </View>
       
       <Text style={styles.reviewComment}>{item.comment}</Text>
@@ -198,7 +206,7 @@ export default function ReviewsScreen() {
         <View style={styles.statsContainer}>
           <View style={styles.statItem}>
             <Text style={styles.statNumber}>{averageRating.toFixed(1)}</Text>
-            <RatingStars rating={averageRating} size="medium" showNumber={false} />
+            <RatingStars rating={averageRating} size="medium" showNumber={false} showCount={false} />
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
@@ -252,6 +260,13 @@ export default function ReviewsScreen() {
               <AlertCircle size={48} color={Colors.textLight} />
               <Text style={styles.restrictionTitle}>{restrictionMessage.title}</Text>
               <Text style={styles.restrictionText}>{restrictionMessage.text}</Text>
+              {!user && (
+                <Button
+                  title="Se connecter"
+                  onPress={() => router.push('/(auth)/login')}
+                  style={styles.loginButton}
+                />
+              )}
             </View>
           ) : null
         }
@@ -457,5 +472,10 @@ const styles = StyleSheet.create({
     color: Colors.textLight,
     textAlign: 'center',
     lineHeight: 20,
+    marginBottom: 20,
+  },
+  loginButton: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 24,
   },
 });

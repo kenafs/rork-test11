@@ -71,6 +71,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
                 rating={listing.creatorRating} 
                 size="small" 
                 showNumber={false}
+                showCount={false}
               />
             )}
           </View>

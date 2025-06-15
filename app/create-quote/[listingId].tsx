@@ -15,13 +15,13 @@ export default function CreateQuoteScreen() {
   const router = useRouter();
   const { getListingById } = useListings();
   const { createQuote, isLoading } = useQuotes();
-  const { createConversation } = useMessages();
+  const { createConversation, sendMessage } = useMessages();
   const { user } = useAuth();
   
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [items, setItems] = useState<QuoteItem[]>([
-    { id: '1', description: '', quantity: 1, unitPrice: 0, total: 0 }
+    { id: '1', name: '', description: '', quantity: 1, unitPrice: 0, total: 0 }
   ]);
   const [validityDays, setValidityDays] = useState('30');
   const [notes, setNotes] = useState('');
@@ -57,6 +57,7 @@ export default function CreateQuoteScreen() {
   const addItem = () => {
     const newItem: QuoteItem = {
       id: Date.now().toString(),
+      name: '',
       description: '',
       quantity: 1,
       unitPrice: 0,
@@ -102,18 +103,21 @@ export default function CreateQuoteScreen() {
       return;
     }
     
-    if (items.some(item => !item.description.trim() || item.unitPrice <= 0)) {
+    if (items.some(item => !item.name || item.name.trim() === '' || !item.description || item.description.trim() === '' || item.unitPrice <= 0)) {
       Alert.alert('Erreur', 'Veuillez remplir tous les éléments du devis.');
       return;
     }
     
     try {
+      const subtotal = calculateSubtotal();
+      const tax = subtotal * 0.2;
+      const total = subtotal + tax;
+      
       // Create the quote
       const newQuote = await createQuote({
         title: title.trim(),
         description: description.trim(),
         listingId: listing.id,
-        listingTitle: listing.title,
         clientId: listing.createdBy,
         clientName: listing.creatorName,
         providerId: user.id,
@@ -121,19 +125,31 @@ export default function CreateQuoteScreen() {
         items,
         validityDays: parseInt(validityDays) || 30,
         notes: notes.trim(),
-        status: 'draft',
+        status: 'pending',
+        subtotal,
+        tax,
+        total,
+        validUntil: Date.now() + (parseInt(validityDays) || 30) * 24 * 60 * 60 * 1000,
       });
       
       console.log('Quote created:', newQuote);
       
       // Create or find conversation with the client
-      const conversationId = await createConversation(
-        listing.createdBy,
-        `📋 Nouveau devis: ${title}\n\n${description}\n\nMontant total: ${newQuote.total}€ TTC\n\nConsultez le devis complet dans vos messages.`,
-        listing.id
-      );
+      const conversationId = await createConversation(listing.createdBy);
       
-      console.log('Conversation created/found:', conversationId);
+      // Send quote message to conversation
+      const quoteMessage = `📋 Nouveau devis: ${title}
+
+${description}
+
+Montant total: ${total.toFixed(2)}€ TTC
+Validité: ${validityDays} jours
+
+Consultez le devis complet dans vos messages.`;
+      
+      await sendMessage(conversationId, quoteMessage, listing.createdBy);
+      
+      console.log('Quote message sent to conversation:', conversationId);
       
       Alert.alert(
         'Devis créé',
@@ -141,7 +157,7 @@ export default function CreateQuoteScreen() {
         [
           {
             text: 'Voir la conversation',
-            onPress: () => router.push(`/conversation/${conversationId}`)
+            onPress: () => router.push(`/conversation/${listing.createdBy}`)
           },
           {
             text: 'Mes devis',
@@ -225,13 +241,27 @@ export default function CreateQuoteScreen() {
                 )}
               </View>
               
-              <TextInput
-                style={styles.input}
-                value={item.description}
-                onChangeText={(value) => updateItem(item.id, 'description', value)}
-                placeholder="Description de l'élément"
-                placeholderTextColor={Colors.textLight}
-              />
+              <View style={styles.formGroup}>
+                <Text style={styles.fieldLabel}>Nom de l'élément *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={item.name}
+                  onChangeText={(value) => updateItem(item.id, 'name', value)}
+                  placeholder="Ex: Prestation DJ"
+                  placeholderTextColor={Colors.textLight}
+                />
+              </View>
+              
+              <View style={styles.formGroup}>
+                <Text style={styles.fieldLabel}>Description *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={item.description}
+                  onChangeText={(value) => updateItem(item.id, 'description', value)}
+                  placeholder="Description détaillée de l'élément"
+                  placeholderTextColor={Colors.textLight}
+                />
+              </View>
               
               <View style={styles.itemRow}>
                 <View style={styles.itemField}>

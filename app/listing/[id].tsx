@@ -52,7 +52,7 @@ export default function ListingDetailScreen() {
   const allUsers = [...mockProviders, ...mockVenues];
   const creator = allUsers.find(u => u.id === listing.createdBy);
   
-  const isFavorite = favorites.some(fav => fav.id === listing.id);
+  const isFavorite = favorites.includes(listing.id);
   const isOwnListing = user?.id === listing.createdBy;
   
   const formatDate = (timestamp: number) => {
@@ -107,7 +107,7 @@ export default function ListingDetailScreen() {
     }
     
     // Navigate to conversation
-    router.push(`/conversation/new?participantId=${listing.createdBy}&listingId=${listing.id}`);
+    router.push(`/conversation/${listing.createdBy}`);
   };
   
   const handleCreateQuote = () => {

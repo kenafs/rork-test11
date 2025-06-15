@@ -162,7 +162,9 @@ export default function ProfileScreen() {
           {user.location && (
             <View style={styles.locationContainer}>
               <MapPin size={16} color="rgba(255, 255, 255, 0.8)" />
-              <Text style={styles.locationText}>{user.location}</Text>
+              <Text style={styles.locationText}>
+                {typeof user.location === 'string' ? user.location : user.location.city}
+              </Text>
             </View>
           )}
           
@@ -213,7 +215,7 @@ export default function ProfileScreen() {
         >
           <Award size={24} color="#9B59B6" />
           <Text style={styles.statNumber}>{completedQuotes}</Text>
-          <Text style={styles.statLabel}>En ligne</Text>
+          <Text style={styles.statLabel}>Terminés</Text>
         </TouchableOpacity>
       </View>
       
