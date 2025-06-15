@@ -1,81 +1,62 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TextInput, Alert, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
-import { useAuth } from '@/hooks/useAuth';
+import { useListings } from '@/hooks/useListings';
 import { useQuotes } from '@/hooks/useQuotes';
 import { useMessages } from '@/hooks/useMessages';
-import { useListings } from '@/hooks/useListings';
-import { mockProviders, mockVenues } from '@/mocks/users';
+import { useAuth } from '@/hooks/useAuth';
 import { QuoteItem } from '@/types';
 import Colors from '@/constants/colors';
 import Button from '@/components/Button';
-import { Plus, Trash2, Calculator, FileText } from 'lucide-react-native';
-import * as Print from 'expo-print';
-import * as Sharing from 'expo-sharing';
+import { Plus, Minus, FileText, Send } from 'lucide-react-native';
 
 export default function CreateQuoteScreen() {
   const { listingId } = useLocalSearchParams<{ listingId: string }>();
   const router = useRouter();
-  const { user } = useAuth();
-  const { createQuote, sendQuote, isLoading } = useQuotes();
-  const { addContact, sendMessage, getConversationByParticipant, createConversation } = useMessages();
   const { getListingById } = useListings();
+  const { createQuote, isLoading } = useQuotes();
+  const { createConversation } = useMessages();
+  const { user } = useAuth();
   
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [items, setItems] = useState<QuoteItem[]>([
-    {
-      id: '1',
-      name: '',
-      description: '',
-      quantity: 1,
-      unitPrice: 0,
-      total: 0,
-    }
+    { id: '1', description: '', quantity: 1, unitPrice: 0, total: 0 }
   ]);
-  const [validDays, setValidDays] = useState('30');
+  const [validityDays, setValidityDays] = useState('30');
+  const [notes, setNotes] = useState('');
   
-  // Find the listing or handle conversation quotes
-  const listing = listingId?.startsWith('conversation-') 
-    ? null 
-    : getListingById(listingId as string);
+  const listing = getListingById(listingId as string);
   
-  // Get conversation participant if it's a conversation quote
-  const conversationId = listingId?.startsWith('conversation-') 
-    ? listingId.replace('conversation-', '') 
-    : null;
-  const allUsers = [...mockProviders, ...mockVenues];
-  const conversationParticipant = conversationId ? allUsers.find(u => u.id === conversationId) : null;
-  
-  // Only providers can create quotes, not business accounts or clients
-  if (!user || user.userType !== 'provider') {
+  if (!listing) {
     return (
       <View style={styles.container}>
-        <Stack.Screen options={{ title: 'Créer un devis' }} />
+        <Stack.Screen options={{ title: "Annonce non trouvée" }} />
         <View style={styles.errorContainer}>
-          <FileText size={64} color={Colors.textLight} />
-          <Text style={styles.errorTitle}>Accès restreint</Text>
-          <Text style={styles.errorText}>
-            {user?.userType === 'business' 
-              ? 'Les établissements ne peuvent pas créer de devis. Seuls les prestataires peuvent proposer des devis.'
-              : 'Seuls les prestataires peuvent créer des devis'
-            }
-          </Text>
-          <Button 
-            title="Retour"
-            onPress={() => router.back()}
-            style={styles.backButton}
-          />
+          <Text style={styles.errorText}>Annonce non trouvée</Text>
+          <Button title="Retour" onPress={() => router.back()} />
         </View>
       </View>
     );
   }
   
-  // Add new item
+  if (!user || user.userType !== 'provider') {
+    return (
+      <View style={styles.container}>
+        <Stack.Screen options={{ title: "Accès restreint" }} />
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>
+            Seuls les prestataires peuvent créer des devis
+          </Text>
+          <Button title="Retour" onPress={() => router.back()} />
+        </View>
+      </View>
+    );
+  }
+  
   const addItem = () => {
     const newItem: QuoteItem = {
       id: Date.now().toString(),
-      name: '',
       description: '',
       quantity: 1,
       unitPrice: 0,
@@ -84,20 +65,18 @@ export default function CreateQuoteScreen() {
     setItems([...items, newItem]);
   };
   
-  // Remove item
   const removeItem = (id: string) => {
     if (items.length > 1) {
       setItems(items.filter(item => item.id !== id));
     }
   };
   
-  // Update item
-  const updateItem = (id: string, field: keyof QuoteItem, value: any) => {
+  const updateItem = (id: string, field: keyof QuoteItem, value: string | number) => {
     setItems(items.map(item => {
       if (item.id === id) {
         const updatedItem = { ...item, [field]: value };
         
-        // Recalculate total price
+        // Recalculate total if quantity or unitPrice changed
         if (field === 'quantity' || field === 'unitPrice') {
           updatedItem.total = updatedItem.quantity * updatedItem.unitPrice;
         }
@@ -108,363 +87,241 @@ export default function CreateQuoteScreen() {
     }));
   };
   
-  // Calculate total amount
-  const totalAmount = items.reduce((sum, item) => sum + (item.total || 0), 0);
-  
-  // Generate PDF
-  const generatePDF = async (quote: any) => {
-    try {
-      const htmlContent = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-          <title>Devis ${quote.id}</title>
-          <style>
-            body { font-family: Arial, sans-serif; margin: 20px; }
-            .header { text-align: center; margin-bottom: 30px; }
-            .company { color: #6366f1; font-size: 24px; font-weight: bold; }
-            .quote-title { font-size: 20px; margin: 20px 0; }
-            .info-section { margin: 20px 0; }
-            .info-row { margin: 5px 0; }
-            .items-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-            .items-table th, .items-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-            .items-table th { background-color: #f2f2f2; }
-            .total-section { margin-top: 20px; text-align: right; }
-            .total-row { margin: 5px 0; }
-            .total-final { font-size: 18px; font-weight: bold; color: #6366f1; }
-            .footer { margin-top: 40px; text-align: center; color: #666; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <div class="company">EventApp</div>
-            <h1 class="quote-title">Devis #${quote.id.slice(-6)}</h1>
-          </div>
-          
-          <div class="info-section">
-            <div class="info-row"><strong>Prestataire:</strong> ${user.name}</div>
-            <div class="info-row"><strong>Email:</strong> ${user.email}</div>
-            <div class="info-row"><strong>Date:</strong> ${new Date().toLocaleDateString('fr-FR')}</div>
-            <div class="info-row"><strong>Valide jusqu'au:</strong> ${new Date(quote.validUntil).toLocaleDateString('fr-FR')}</div>
-          </div>
-          
-          <div class="info-section">
-            <h3>${quote.title}</h3>
-            <p>${quote.description}</p>
-          </div>
-          
-          <table class="items-table">
-            <thead>
-              <tr>
-                <th>Description</th>
-                <th>Quantité</th>
-                <th>Prix unitaire</th>
-                <th>Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${quote.items.map((item: QuoteItem) => `
-                <tr>
-                  <td>${item.name || item.description || ''}</td>
-                  <td>${item.quantity}</td>
-                  <td>${item.unitPrice.toFixed(2)}€</td>
-                  <td>${item.total.toFixed(2)}€</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-          
-          <div class="total-section">
-            <div class="total-row">Sous-total: ${quote.subtotal.toFixed(2)}€</div>
-            <div class="total-row">TVA (20%): ${quote.tax.toFixed(2)}€</div>
-            <div class="total-row total-final">Total TTC: ${quote.total.toFixed(2)}€</div>
-          </div>
-          
-          <div class="footer">
-            <p>Devis généré par EventApp - ${new Date().toLocaleDateString('fr-FR')}</p>
-          </div>
-        </body>
-        </html>
-      `;
-      
-      const result = await Print.printToFileAsync({
-        html: htmlContent,
-        base64: false
-      });
-      
-      if (result && result.uri && await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(result.uri, {
-          mimeType: 'application/pdf',
-          dialogTitle: `Devis ${quote.id.slice(-6)}`
-        });
-      } else {
-        Alert.alert('Succès', 'PDF généré avec succès');
-      }
-    } catch (error) {
-      console.error('Error generating PDF:', error);
-      Alert.alert('Erreur', 'Impossible de générer le PDF');
-    }
+  const calculateSubtotal = () => {
+    return items.reduce((sum, item) => sum + item.total, 0);
   };
   
-  // Handle submit
   const handleSubmit = async () => {
     if (!title.trim()) {
-      Alert.alert('Erreur', 'Veuillez saisir un titre pour le devis');
+      Alert.alert('Erreur', 'Veuillez saisir un titre pour le devis.');
       return;
     }
     
     if (!description.trim()) {
-      Alert.alert('Erreur', 'Veuillez saisir une description');
+      Alert.alert('Erreur', 'Veuillez saisir une description.');
       return;
     }
     
-    if (items.some(item => !item.name.trim() || item.unitPrice <= 0)) {
-      Alert.alert('Erreur', 'Veuillez remplir tous les éléments du devis');
+    if (items.some(item => !item.description.trim() || item.unitPrice <= 0)) {
+      Alert.alert('Erreur', 'Veuillez remplir tous les éléments du devis.');
       return;
     }
     
     try {
-      const validUntil = Date.now() + (parseInt(validDays) * 24 * 60 * 60 * 1000);
-      
-      const quote = await createQuote({
-        listingId: listing?.id,
+      // Create the quote
+      const newQuote = await createQuote({
+        title: title.trim(),
+        description: description.trim(),
+        listingId: listing.id,
+        listingTitle: listing.title,
+        clientId: listing.createdBy,
+        clientName: listing.creatorName,
         providerId: user.id,
-        clientId: listing?.createdBy || conversationParticipant?.id || 'unknown',
-        title,
-        description,
+        providerName: user.name,
         items,
-        status: 'pending',
-        validUntil,
+        validityDays: parseInt(validityDays) || 30,
+        notes: notes.trim(),
+        status: 'draft',
       });
       
-      console.log('Quote created successfully:', quote);
+      console.log('Quote created:', newQuote);
       
-      // Send the quote immediately
-      await sendQuote(quote.id);
+      // Create or find conversation with the client
+      const conversationId = await createConversation(
+        listing.createdBy,
+        `📋 Nouveau devis: ${title}\n\n${description}\n\nMontant total: ${newQuote.total}€ TTC\n\nConsultez le devis complet dans vos messages.`,
+        listing.id
+      );
       
-      // CRITICAL FIX: Always send quote message to conversation
-      const targetUserId = listing?.createdBy || conversationParticipant?.id;
-      if (targetUserId) {
-        try {
-          // Get or create conversation
-          let conversation = getConversationByParticipant(targetUserId);
-          let conversationId: string;
-          
-          if (!conversation) {
-            conversationId = await createConversation(targetUserId);
-          } else {
-            conversationId = conversation.id;
+      console.log('Conversation created/found:', conversationId);
+      
+      Alert.alert(
+        'Devis créé',
+        'Votre devis a été créé avec succès et envoyé au client.',
+        [
+          {
+            text: 'Voir la conversation',
+            onPress: () => router.push(`/conversation/${conversationId}`)
+          },
+          {
+            text: 'Mes devis',
+            onPress: () => router.push('/quotes')
           }
-          
-          // Send quote message
-          const quoteMessage = `📋 Devis envoyé: ${title}
-💰 Montant: ${totalAmount.toFixed(2)}€ TTC
-📅 Valide jusqu'au: ${new Date(validUntil).toLocaleDateString('fr-FR')}
-
-${description}`;
-          
-          await sendMessage(conversationId, quoteMessage, targetUserId);
-          
-          // Update contact
-          const targetUser = allUsers.find(u => u.id === targetUserId) || 
-                            (listing ? { id: listing.createdBy, name: listing.creatorName, profileImage: listing.creatorImage, userType: listing.creatorType } : null);
-          
-          if (targetUser) {
-            addContact({
-              participantId: targetUserId,
-              participantName: targetUser.name,
-              participantImage: targetUser.profileImage,
-              participantType: targetUser.userType === 'provider' ? 'provider' : 
-                              targetUser.userType === 'business' ? 'business' : 'client',
-              lastMessage: `📋 Devis envoyé: ${title} - ${totalAmount.toFixed(2)}€`,
-              unread: 0,
-              timestamp: Date.now(),
-            });
-          }
-          
-          console.log('Quote message sent to conversation successfully');
-        } catch (messageError) {
-          console.error('Error sending quote message:', messageError);
-        }
-      }
+        ]
+      );
       
-      Alert.alert('Succès', 'Devis créé et envoyé avec succès', [
-        { 
-          text: 'Générer PDF', 
-          onPress: () => generatePDF(quote)
-        },
-        { 
-          text: 'Voir les devis', 
-          onPress: () => router.push('/quotes') 
-        },
-        { 
-          text: 'Retour aux messages', 
-          onPress: () => router.push('/(tabs)/messages') 
-        }
-      ]);
     } catch (error) {
       console.error('Error creating quote:', error);
-      Alert.alert('Erreur', 'Impossible de créer le devis');
+      Alert.alert('Erreur', 'Une erreur est survenue lors de la création du devis.');
     }
   };
   
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ 
-        title: 'Créer un devis',
+        title: "Créer un devis",
         headerStyle: { backgroundColor: Colors.primary },
         headerTintColor: '#fff',
         headerTitleStyle: { fontWeight: '700' }
       }} />
       
-      <KeyboardAvoidingView 
-        style={styles.keyboardContainer}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-      >
-        <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
-          <View style={styles.header}>
-            <View style={styles.headerIcon}>
-              <FileText size={32} color={Colors.primary} />
-            </View>
-            <Text style={styles.title}>💰 Créer un devis</Text>
-            {listing && (
-              <Text style={styles.subtitle}>Pour: {listing.title}</Text>
-            )}
-            {conversationParticipant && (
-              <Text style={styles.subtitle}>Pour: {conversationParticipant.name}</Text>
-            )}
+      <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
+        {/* Listing Info */}
+        <View style={styles.listingInfo}>
+          <Text style={styles.listingTitle}>{listing.title}</Text>
+          <Text style={styles.listingClient}>Client: {listing.creatorName}</Text>
+        </View>
+        
+        {/* Quote Form */}
+        <View style={styles.formSection}>
+          <Text style={styles.sectionTitle}>📋 Informations du devis</Text>
+          
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Titre du devis *</Text>
+            <TextInput
+              style={styles.input}
+              value={title}
+              onChangeText={setTitle}
+              placeholder="Ex: Prestation DJ pour mariage"
+              placeholderTextColor={Colors.textLight}
+            />
           </View>
           
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>📝 Informations générales</Text>
-            
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>Titre du devis *</Text>
-              <TextInput
-                style={styles.input}
-                value={title}
-                onChangeText={setTitle}
-                placeholder="Ex: Prestation DJ pour mariage"
-                placeholderTextColor={Colors.textLight}
-              />
-            </View>
-            
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>Description *</Text>
-              <TextInput
-                style={[styles.input, styles.textArea]}
-                value={description}
-                onChangeText={setDescription}
-                placeholder="Décrivez votre prestation en détail..."
-                multiline
-                numberOfLines={4}
-                textAlignVertical="top"
-                placeholderTextColor={Colors.textLight}
-              />
-            </View>
-            
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>Validité (jours)</Text>
-              <TextInput
-                style={styles.input}
-                value={validDays}
-                onChangeText={setValidDays}
-                placeholder="30"
-                keyboardType="numeric"
-                placeholderTextColor={Colors.textLight}
-              />
-            </View>
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Description *</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              value={description}
+              onChangeText={setDescription}
+              placeholder="Décrivez votre prestation en détail..."
+              multiline
+              numberOfLines={4}
+              textAlignVertical="top"
+              placeholderTextColor={Colors.textLight}
+            />
+          </View>
+        </View>
+        
+        {/* Quote Items */}
+        <View style={styles.formSection}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>💰 Détail du devis</Text>
+            <TouchableOpacity style={styles.addButton} onPress={addItem}>
+              <Plus size={20} color="#fff" />
+            </TouchableOpacity>
           </View>
           
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>📋 Éléments du devis</Text>
-              <TouchableOpacity style={styles.addButton} onPress={addItem}>
-                <Plus size={20} color="#fff" />
-              </TouchableOpacity>
-            </View>
-            
-            {items.map((item, index) => (
-              <View key={`item-${item.id}-${index}`} style={styles.itemCard}>
-                <View style={styles.itemHeader}>
-                  <Text style={styles.itemNumber}>Élément {index + 1}</Text>
-                  {items.length > 1 && (
-                    <TouchableOpacity
-                      style={styles.removeButton}
-                      onPress={() => removeItem(item.id)}
-                    >
-                      <Trash2 size={16} color={Colors.error} />
-                    </TouchableOpacity>
-                  )}
-                </View>
-                
-                <View style={styles.formGroup}>
-                  <Text style={styles.label}>Nom/Description *</Text>
+          {items.map((item, index) => (
+            <View key={`quote-item-${item.id}`} style={styles.itemContainer}>
+              <View style={styles.itemHeader}>
+                <Text style={styles.itemTitle}>Élément {index + 1}</Text>
+                {items.length > 1 && (
+                  <TouchableOpacity
+                    style={styles.removeButton}
+                    onPress={() => removeItem(item.id)}
+                  >
+                    <Minus size={16} color="#FF6B6B" />
+                  </TouchableOpacity>
+                )}
+              </View>
+              
+              <TextInput
+                style={styles.input}
+                value={item.description}
+                onChangeText={(value) => updateItem(item.id, 'description', value)}
+                placeholder="Description de l'élément"
+                placeholderTextColor={Colors.textLight}
+              />
+              
+              <View style={styles.itemRow}>
+                <View style={styles.itemField}>
+                  <Text style={styles.fieldLabel}>Quantité</Text>
                   <TextInput
-                    style={styles.input}
-                    value={item.name}
-                    onChangeText={(value) => updateItem(item.id, 'name', value)}
-                    placeholder="Ex: Animation musicale"
+                    style={styles.smallInput}
+                    value={item.quantity.toString()}
+                    onChangeText={(value) => updateItem(item.id, 'quantity', parseInt(value) || 1)}
+                    keyboardType="numeric"
                     placeholderTextColor={Colors.textLight}
                   />
                 </View>
                 
-                <View style={styles.row}>
-                  <View style={styles.halfWidth}>
-                    <Text style={styles.label}>Quantité *</Text>
-                    <TextInput
-                      style={styles.input}
-                      value={item.quantity.toString()}
-                      onChangeText={(value) => updateItem(item.id, 'quantity', parseInt(value) || 1)}
-                      keyboardType="numeric"
-                      placeholderTextColor={Colors.textLight}
-                    />
-                  </View>
-                  
-                  <View style={styles.halfWidth}>
-                    <Text style={styles.label}>Prix unitaire (€) *</Text>
-                    <TextInput
-                      style={styles.input}
-                      value={item.unitPrice.toString()}
-                      onChangeText={(value) => updateItem(item.id, 'unitPrice', parseFloat(value) || 0)}
-                      keyboardType="numeric"
-                      placeholderTextColor={Colors.textLight}
-                    />
-                  </View>
+                <View style={styles.itemField}>
+                  <Text style={styles.fieldLabel}>Prix unitaire (€)</Text>
+                  <TextInput
+                    style={styles.smallInput}
+                    value={item.unitPrice.toString()}
+                    onChangeText={(value) => updateItem(item.id, 'unitPrice', parseFloat(value) || 0)}
+                    keyboardType="numeric"
+                    placeholderTextColor={Colors.textLight}
+                  />
                 </View>
                 
-                <View style={styles.totalRow}>
-                  <Text style={styles.totalLabel}>Total:</Text>
-                  <Text style={styles.totalValue}>{(item.total || 0).toFixed(2)}€</Text>
+                <View style={styles.itemField}>
+                  <Text style={styles.fieldLabel}>Total (€)</Text>
+                  <Text style={styles.totalText}>{item.total.toFixed(2)}</Text>
                 </View>
               </View>
-            ))}
+            </View>
+          ))}
+          
+          {/* Totals */}
+          <View style={styles.totalsContainer}>
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>Sous-total HT:</Text>
+              <Text style={styles.totalValue}>{calculateSubtotal().toFixed(2)}€</Text>
+            </View>
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>TVA (20%):</Text>
+              <Text style={styles.totalValue}>{(calculateSubtotal() * 0.2).toFixed(2)}€</Text>
+            </View>
+            <View style={[styles.totalRow, styles.finalTotal]}>
+              <Text style={styles.finalTotalLabel}>Total TTC:</Text>
+              <Text style={styles.finalTotalValue}>{(calculateSubtotal() * 1.2).toFixed(2)}€</Text>
+            </View>
+          </View>
+        </View>
+        
+        {/* Additional Info */}
+        <View style={styles.formSection}>
+          <Text style={styles.sectionTitle}>ℹ️ Informations complémentaires</Text>
+          
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Validité du devis (jours)</Text>
+            <TextInput
+              style={styles.input}
+              value={validityDays}
+              onChangeText={setValidityDays}
+              keyboardType="numeric"
+              placeholder="30"
+              placeholderTextColor={Colors.textLight}
+            />
           </View>
           
-          <View style={styles.summaryCard}>
-            <View style={styles.summaryRow}>
-              <Calculator size={24} color={Colors.primary} />
-              <Text style={styles.summaryTitle}>Total du devis</Text>
-            </View>
-            <Text style={styles.summaryAmount}>{totalAmount.toFixed(2)}€</Text>
-            <Text style={styles.summaryNote}>
-              Valide pendant {validDays} jours
-            </Text>
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Notes (optionnel)</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              value={notes}
+              onChangeText={setNotes}
+              placeholder="Conditions particulières, modalités de paiement..."
+              multiline
+              numberOfLines={3}
+              textAlignVertical="top"
+              placeholderTextColor={Colors.textLight}
+            />
           </View>
-        </ScrollView>
-        
-        <View style={styles.footer}>
-          <Button
-            title="📤 Envoyer le devis"
-            onPress={handleSubmit}
-            loading={isLoading}
-            fullWidth
-            style={styles.submitButton}
-          />
         </View>
-      </KeyboardAvoidingView>
+      </ScrollView>
+      
+      {/* Submit Button */}
+      <View style={styles.submitContainer}>
+        <Button
+          title={isLoading ? "Création..." : "📤 Envoyer le devis"}
+          onPress={handleSubmit}
+          disabled={isLoading}
+          style={styles.submitButton}
+        />
+      </View>
     </View>
   );
 }
@@ -474,43 +331,46 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.backgroundAlt,
   },
-  keyboardContainer: {
-    flex: 1,
-  },
-  header: {
-    backgroundColor: '#fff',
-    paddingTop: 20,
-    paddingBottom: 20,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-    marginBottom: 20,
-    alignItems: 'center',
-  },
-  headerIcon: {
-    marginBottom: 12,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: Colors.text,
-    marginBottom: 4,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: Colors.textLight,
-    textAlign: 'center',
-  },
   content: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 120, // Extra space for submit button
+    paddingBottom: 100,
   },
-  section: {
-    marginBottom: 32,
-    paddingHorizontal: 20,
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  errorText: {
+    fontSize: 18,
+    color: Colors.text,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  listingInfo: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  listingTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.text,
+    marginBottom: 8,
+  },
+  listingClient: {
+    fontSize: 14,
+    color: Colors.textLight,
+  },
+  formSection: {
+    backgroundColor: '#fff',
+    padding: 20,
+    marginTop: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -519,25 +379,20 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 18,
+    fontWeight: '600',
     color: Colors.text,
   },
   addButton: {
     backgroundColor: Colors.primary,
+    borderRadius: 20,
     width: 40,
     height: 40,
-    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
   },
   formGroup: {
-    marginBottom: 16,
+    marginBottom: 20,
   },
   label: {
     fontSize: 16,
@@ -546,7 +401,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.backgroundAlt,
     borderWidth: 1,
     borderColor: Colors.border,
     borderRadius: 12,
@@ -558,95 +413,106 @@ const styles = StyleSheet.create({
     minHeight: 100,
     textAlignVertical: 'top',
   },
-  itemCard: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
+  itemContainer: {
+    backgroundColor: Colors.backgroundAlt,
+    borderRadius: 12,
+    padding: 16,
     marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
   },
   itemHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
   },
-  itemNumber: {
+  itemTitle: {
     fontSize: 16,
-    fontWeight: '700',
-    color: Colors.primary,
+    fontWeight: '600',
+    color: Colors.text,
   },
   removeButton: {
-    padding: 8,
+    backgroundColor: '#FFE5E5',
+    borderRadius: 16,
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  row: {
+  itemRow: {
     flexDirection: 'row',
     gap: 12,
+    marginTop: 12,
   },
-  halfWidth: {
+  itemField: {
     flex: 1,
+  },
+  fieldLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: Colors.textLight,
+    marginBottom: 4,
+  },
+  smallInput: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 14,
+    color: Colors.text,
+    textAlign: 'center',
+  },
+  totalText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: Colors.primary,
+    textAlign: 'center',
+    paddingVertical: 12,
+  },
+  totalsContainer: {
+    backgroundColor: Colors.backgroundAlt,
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 16,
   },
   totalRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 16,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: Colors.border,
+    marginBottom: 8,
   },
   totalLabel: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 14,
     color: Colors.text,
   },
   totalValue: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: Colors.primary,
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.text,
   },
-  summaryCard: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 24,
-    marginHorizontal: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 6,
+  finalTotal: {
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+    paddingTop: 12,
+    marginTop: 8,
   },
-  summaryRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  summaryTitle: {
-    fontSize: 18,
+  finalTotalLabel: {
+    fontSize: 16,
     fontWeight: '700',
     color: Colors.text,
-    marginLeft: 12,
   },
-  summaryAmount: {
-    fontSize: 32,
-    fontWeight: '800',
+  finalTotalValue: {
+    fontSize: 18,
+    fontWeight: '700',
     color: Colors.primary,
-    textAlign: 'center',
-    marginBottom: 8,
   },
-  summaryNote: {
-    fontSize: 14,
-    color: Colors.textLight,
-    textAlign: 'center',
-  },
-  footer: {
+  submitContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     backgroundColor: '#fff',
     padding: 20,
-    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
     shadowColor: '#000',
@@ -657,33 +523,5 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     backgroundColor: Colors.primary,
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 10,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 40,
-  },
-  errorTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: Colors.text,
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  errorText: {
-    fontSize: 16,
-    color: Colors.textLight,
-    textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 24,
-  },
-  backButton: {
-    backgroundColor: Colors.textLight,
   },
 });

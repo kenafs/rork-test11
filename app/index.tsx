@@ -80,7 +80,7 @@ export default function LandingScreen() {
         <Text style={styles.sectionTitle}>Pourquoi choisir EventApp ?</Text>
         
         {features.map((feature, index) => (
-          <View key={index} style={styles.featureCard}>
+          <View key={`feature-${index}`} style={styles.featureCard}>
             <View style={styles.featureIcon}>
               <feature.icon size={24} color={Colors.primary} />
             </View>

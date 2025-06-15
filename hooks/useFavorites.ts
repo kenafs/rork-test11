@@ -2,66 +2,93 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Listing } from '@/types';
-import { mockListings } from '@/mocks/listings';
+import { useAuth } from './useAuth';
+import { useListings } from './useListings';
 
 interface FavoritesState {
-  favorites: string[];
-  favoriteListings: Listing[];
+  favorites: { [userId: string]: string[] };
   
   addToFavorites: (listingId: string) => void;
   removeFromFavorites: (listingId: string) => void;
   isFavorite: (listingId: string) => boolean;
-  loadFavoriteListings: () => void;
-  clearFavorites: () => void;
+  getUserFavorites: () => Listing[];
+  getFavoriteIds: () => string[];
 }
 
 export const useFavorites = create<FavoritesState>()(
   persist(
     (set, get) => ({
-      favorites: [],
-      favoriteListings: [],
+      favorites: {},
       
       addToFavorites: (listingId: string) => {
-        const currentFavorites = get().favorites;
-        if (!currentFavorites.includes(listingId)) {
-          const newFavorites = [...currentFavorites, listingId];
-          set({ favorites: newFavorites });
-          get().loadFavoriteListings();
-        }
+        const user = useAuth.getState().user;
+        if (!user) return;
+        
+        set(state => {
+          const userFavorites = state.favorites[user.id] || [];
+          if (userFavorites.includes(listingId)) return state;
+          
+          return {
+            favorites: {
+              ...state.favorites,
+              [user.id]: [...userFavorites, listingId],
+            },
+          };
+        });
+        
+        console.log('Added to favorites:', listingId);
       },
       
       removeFromFavorites: (listingId: string) => {
-        const currentFavorites = get().favorites;
-        const newFavorites = currentFavorites.filter(id => id !== listingId);
-        set({ favorites: newFavorites });
-        get().loadFavoriteListings();
+        const user = useAuth.getState().user;
+        if (!user) return;
+        
+        set(state => {
+          const userFavorites = state.favorites[user.id] || [];
+          
+          return {
+            favorites: {
+              ...state.favorites,
+              [user.id]: userFavorites.filter(id => id !== listingId),
+            },
+          };
+        });
+        
+        console.log('Removed from favorites:', listingId);
       },
       
       isFavorite: (listingId: string) => {
-        return get().favorites.includes(listingId);
+        const user = useAuth.getState().user;
+        if (!user) return false;
+        
+        const userFavorites = get().favorites[user.id] || [];
+        return userFavorites.includes(listingId);
       },
       
-      loadFavoriteListings: () => {
-        const favoriteIds = get().favorites;
-        const favoriteListings = mockListings.filter(listing => 
-          favoriteIds.includes(listing.id)
-        );
-        set({ favoriteListings });
+      getFavoriteIds: () => {
+        const user = useAuth.getState().user;
+        if (!user) return [];
+        
+        return get().favorites[user.id] || [];
       },
       
-      clearFavorites: () => {
-        set({ favorites: [], favoriteListings: [] });
+      getUserFavorites: () => {
+        const user = useAuth.getState().user;
+        if (!user) return [];
+        
+        const userFavoriteIds = get().favorites[user.id] || [];
+        const { getAllListings } = useListings.getState();
+        const allListings = getAllListings();
+        
+        return allListings.filter(listing => userFavoriteIds.includes(listing.id));
       },
     }),
     {
       name: 'favorites-storage',
       storage: createJSONStorage(() => AsyncStorage),
-      onRehydrateStorage: () => (state) => {
-        if (state) {
-          state.loadFavoriteListings();
-        }
-      },
-      partialize: (state) => ({ favorites: state.favorites }),
+      partialize: (state) => ({
+        favorites: state.favorites,
+      }),
     }
   )
 );

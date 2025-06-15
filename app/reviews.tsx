@@ -14,7 +14,7 @@ export default function ReviewsScreen() {
   const { id, type } = useLocalSearchParams<{ id: string; type: string }>();
   const router = useRouter();
   const { user } = useAuth();
-  const { canUserRate } = useQuotes();
+  const { getAllQuotes } = useQuotes();
   const [newReview, setNewReview] = useState('');
   const [newRating, setNewRating] = useState(5);
   
@@ -37,11 +37,23 @@ export default function ReviewsScreen() {
     // Users cannot rate themselves
     if (user.id === id) return false;
     
-    // For user ratings, check if there's a completed quote between them
+    // For user ratings, check if there's a completed and paid quote between them
     if (type === 'user') {
-      // This would need to be implemented with proper quote checking
-      // For now, we'll allow reviews only if user has interacted with the target
-      return true; // Simplified for demo
+      const allQuotes = getAllQuotes();
+      const hasCompletedQuote = allQuotes.some(quote => 
+        quote.status === 'completed' && 
+        quote.paidAt && 
+        ((quote.clientId === user.id && quote.providerId === id) ||
+         (quote.providerId === user.id && quote.clientId === id))
+      );
+      
+      if (!hasCompletedQuote) {
+        return false;
+      }
+      
+      // Check if user already left a review
+      const hasReviewed = reviews.some(review => review.userId === user.id);
+      return !hasReviewed;
     }
     
     return true;
@@ -72,6 +84,45 @@ export default function ReviewsScreen() {
     Alert.alert('Succès', 'Votre avis a été publié avec succès.');
     setNewReview('');
     setNewRating(5);
+  };
+  
+  // Get restriction message
+  const getRestrictionMessage = () => {
+    if (!user) return null;
+    
+    if (user.id === id) {
+      return {
+        title: "Vous ne pouvez pas vous noter",
+        text: "Les avis permettent aux autres utilisateurs d'évaluer votre travail."
+      };
+    }
+    
+    if (type === 'user') {
+      const allQuotes = getAllQuotes();
+      const hasCompletedQuote = allQuotes.some(quote => 
+        quote.status === 'completed' && 
+        quote.paidAt && 
+        ((quote.clientId === user.id && quote.providerId === id) ||
+         (quote.providerId === user.id && quote.clientId === id))
+      );
+      
+      if (!hasCompletedQuote) {
+        return {
+          title: "Avis restreint",
+          text: "Vous pouvez laisser un avis uniquement après avoir terminé et payé une prestation avec cet utilisateur."
+        };
+      }
+      
+      const hasReviewed = reviews.some(review => review.userId === user.id);
+      if (hasReviewed) {
+        return {
+          title: "Avis déjà donné",
+          text: "Vous avez déjà laissé un avis pour cet utilisateur."
+        };
+      }
+    }
+    
+    return null;
   };
   
   // Render review item
@@ -116,7 +167,7 @@ export default function ReviewsScreen() {
       <View style={styles.ratingStars}>
         {[1, 2, 3, 4, 5].map((star) => (
           <TouchableOpacity
-            key={`star-${star}`}
+            key={`rating-star-${star}`}
             onPress={() => setNewRating(star)}
             style={styles.starButton}
           >
@@ -131,6 +182,8 @@ export default function ReviewsScreen() {
       </View>
     </View>
   );
+  
+  const restrictionMessage = getRestrictionMessage();
   
   return (
     <View style={styles.container}>
@@ -194,23 +247,13 @@ export default function ReviewsScreen() {
                 style={styles.submitButton}
               />
             </View>
-          ) : user?.id === id ? (
+          ) : restrictionMessage ? (
             <View style={styles.restrictionContainer}>
               <AlertCircle size={48} color={Colors.textLight} />
-              <Text style={styles.restrictionTitle}>Vous ne pouvez pas vous noter</Text>
-              <Text style={styles.restrictionText}>
-                Les avis permettent aux autres utilisateurs d'évaluer votre travail.
-              </Text>
+              <Text style={styles.restrictionTitle}>{restrictionMessage.title}</Text>
+              <Text style={styles.restrictionText}>{restrictionMessage.text}</Text>
             </View>
-          ) : (
-            <View style={styles.restrictionContainer}>
-              <AlertCircle size={48} color={Colors.textLight} />
-              <Text style={styles.restrictionTitle}>Avis restreint</Text>
-              <Text style={styles.restrictionText}>
-                Vous pouvez laisser un avis uniquement après avoir utilisé ce service.
-              </Text>
-            </View>
-          )
+          ) : null
         }
       />
     </View>

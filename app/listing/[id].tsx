@@ -71,7 +71,7 @@ export default function ListingDetailScreen() {
     if (isFavorite) {
       removeFromFavorites(listing.id);
     } else {
-      addToFavorites(listing);
+      addToFavorites(listing.id);
     }
   };
   
@@ -211,7 +211,7 @@ export default function ListingDetailScreen() {
             >
               {listing.images.map((image, index) => (
                 <Image 
-                  key={`image-${index}`}
+                  key={`listing-image-${listing.id}-${index}`}
                   source={{ uri: image }} 
                   style={styles.listingImage} 
                 />
@@ -221,7 +221,7 @@ export default function ListingDetailScreen() {
               <View style={styles.imageIndicators}>
                 {listing.images.map((_, index) => (
                   <View 
-                    key={`indicator-${index}`}
+                    key={`image-indicator-${listing.id}-${index}`}
                     style={[
                       styles.imageIndicator,
                       selectedImageIndex === index && styles.activeImageIndicator
@@ -259,7 +259,7 @@ export default function ListingDetailScreen() {
           {listing.tags && listing.tags.length > 0 && (
             <View style={styles.tagsContainer}>
               {listing.tags.map((tag, index) => (
-                <View key={`tag-${index}`} style={styles.tag}>
+                <View key={`listing-tag-${listing.id}-${index}`} style={styles.tag}>
                   <Text style={styles.tagText}>{tag}</Text>
                 </View>
               ))}
