@@ -6,10 +6,11 @@ import { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { trpc, trpcClient } from "@/lib/trpc";
+import { useAuth } from "@/hooks/useAuth";
 import Colors from "@/constants/colors";
 
 export const unstable_settings = {
-  initialRouteName: "(tabs)",
+  initialRouteName: "index",
 };
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -46,22 +47,23 @@ function RootLayoutNav() {
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
-        <StatusBar style="dark" />
+        <StatusBar style="light" />
         <Stack
           screenOptions={{
             headerStyle: {
-              backgroundColor: '#fff',
+              backgroundColor: '#1e3a8a',
             },
-            headerTintColor: Colors.primary,
+            headerTintColor: '#fff',
             headerTitleStyle: {
               fontWeight: '600',
             },
             headerShadowVisible: false,
             contentStyle: {
-              backgroundColor: Colors.backgroundAlt,
+              backgroundColor: '#f8fafc',
             },
           }}
         >
+          <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen 
             name="(auth)/login" 
@@ -74,6 +76,13 @@ function RootLayoutNav() {
             name="(auth)/register" 
             options={{ 
               title: "Inscription",
+              headerShown: false,
+            }} 
+          />
+          <Stack.Screen 
+            name="(auth)/demo" 
+            options={{ 
+              title: "Comptes démo",
               headerShown: false,
             }} 
           />

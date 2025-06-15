@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Alert, Image } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { DemoAccount } from '@/types';
-import Colors from '@/constants/colors';
+import { LinearGradient } from 'expo-linear-gradient';
+import { StatusBar } from 'expo-status-bar';
 import Button from '@/components/Button';
-import { User, Building, Briefcase } from 'lucide-react-native';
+import { User, Building, Briefcase, ArrowLeft, Sparkles, Star, MapPin } from 'lucide-react-native';
 
 const demoAccounts: DemoAccount[] = [
   // Client Demo Accounts
@@ -177,13 +178,13 @@ export default function DemoScreen() {
   const getAccountIcon = (userType: string) => {
     switch (userType) {
       case 'client':
-        return <User size={24} color={Colors.primary} />;
+        return <User size={24} color="#fff" />;
       case 'provider':
-        return <Briefcase size={24} color={Colors.primary} />;
+        return <Briefcase size={24} color="#fff" />;
       case 'business':
-        return <Building size={24} color={Colors.primary} />;
+        return <Building size={24} color="#fff" />;
       default:
-        return <User size={24} color={Colors.primary} />;
+        return <User size={24} color="#fff" />;
     }
   };
 
@@ -200,6 +201,19 @@ export default function DemoScreen() {
     }
   };
 
+  const getAccountTypeColor = (userType: string) => {
+    switch (userType) {
+      case 'client':
+        return ['#3b82f6', '#1d4ed8'];
+      case 'provider':
+        return ['#8b5cf6', '#7c3aed'];
+      case 'business':
+        return ['#10b981', '#059669'];
+      default:
+        return ['#6b7280', '#4b5563'];
+    }
+  };
+
   // Group accounts by type
   const groupedAccounts = {
     client: demoAccounts.filter(acc => acc.userType === 'client'),
@@ -209,27 +223,47 @@ export default function DemoScreen() {
 
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ 
-        title: "Comptes démo",
-        headerStyle: { backgroundColor: Colors.primary },
-        headerTintColor: "#fff",
-        headerTitleStyle: { fontWeight: "700" }
-      }} />
+      <StatusBar style="light" />
       
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <Text style={styles.title}>✨ Essayez EventApp</Text>
-          <Text style={styles.subtitle}>
-            Choisissez un type de compte pour découvrir toutes les fonctionnalités
+      {/* Header */}
+      <LinearGradient
+        colors={['#1e3a8a', '#3730a3']}
+        style={styles.header}
+      >
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
+          <ArrowLeft size={24} color="#fff" />
+        </TouchableOpacity>
+        
+        <View style={styles.headerContent}>
+          <Sparkles size={32} color="#fbbf24" />
+          <Text style={styles.headerTitle}>Comptes démo</Text>
+          <Text style={styles.headerSubtitle}>
+            Découvrez EventApp avec nos comptes de démonstration
           </Text>
         </View>
-
+      </LinearGradient>
+      
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Client Accounts */}
         <View style={styles.typeSection}>
-          <Text style={styles.typeTitle}>👤 Comptes Client</Text>
-          <Text style={styles.typeDescription}>
-            Recherchez et contactez des prestataires pour vos événements
-          </Text>
+          <View style={styles.typeSectionHeader}>
+            <LinearGradient
+              colors={getAccountTypeColor('client')}
+              style={styles.typeSectionIcon}
+            >
+              <User size={24} color="#fff" />
+            </LinearGradient>
+            <View style={styles.typeSectionInfo}>
+              <Text style={styles.typeTitle}>👤 Comptes Client</Text>
+              <Text style={styles.typeDescription}>
+                Recherchez et contactez des prestataires pour vos événements
+              </Text>
+            </View>
+          </View>
+          
           {groupedAccounts.client.map((account, index) => (
             <TouchableOpacity
               key={`client-${index}`}
@@ -238,16 +272,28 @@ export default function DemoScreen() {
                 selectedAccount?.email === account.email && styles.selectedCard
               ]}
               onPress={() => setSelectedAccount(account)}
+              activeOpacity={0.8}
             >
               <View style={styles.accountHeader}>
-                <View style={styles.accountIcon}>
-                  {getAccountIcon(account.userType)}
-                </View>
+                <Image 
+                  source={{ uri: account.profileImage }} 
+                  style={styles.accountImage}
+                />
                 <View style={styles.accountInfo}>
-                  <Text style={styles.accountType}>
-                    {getAccountTypeLabel(account.userType)}
-                  </Text>
+                  <View style={styles.accountBadge}>
+                    <Text style={styles.accountType}>
+                      {getAccountTypeLabel(account.userType)}
+                    </Text>
+                  </View>
                   <Text style={styles.accountName}>{account.name}</Text>
+                  <View style={styles.accountMeta}>
+                    <MapPin size={14} color="#64748b" />
+                    <Text style={styles.accountLocation}>{account.city}</Text>
+                    <Star size={14} color="#fbbf24" fill="#fbbf24" />
+                    <Text style={styles.accountRating}>
+                      {account.rating} ({account.reviewCount})
+                    </Text>
+                  </View>
                 </View>
                 <View style={[
                   styles.radioButton,
@@ -262,23 +308,27 @@ export default function DemoScreen() {
               <Text style={styles.accountDescription}>
                 {account.description}
               </Text>
-              
-              <View style={styles.accountDetails}>
-                <Text style={styles.accountLocation}>📍 {account.city}</Text>
-                <Text style={styles.accountRating}>
-                  ⭐ {account.rating} ({account.reviewCount} avis)
-                </Text>
-              </View>
             </TouchableOpacity>
           ))}
         </View>
 
         {/* Provider Accounts */}
         <View style={styles.typeSection}>
-          <Text style={styles.typeTitle}>💼 Comptes Prestataire</Text>
-          <Text style={styles.typeDescription}>
-            Proposez vos services et créez des devis pour vos clients
-          </Text>
+          <View style={styles.typeSectionHeader}>
+            <LinearGradient
+              colors={getAccountTypeColor('provider')}
+              style={styles.typeSectionIcon}
+            >
+              <Briefcase size={24} color="#fff" />
+            </LinearGradient>
+            <View style={styles.typeSectionInfo}>
+              <Text style={styles.typeTitle}>💼 Comptes Prestataire</Text>
+              <Text style={styles.typeDescription}>
+                Proposez vos services et créez des devis pour vos clients
+              </Text>
+            </View>
+          </View>
+          
           {groupedAccounts.provider.map((account, index) => (
             <TouchableOpacity
               key={`provider-${index}`}
@@ -287,16 +337,28 @@ export default function DemoScreen() {
                 selectedAccount?.email === account.email && styles.selectedCard
               ]}
               onPress={() => setSelectedAccount(account)}
+              activeOpacity={0.8}
             >
               <View style={styles.accountHeader}>
-                <View style={styles.accountIcon}>
-                  {getAccountIcon(account.userType)}
-                </View>
+                <Image 
+                  source={{ uri: account.profileImage }} 
+                  style={styles.accountImage}
+                />
                 <View style={styles.accountInfo}>
-                  <Text style={styles.accountType}>
-                    {getAccountTypeLabel(account.userType)}
-                  </Text>
+                  <View style={styles.accountBadge}>
+                    <Text style={styles.accountType}>
+                      {getAccountTypeLabel(account.userType)}
+                    </Text>
+                  </View>
                   <Text style={styles.accountName}>{account.name}</Text>
+                  <View style={styles.accountMeta}>
+                    <MapPin size={14} color="#64748b" />
+                    <Text style={styles.accountLocation}>{account.city}</Text>
+                    <Star size={14} color="#fbbf24" fill="#fbbf24" />
+                    <Text style={styles.accountRating}>
+                      {account.rating} ({account.reviewCount})
+                    </Text>
+                  </View>
                 </View>
                 <View style={[
                   styles.radioButton,
@@ -311,13 +373,6 @@ export default function DemoScreen() {
               <Text style={styles.accountDescription}>
                 {account.description}
               </Text>
-              
-              <View style={styles.accountDetails}>
-                <Text style={styles.accountLocation}>📍 {account.city}</Text>
-                <Text style={styles.accountRating}>
-                  ⭐ {account.rating} ({account.reviewCount} avis)
-                </Text>
-              </View>
               
               {account.services && (
                 <View style={styles.servicesList}>
@@ -334,10 +389,21 @@ export default function DemoScreen() {
 
         {/* Business Accounts */}
         <View style={styles.typeSection}>
-          <Text style={styles.typeTitle}>🏢 Comptes Établissement</Text>
-          <Text style={styles.typeDescription}>
-            Proposez votre lieu pour des événements et réceptions
-          </Text>
+          <View style={styles.typeSectionHeader}>
+            <LinearGradient
+              colors={getAccountTypeColor('business')}
+              style={styles.typeSectionIcon}
+            >
+              <Building size={24} color="#fff" />
+            </LinearGradient>
+            <View style={styles.typeSectionInfo}>
+              <Text style={styles.typeTitle}>🏢 Comptes Établissement</Text>
+              <Text style={styles.typeDescription}>
+                Proposez votre lieu pour des événements et réceptions
+              </Text>
+            </View>
+          </View>
+          
           {groupedAccounts.business.map((account, index) => (
             <TouchableOpacity
               key={`business-${index}`}
@@ -346,16 +412,28 @@ export default function DemoScreen() {
                 selectedAccount?.email === account.email && styles.selectedCard
               ]}
               onPress={() => setSelectedAccount(account)}
+              activeOpacity={0.8}
             >
               <View style={styles.accountHeader}>
-                <View style={styles.accountIcon}>
-                  {getAccountIcon(account.userType)}
-                </View>
+                <Image 
+                  source={{ uri: account.profileImage }} 
+                  style={styles.accountImage}
+                />
                 <View style={styles.accountInfo}>
-                  <Text style={styles.accountType}>
-                    {getAccountTypeLabel(account.userType)}
-                  </Text>
+                  <View style={styles.accountBadge}>
+                    <Text style={styles.accountType}>
+                      {getAccountTypeLabel(account.userType)}
+                    </Text>
+                  </View>
                   <Text style={styles.accountName}>{account.name}</Text>
+                  <View style={styles.accountMeta}>
+                    <MapPin size={14} color="#64748b" />
+                    <Text style={styles.accountLocation}>{account.city}</Text>
+                    <Star size={14} color="#fbbf24" fill="#fbbf24" />
+                    <Text style={styles.accountRating}>
+                      {account.rating} ({account.reviewCount})
+                    </Text>
+                  </View>
                 </View>
                 <View style={[
                   styles.radioButton,
@@ -370,13 +448,6 @@ export default function DemoScreen() {
               <Text style={styles.accountDescription}>
                 {account.description}
               </Text>
-              
-              <View style={styles.accountDetails}>
-                <Text style={styles.accountLocation}>📍 {account.city}</Text>
-                <Text style={styles.accountRating}>
-                  ⭐ {account.rating} ({account.reviewCount} avis)
-                </Text>
-              </View>
               
               {account.amenities && (
                 <View style={styles.servicesList}>
@@ -398,14 +469,8 @@ export default function DemoScreen() {
           onPress={handleDemoLogin}
           disabled={!selectedAccount || isLoading}
           fullWidth
+          style={styles.connectButton}
         />
-        
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <Text style={styles.backButtonText}>Retour</Text>
-        </TouchableOpacity>
       </View>
     </View>
   );
@@ -414,126 +479,182 @@ export default function DemoScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.backgroundAlt,
+    backgroundColor: '#f8fafc',
   },
-  content: {
-    flex: 1,
-  },
+  
+  // Header
   header: {
-    padding: 24,
-    alignItems: 'center',
+    paddingTop: 60,
+    paddingBottom: 32,
+    paddingHorizontal: 20,
+    position: 'relative',
   },
-  title: {
+  backButton: {
+    position: 'absolute',
+    top: 60,
+    left: 20,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  headerContent: {
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  headerTitle: {
     fontSize: 28,
     fontWeight: '900',
-    color: Colors.text,
-    marginBottom: 12,
-    textAlign: 'center',
+    color: '#fff',
+    marginTop: 12,
+    marginBottom: 8,
   },
-  subtitle: {
+  headerSubtitle: {
     fontSize: 16,
-    color: Colors.textLight,
+    color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: 22,
+  },
+  
+  // Content
+  content: {
+    flex: 1,
   },
   typeSection: {
     marginBottom: 32,
     paddingHorizontal: 20,
   },
-  typeTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: Colors.text,
-    marginBottom: 8,
-  },
-  typeDescription: {
-    fontSize: 14,
-    color: Colors.textLight,
-    marginBottom: 16,
-    lineHeight: 20,
-  },
-  accountCard: {
+  typeSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
     backgroundColor: '#fff',
     borderRadius: 16,
     padding: 20,
-    marginBottom: 16,
-    borderWidth: 2,
-    borderColor: Colors.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4,
   },
-  selectedCard: {
-    borderColor: Colors.primary,
-    backgroundColor: 'rgba(99, 102, 241, 0.02)',
-  },
-  accountHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  accountIcon: {
+  typeSectionIcon: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: 'rgba(99, 102, 241, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 16,
+  },
+  typeSectionInfo: {
+    flex: 1,
+  },
+  typeTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1e293b',
+    marginBottom: 4,
+  },
+  typeDescription: {
+    fontSize: 14,
+    color: '#64748b',
+    lineHeight: 20,
+  },
+  
+  // Account Cards
+  accountCard: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 16,
+    borderWidth: 2,
+    borderColor: '#e2e8f0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  selectedCard: {
+    borderColor: '#1e3a8a',
+    backgroundColor: 'rgba(30, 58, 138, 0.02)',
+    transform: [{ scale: 1.02 }],
+  },
+  accountHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+  },
+  accountImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginRight: 16,
   },
   accountInfo: {
     flex: 1,
   },
+  accountBadge: {
+    backgroundColor: 'rgba(30, 58, 138, 0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+    marginBottom: 8,
+  },
   accountType: {
     fontSize: 12,
     fontWeight: '600',
-    color: Colors.primary,
+    color: '#1e3a8a',
     textTransform: 'uppercase',
-    marginBottom: 2,
   },
   accountName: {
     fontSize: 18,
     fontWeight: '700',
-    color: Colors.text,
+    color: '#1e293b',
+    marginBottom: 8,
+  },
+  accountMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  accountLocation: {
+    fontSize: 14,
+    color: '#64748b',
+    marginRight: 12,
+  },
+  accountRating: {
+    fontSize: 14,
+    color: '#64748b',
+    marginLeft: 4,
   },
   radioButton: {
     width: 24,
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: Colors.border,
+    borderColor: '#e2e8f0',
     justifyContent: 'center',
     alignItems: 'center',
+    marginTop: 4,
   },
   radioButtonSelected: {
-    borderColor: Colors.primary,
+    borderColor: '#1e3a8a',
   },
   radioButtonInner: {
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: Colors.primary,
+    backgroundColor: '#1e3a8a',
   },
   accountDescription: {
-    fontSize: 14,
-    color: Colors.text,
-    lineHeight: 20,
-    marginBottom: 12,
-  },
-  accountDetails: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  accountLocation: {
-    fontSize: 14,
-    color: Colors.textLight,
-  },
-  accountRating: {
-    fontSize: 14,
-    color: Colors.textLight,
+    fontSize: 15,
+    color: '#374151',
+    lineHeight: 22,
+    marginBottom: 16,
   },
   servicesList: {
     flexDirection: 'row',
@@ -541,31 +662,33 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   serviceTag: {
-    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+    backgroundColor: 'rgba(30, 58, 138, 0.1)',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
   },
   serviceText: {
     fontSize: 12,
-    color: Colors.primary,
+    color: '#1e3a8a',
     fontWeight: '500',
   },
+  
+  // Bottom Container
   bottomContainer: {
     padding: 20,
     paddingBottom: 34,
     backgroundColor: '#fff',
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
+    borderTopColor: '#e2e8f0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 8,
   },
-  backButton: {
-    alignItems: 'center',
-    paddingVertical: 12,
-    marginTop: 12,
-  },
-  backButtonText: {
-    fontSize: 16,
-    color: Colors.textLight,
-    fontWeight: '500',
+  connectButton: {
+    backgroundColor: '#1e3a8a',
+    borderRadius: 16,
+    paddingVertical: 16,
   },
 });

@@ -75,7 +75,7 @@ export default function HomeScreen() {
   const safeFilteredListings = Array.isArray(filteredListings) ? filteredListings : [];
   const safeFavorites = Array.isArray(favorites) ? favorites : [];
   
-  // Authenticated user experience - CRITICAL FIX: Remove landing page for authenticated users
+  // Authenticated user experience
   const getWelcomeMessage = () => {
     switch (user?.userType) {
       case 'provider':
@@ -122,6 +122,25 @@ export default function HomeScreen() {
       router.push('/(tabs)/create');
     }
   };
+
+  const handleStatCardPress = (type: string) => {
+    switch (type) {
+      case 'favorites':
+        router.push('/favorites');
+        break;
+      case 'reviews':
+        router.push('/reviews');
+        break;
+      case 'listings':
+        router.push('/my-listings');
+        break;
+      case 'quotes':
+        router.push('/quotes');
+        break;
+      default:
+        break;
+    }
+  };
   
   return (
     <View style={styles.container}>
@@ -143,26 +162,45 @@ export default function HomeScreen() {
             
             {/* Enhanced Stats Row */}
             <View style={styles.statsRow}>
-              <View style={styles.statCard}>
+              <TouchableOpacity 
+                style={styles.statCard}
+                onPress={() => handleStatCardPress('favorites')}
+                activeOpacity={0.8}
+              >
                 <Heart size={16} color="#FF6B6B" />
                 <Text style={styles.statCardNumber}>{safeFavorites.length || 0}</Text>
                 <Text style={styles.statCardLabel}>Favoris</Text>
-              </View>
-              <View style={styles.statCard}>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.statCard}
+                onPress={() => handleStatCardPress('reviews')}
+                activeOpacity={0.8}
+              >
                 <Star size={16} color="#FFD700" />
                 <Text style={styles.statCardNumber}>{user?.rating?.toFixed(1) || '4.8'}</Text>
                 <Text style={styles.statCardLabel}>Note</Text>
-              </View>
-              <View style={styles.statCard}>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.statCard}
+                onPress={() => handleStatCardPress('listings')}
+                activeOpacity={0.8}
+              >
                 <TrendingUp size={16} color="#10B981" />
                 <Text style={styles.statCardNumber}>{safeFilteredListings.length}</Text>
                 <Text style={styles.statCardLabel}>Offres</Text>
-              </View>
-              <View style={styles.statCard}>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.statCard}
+                onPress={() => handleStatCardPress('quotes')}
+                activeOpacity={0.8}
+              >
                 <Sparkles size={16} color="#8B5CF6" />
                 <Text style={styles.statCardNumber}>12</Text>
-                <Text style={styles.statCardLabel}>En ligne</Text>
-              </View>
+                <Text style={styles.statCardLabel}>Devis</Text>
+              </TouchableOpacity>
             </View>
             
             {user && user.userType !== 'client' && (
