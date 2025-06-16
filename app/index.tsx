@@ -1,153 +1,248 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
+import { Image } from 'expo-image';
 import { useAuth } from '@/hooks/useAuth';
 import Colors from '@/constants/colors';
 import Button from '@/components/Button';
-import { Calendar, Users, MessageCircle, Star, ArrowRight, Sparkles, Heart, Zap } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Sparkles, Users, Calendar, Star, ArrowRight, Heart, MessageCircle } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
 
 export default function LandingScreen() {
   const router = useRouter();
-  const { isAuthenticated, isLoading } = useAuth();
-
-  // Redirect to tabs if already authenticated
+  const { isAuthenticated, user } = useAuth();
+  
+  // CRITICAL FIX: Redirect authenticated users to main app
   useEffect(() => {
-    if (!isLoading && isAuthenticated) {
+    if (isAuthenticated && user) {
+      console.log('User is authenticated, redirecting to main app');
       router.replace('/(tabs)');
     }
-  }, [isAuthenticated, isLoading]);
-
-  // Show loading if checking auth status
-  if (isLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Chargement...</Text>
-      </View>
-    );
+  }, [isAuthenticated, user]);
+  
+  // CRITICAL FIX: Show landing page only for non-authenticated users
+  if (isAuthenticated && user) {
+    return null; // Will redirect via useEffect
   }
-
-  // If authenticated, don't show landing page (will redirect)
-  if (isAuthenticated) {
-    return null;
-  }
-
+  
   const features = [
     {
-      icon: Calendar,
-      title: "Organisez vos événements",
-      description: "Trouvez facilement des prestataires et des lieux pour tous vos événements"
-    },
-    {
       icon: Users,
-      title: "Réseau de professionnels",
-      description: "Accédez à un large réseau de prestataires vérifiés et d'établissements de qualité"
+      title: 'Trouvez des prestataires',
+      description: 'Découvrez des professionnels qualifiés pour vos événements',
+      color: '#6366F1'
     },
     {
-      icon: MessageCircle,
-      title: "Communication simplifiée",
-      description: "Échangez directement avec les prestataires et recevez des devis personnalisés"
+      icon: Calendar,
+      title: 'Organisez facilement',
+      description: 'Planifiez et gérez tous vos événements en un seul endroit',
+      color: '#EC4899'
     },
     {
       icon: Star,
-      title: "Avis authentiques",
-      description: "Consultez les avis clients pour faire le meilleur choix pour votre événement"
+      title: 'Avis vérifiés',
+      description: 'Consultez les avis authentiques de la communauté',
+      color: '#F59E0B'
+    },
+    {
+      icon: Heart,
+      title: 'Favoris personnalisés',
+      description: 'Sauvegardez vos prestataires et lieux préférés',
+      color: '#EF4444'
     }
   ];
-
+  
+  const testimonials = [
+    {
+      name: 'Marie L.',
+      role: 'Organisatrice d\'événements',
+      comment: 'EventApp m\'a permis de trouver les meilleurs prestataires pour mon mariage. Tout s\'est parfaitement déroulé !',
+      rating: 5,
+      image: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face'
+    },
+    {
+      name: 'Thomas M.',
+      role: 'DJ Professionnel',
+      comment: 'Grâce à cette plateforme, j\'ai pu développer ma clientèle et recevoir de nombreuses demandes de qualité.',
+      rating: 5,
+      image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face'
+    },
+    {
+      name: 'Sophie R.',
+      role: 'Propriétaire de salle',
+      comment: 'L\'interface est intuitive et les outils de gestion sont parfaits pour mon établissement.',
+      rating: 5,
+      image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face'
+    }
+  ];
+  
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Hero Section */}
       <LinearGradient
         colors={[Colors.primary, Colors.secondary] as const}
-        style={styles.heroSection}
+        style={styles.hero}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
         <View style={styles.heroContent}>
-          <View style={styles.heroIcon}>
+          <View style={styles.logoContainer}>
             <Sparkles size={40} color="#fff" />
+            <Text style={styles.logoText}>EventApp</Text>
           </View>
-          <Text style={styles.heroTitle}>EventApp</Text>
+          
+          <Text style={styles.heroTitle}>
+            Organisez des événements{'\n'}
+            <Text style={styles.heroTitleAccent}>inoubliables</Text>
+          </Text>
+          
           <Text style={styles.heroSubtitle}>
-            La plateforme qui connecte organisateurs d'événements et prestataires
+            Connectez-vous avec les meilleurs prestataires et lieux pour créer des moments magiques
           </Text>
-          <Text style={styles.heroDescription}>
-            Organisez des événements mémorables en trouvant facilement les meilleurs prestataires et lieux près de chez vous
-          </Text>
+          
+          <View style={styles.heroButtons}>
+            <Button
+              title="🚀 Commencer"
+              onPress={() => router.push('/(auth)/demo')}
+              style={styles.primaryButton}
+              textStyle={styles.primaryButtonText}
+            />
+            <Button
+              title="Se connecter"
+              onPress={() => router.push('/(auth)/login')}
+              variant="outline"
+              style={styles.secondaryButton}
+              textStyle={styles.secondaryButtonText}
+            />
+          </View>
+        </View>
+        
+        <View style={styles.heroImageContainer}>
+          <Image 
+            source={{ uri: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=400&h=300&fit=crop' }}
+            style={styles.heroImage}
+          />
         </View>
       </LinearGradient>
-
+      
       {/* Features Section */}
-      <View style={styles.featuresSection}>
-        <Text style={styles.sectionTitle}>Pourquoi choisir EventApp ?</Text>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>✨ Pourquoi choisir EventApp ?</Text>
+        <Text style={styles.sectionSubtitle}>
+          Découvrez tous les avantages de notre plateforme
+        </Text>
         
-        {features.map((feature, index) => (
-          <View key={`feature-${index}`} style={styles.featureCard}>
-            <View style={styles.featureIcon}>
-              <feature.icon size={24} color={Colors.primary} />
-            </View>
-            <View style={styles.featureContent}>
+        <View style={styles.featuresGrid}>
+          {features.map((feature, index) => (
+            <View key={`feature-${index}`} style={styles.featureCard}>
+              <View style={[styles.featureIcon, { backgroundColor: `${feature.color}20` }]}>
+                <feature.icon size={28} color={feature.color} />
+              </View>
               <Text style={styles.featureTitle}>{feature.title}</Text>
               <Text style={styles.featureDescription}>{feature.description}</Text>
             </View>
-          </View>
-        ))}
+          ))}
+        </View>
       </View>
-
+      
       {/* Stats Section */}
       <View style={styles.statsSection}>
-        <Text style={styles.sectionTitle}>Rejoignez notre communauté</Text>
-        <View style={styles.statsContainer}>
-          <View style={styles.statCard}>
-            <Heart size={24} color="#FF6B6B" />
-            <Text style={styles.statNumber}>500+</Text>
-            <Text style={styles.statLabel}>Prestataires</Text>
+        <LinearGradient
+          colors={['#F8FAFC', '#E2E8F0'] as const}
+          style={styles.statsContainer}
+        >
+          <Text style={styles.statsTitle}>🎯 EventApp en chiffres</Text>
+          <View style={styles.statsGrid}>
+            <View style={styles.statItem}>
+              <Text style={styles.statNumber}>500+</Text>
+              <Text style={styles.statLabel}>Prestataires</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statNumber}>1000+</Text>
+              <Text style={styles.statLabel}>Événements</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statNumber}>98%</Text>
+              <Text style={styles.statLabel}>Satisfaction</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statNumber}>50+</Text>
+              <Text style={styles.statLabel}>Villes</Text>
+            </View>
           </View>
-          <View style={styles.statCard}>
-            <Zap size={24} color="#FFD93D" />
-            <Text style={styles.statNumber}>1000+</Text>
-            <Text style={styles.statLabel}>Événements</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Star size={24} color="#6BCF7F" />
-            <Text style={styles.statNumber}>4.8/5</Text>
-            <Text style={styles.statLabel}>Satisfaction</Text>
-          </View>
-        </View>
+        </LinearGradient>
       </View>
-
+      
+      {/* Testimonials Section */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>💬 Ce que disent nos utilisateurs</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.testimonialsScroll}>
+          {testimonials.map((testimonial, index) => (
+            <View key={`testimonial-${index}`} style={styles.testimonialCard}>
+              <View style={styles.testimonialHeader}>
+                <Image source={{ uri: testimonial.image }} style={styles.testimonialImage} />
+                <View style={styles.testimonialInfo}>
+                  <Text style={styles.testimonialName}>{testimonial.name}</Text>
+                  <Text style={styles.testimonialRole}>{testimonial.role}</Text>
+                </View>
+                <View style={styles.testimonialRating}>
+                  {[...Array(testimonial.rating)].map((_, i) => (
+                    <Text key={`star-${index}-${i}`} style={styles.star}>⭐</Text>
+                  ))}
+                </View>
+              </View>
+              <Text style={styles.testimonialComment}>{testimonial.comment}</Text>
+            </View>
+          ))}
+        </ScrollView>
+      </View>
+      
       {/* CTA Section */}
       <View style={styles.ctaSection}>
-        <Text style={styles.ctaTitle}>Prêt à commencer ?</Text>
-        <Text style={styles.ctaDescription}>
-          Créez votre compte et découvrez tous les prestataires près de chez vous
-        </Text>
-        
-        <View style={styles.buttonContainer}>
-          <Button
-            title="Créer un compte"
-            onPress={() => router.push('/(auth)/register')}
-            style={styles.primaryButton}
-          />
-          
-          <Button
-            title="Se connecter"
-            variant="outline"
-            onPress={() => router.push('/(auth)/login')}
-            style={styles.secondaryButton}
-          />
-        </View>
-
-        <TouchableOpacity 
-          style={styles.demoButton}
-          onPress={() => router.push('/(auth)/demo')}
+        <LinearGradient
+          colors={[Colors.primary, Colors.secondary] as const}
+          style={styles.ctaContainer}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
         >
-          <Text style={styles.demoButtonText}>Essayer avec un compte démo</Text>
-          <ArrowRight size={16} color={Colors.primary} />
-        </TouchableOpacity>
+          <Text style={styles.ctaTitle}>🎉 Prêt à commencer ?</Text>
+          <Text style={styles.ctaSubtitle}>
+            Rejoignez des milliers d'utilisateurs qui font confiance à EventApp
+          </Text>
+          <View style={styles.ctaButtons}>
+            <Button
+              title="Essayer gratuitement"
+              onPress={() => router.push('/(auth)/demo')}
+              style={styles.ctaButton}
+              textStyle={styles.ctaButtonText}
+            />
+            <TouchableOpacity 
+              style={styles.ctaSecondaryButton}
+              onPress={() => router.push('/(auth)/register')}
+            >
+              <Text style={styles.ctaSecondaryText}>Créer un compte</Text>
+              <ArrowRight size={16} color="#fff" />
+            </TouchableOpacity>
+          </View>
+        </LinearGradient>
+      </View>
+      
+      {/* Footer */}
+      <View style={styles.footer}>
+        <View style={styles.footerContent}>
+          <View style={styles.footerLogo}>
+            <Sparkles size={24} color={Colors.primary} />
+            <Text style={styles.footerLogoText}>EventApp</Text>
+          </View>
+          <Text style={styles.footerText}>
+            La plateforme de référence pour organiser vos événements
+          </Text>
+          <Text style={styles.footerCopyright}>
+            © 2024 EventApp. Tous droits réservés.
+          </Text>
+        </View>
       </View>
     </ScrollView>
   );
@@ -158,179 +253,308 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  scrollContent: {
+  hero: {
+    paddingTop: 60,
     paddingBottom: 40,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-  },
-  loadingText: {
-    fontSize: 18,
-    color: Colors.text,
-    fontWeight: '600',
-  },
-  heroSection: {
-    paddingTop: 80,
-    paddingBottom: 60,
     paddingHorizontal: 20,
-    alignItems: 'center',
   },
   heroContent: {
     alignItems: 'center',
-    maxWidth: width - 40,
+    marginBottom: 30,
   },
-  heroIcon: {
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 20,
   },
-  heroTitle: {
-    fontSize: 36,
-    fontWeight: '900',
+  logoText: {
+    fontSize: 28,
+    fontWeight: '800',
     color: '#fff',
-    marginBottom: 16,
+    marginLeft: 12,
+  },
+  heroTitle: {
+    fontSize: 32,
+    fontWeight: '800',
+    color: '#fff',
     textAlign: 'center',
+    marginBottom: 16,
+    lineHeight: 40,
+  },
+  heroTitleAccent: {
+    color: '#FDE68A',
   },
   heroSubtitle: {
-    fontSize: 20,
-    fontWeight: '600',
+    fontSize: 18,
     color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
-    marginBottom: 16,
-    lineHeight: 28,
+    lineHeight: 26,
+    marginBottom: 32,
   },
-  heroDescription: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
-    textAlign: 'center',
-    lineHeight: 24,
+  heroButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 20,
   },
-  featuresSection: {
+  primaryButton: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  primaryButtonText: {
+    color: Colors.primary,
+    fontWeight: '700',
+  },
+  secondaryButton: {
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    paddingHorizontal: 24,
+  },
+  secondaryButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  heroImageContainer: {
+    alignItems: 'center',
+  },
+  heroImage: {
+    width: width - 40,
+    height: 200,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 10,
+  },
+  section: {
     padding: 20,
     paddingTop: 40,
   },
   sectionTitle: {
-    fontSize: 24,
-    fontWeight: '700',
+    fontSize: 28,
+    fontWeight: '800',
     color: Colors.text,
     textAlign: 'center',
-    marginBottom: 32,
-  },
-  featureCard: {
-    flexDirection: 'row',
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  featureIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(99, 102, 241, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  featureContent: {
-    flex: 1,
-  },
-  featureTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: Colors.text,
     marginBottom: 8,
   },
-  featureDescription: {
-    fontSize: 14,
-    color: Colors.textLight,
-    lineHeight: 20,
-  },
-  statsSection: {
-    padding: 20,
-    backgroundColor: Colors.backgroundAlt,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  statCard: {
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
-    flex: 1,
-    marginHorizontal: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  statNumber: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: Colors.text,
-    marginTop: 12,
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: Colors.textLight,
-    fontWeight: '500',
-    textAlign: 'center',
-  },
-  ctaSection: {
-    padding: 20,
-    paddingTop: 40,
-    alignItems: 'center',
-  },
-  ctaTitle: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: Colors.text,
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  ctaDescription: {
+  sectionSubtitle: {
     fontSize: 16,
     color: Colors.textLight,
     textAlign: 'center',
     marginBottom: 32,
     lineHeight: 24,
   },
-  buttonContainer: {
-    width: '100%',
-    gap: 12,
-    marginBottom: 24,
+  featuresGrid: {
+    gap: 20,
   },
-  primaryButton: {
-    shadowColor: Colors.primary,
+  featureCard: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 24,
+    alignItems: 'center',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  featureIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  featureTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: Colors.text,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  featureDescription: {
+    fontSize: 16,
+    color: Colors.textLight,
+    textAlign: 'center',
+    lineHeight: 24,
+  },
+  statsSection: {
+    padding: 20,
+    paddingTop: 40,
+  },
+  statsContainer: {
+    borderRadius: 20,
+    padding: 32,
+    alignItems: 'center',
+  },
+  statsTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: Colors.text,
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-around',
+    width: '100%',
+  },
+  statItem: {
+    alignItems: 'center',
+    minWidth: '45%',
+    marginBottom: 20,
+  },
+  statNumber: {
+    fontSize: 32,
+    fontWeight: '800',
+    color: Colors.primary,
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 14,
+    color: Colors.textLight,
+    fontWeight: '600',
+  },
+  testimonialsScroll: {
+    marginHorizontal: -20,
+    paddingHorizontal: 20,
+  },
+  testimonialCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    marginRight: 16,
+    width: width - 80,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  testimonialHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  testimonialImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    marginRight: 12,
+  },
+  testimonialInfo: {
+    flex: 1,
+  },
+  testimonialName: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: Colors.text,
+    marginBottom: 2,
+  },
+  testimonialRole: {
+    fontSize: 14,
+    color: Colors.textLight,
+  },
+  testimonialRating: {
+    flexDirection: 'row',
+  },
+  star: {
+    fontSize: 16,
+  },
+  testimonialComment: {
+    fontSize: 14,
+    color: Colors.text,
+    lineHeight: 20,
+    fontStyle: 'italic',
+  },
+  ctaSection: {
+    padding: 20,
+    paddingTop: 40,
+  },
+  ctaContainer: {
+    borderRadius: 20,
+    padding: 32,
+    alignItems: 'center',
+  },
+  ctaTitle: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  ctaSubtitle: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.9)',
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 24,
+  },
+  ctaButtons: {
+    gap: 12,
+    alignItems: 'center',
+  },
+  ctaButton: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 32,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 6,
   },
-  secondaryButton: {
-    borderWidth: 2,
-    borderColor: Colors.primary,
+  ctaButtonText: {
+    color: Colors.primary,
+    fontWeight: '700',
   },
-  demoButton: {
+  ctaSecondaryButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
     gap: 8,
+    marginTop: 8,
   },
-  demoButtonText: {
+  ctaSecondaryText: {
     fontSize: 16,
-    color: Colors.primary,
+    color: '#fff',
     fontWeight: '600',
+    textDecorationLine: 'underline',
+  },
+  footer: {
+    backgroundColor: Colors.backgroundAlt,
+    padding: 40,
+    paddingBottom: 60,
+  },
+  footerContent: {
+    alignItems: 'center',
+  },
+  footerLogo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  footerLogoText: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: Colors.primary,
+    marginLeft: 8,
+  },
+  footerText: {
+    fontSize: 16,
+    color: Colors.textLight,
+    textAlign: 'center',
+    marginBottom: 16,
+    lineHeight: 24,
+  },
+  footerCopyright: {
+    fontSize: 14,
+    color: Colors.textLight,
+    textAlign: 'center',
   },
 });

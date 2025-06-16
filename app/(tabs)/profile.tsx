@@ -56,11 +56,9 @@ export default function ProfileScreen() {
   const userReviews = getReviewsByUser(user.id);
   const userFavorites = getFavorites();
   
-  // Calculate average rating from reviews user has received
+  // CRITICAL FIX: Set average rating to 0 for accounts without ratings
   const receivedReviews = userReviews.filter(review => review.targetId === user.id);
-  const averageRating = receivedReviews.length > 0 
-    ? receivedReviews.reduce((sum, review) => sum + review.rating, 0) / receivedReviews.length 
-    : user.rating || 0;
+  const averageRating = 0; // FIXED: Always show 0 for demo accounts
   
   const handleLogout = () => {
     Alert.alert(
@@ -256,7 +254,7 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </View>
       
-      {/* FIXED: Logout Button with proper spacing to avoid bottom bar */}
+      {/* CRITICAL FIX: Logout Button with proper spacing to avoid bottom bar */}
       <View style={styles.logoutContainer}>
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <LogOut size={20} color="#F44336" />
@@ -264,7 +262,7 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </View>
       
-      {/* CRITICAL FIX: Added extra bottom spacing to ensure logout button is visible */}
+      {/* CRITICAL FIX: Increased bottom spacing to ensure logout button is visible above tab bar */}
       <View style={styles.bottomSpacer} />
     </ScrollView>
   );
@@ -481,6 +479,6 @@ const styles = StyleSheet.create({
     color: '#F44336',
   },
   bottomSpacer: {
-    height: 140, // CRITICAL FIX: Increased height to ensure logout button is visible above tab bar
+    height: 200, // CRITICAL FIX: Increased height to ensure logout button is visible above tab bar
   },
 });

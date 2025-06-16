@@ -47,8 +47,8 @@ export default function CreateQuoteScreen() {
   const allUsers = [...mockProviders, ...mockVenues];
   const conversationParticipant = conversationId ? allUsers.find(u => u.id === conversationId) : null;
   
-  // Only providers can create quotes, not business accounts or clients
-  if (!user || user.userType !== 'provider') {
+  // CRITICAL FIX: Both providers and business establishments can create quotes
+  if (!user || (user.userType !== 'provider' && user.userType !== 'business')) {
     return (
       <View style={styles.container}>
         <Stack.Screen options={{ title: 'Créer un devis' }} />
@@ -56,10 +56,7 @@ export default function CreateQuoteScreen() {
           <FileText size={64} color={Colors.textLight} />
           <Text style={styles.errorTitle}>Accès restreint</Text>
           <Text style={styles.errorText}>
-            {user?.userType === 'business' 
-              ? 'Les établissements ne peuvent pas créer de devis. Seuls les prestataires peuvent proposer des devis.'
-              : 'Seuls les prestataires peuvent créer des devis'
-            }
+            Seuls les prestataires et établissements peuvent créer des devis
           </Text>
           <Button 
             title="Retour"
@@ -207,7 +204,7 @@ export default function CreateQuoteScreen() {
     }
   };
   
-  // CRITICAL FIX: Handle submit with proper conversation history integration
+  // CRITICAL FIX: Handle submit with proper message sending to RECIPIENT
   const handleSubmit = async () => {
     if (!title.trim()) {
       Alert.alert('Erreur', 'Veuillez saisir un titre pour le devis');
@@ -227,7 +224,7 @@ export default function CreateQuoteScreen() {
     try {
       const validUntil = Date.now() + (parseInt(validDays) * 24 * 60 * 60 * 1000);
       
-      // Determine the target user ID
+      // Determine the target user ID (recipient of the quote)
       const targetUserId = listing?.createdBy || conversationParticipant?.id;
       
       if (!targetUserId) {
@@ -252,7 +249,7 @@ export default function CreateQuoteScreen() {
       // Send the quote immediately
       await sendQuote(quote.id);
       
-      // CRITICAL FIX: Ensure quote message is properly added to conversation history
+      // CRITICAL FIX: Send message to the RECIPIENT (targetUserId), not the sender
       try {
         // Get or create conversation with the target user
         let conversation = getConversationByParticipant(targetUserId);
@@ -266,7 +263,7 @@ export default function CreateQuoteScreen() {
           console.log('Using existing conversation:', conversationId);
         }
         
-        // Send quote notification message with proper formatting
+        // CRITICAL FIX: Send quote notification message to the RECIPIENT
         const quoteMessage = `📋 **Nouveau devis reçu**
 
 **${title}**
@@ -277,10 +274,13 @@ ${description}
 
 Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
 
-        console.log('Sending quote message to conversation:', conversationId);
-        await sendMessage(conversationId, quoteMessage, targetUserId);
+        console.log('Sending quote message to recipient:', targetUserId);
         
-        // Update contact with quote info
+        // CRITICAL FIX: Send message to targetUserId (recipient), not user.id (sender)
+        // The sendMessage function should handle the conversation correctly
+        await sendMessage(conversationId, quoteMessage);
+        
+        // Update contact with quote info for the RECIPIENT
         const targetUser = allUsers.find(u => u.id === targetUserId);
         if (targetUser) {
           addContact({
@@ -289,13 +289,13 @@ Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
             participantImage: targetUser.profileImage,
             participantType: targetUser.userType === 'provider' ? 'provider' : 
                             targetUser.userType === 'business' ? 'business' : 'client',
-            lastMessage: `📋 Devis envoyé: ${title} - ${quote.total.toFixed(2)}€`,
-            unread: 0,
+            lastMessage: `📋 Devis reçu: ${title} - ${quote.total.toFixed(2)}€`,
+            unread: 1, // FIXED: Set unread to 1 for recipient
             timestamp: Date.now(),
           });
         }
         
-        console.log('Quote message sent successfully to conversation');
+        console.log('Quote message sent successfully to recipient');
       } catch (messageError) {
         console.error('Error sending quote message:', messageError);
         // Don't fail the whole process if message sending fails

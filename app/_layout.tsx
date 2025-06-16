@@ -1,11 +1,12 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
+import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { trpc, trpcClient } from "@/lib/trpc";
+import { useAuth } from "@/hooks/useAuth";
 import Colors from "@/constants/colors";
 
 export const unstable_settings = {
@@ -42,6 +43,32 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const [queryClient] = useState(() => new QueryClient());
+  const { isAuthenticated } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
+
+  // CRITICAL FIX: Ensure proper routing based on authentication state
+  useEffect(() => {
+    const inAuthGroup = segments[0] === '(auth)';
+    const inTabsGroup = segments[0] === '(tabs)';
+    
+    console.log('Current segments:', segments);
+    console.log('Is authenticated:', isAuthenticated);
+    console.log('In auth group:', inAuthGroup);
+    console.log('In tabs group:', inTabsGroup);
+    
+    // CRITICAL FIX: If user is not authenticated and trying to access protected routes
+    if (!isAuthenticated && inTabsGroup) {
+      console.log('User not authenticated, redirecting to landing page');
+      router.replace('/');
+    }
+    
+    // CRITICAL FIX: If user is authenticated and on landing page, redirect to tabs
+    if (isAuthenticated && segments.length === 1 && segments[0] === 'index') {
+      console.log('User authenticated on landing page, redirecting to tabs');
+      router.replace('/(tabs)');
+    }
+  }, [isAuthenticated, segments]);
 
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
@@ -62,7 +89,7 @@ function RootLayoutNav() {
             },
           }}
         >
-          {/* Landing page - always show first unless authenticated */}
+          {/* CRITICAL FIX: Landing page - always show first unless authenticated */}
           <Stack.Screen 
             name="index" 
             options={{ 

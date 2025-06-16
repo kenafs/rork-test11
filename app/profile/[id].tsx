@@ -84,7 +84,7 @@ export default function ProfileDetailScreen() {
   const isOwnProfile = currentUser && currentUser.id === id;
   
   // Get social links safely - FIXED: Added proper type checking
-  const socialLinks = (user as any).socialLinks || {};
+  const socialLinks = user.socialLinks || {};
   
   // Render provider-specific info
   const renderProviderInfo = (provider: Provider) => (
@@ -200,7 +200,7 @@ export default function ProfileDetailScreen() {
   
   // Render portfolio - FIXED: Added proper type checking
   const renderPortfolio = () => {
-    const portfolio = (user as any).portfolio || [];
+    const portfolio = user.portfolio || [];
     
     if (portfolio.length === 0) return null;
     
