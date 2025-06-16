@@ -10,7 +10,7 @@ export const mockListings: Listing[] = [
     creatorType: 'provider',
     creatorName: mockProviders[0].name,
     creatorImage: mockProviders[0].profileImage,
-    creatorRating: 0, // CRITICAL FIX: Set to 0
+    creatorRating: 0,
     creatorReviewCount: 0,
     location: mockProviders[0].location!,
     category: 'DJ',
@@ -31,7 +31,7 @@ export const mockListings: Listing[] = [
     creatorType: 'business',
     creatorName: mockVenues[0].name,
     creatorImage: mockVenues[0].profileImage,
-    creatorRating: 0, // CRITICAL FIX: Set to 0
+    creatorRating: 0,
     creatorReviewCount: 0,
     location: mockVenues[0].location!,
     category: 'Personnel',
@@ -52,7 +52,7 @@ export const mockListings: Listing[] = [
     creatorType: 'provider',
     creatorName: mockProviders[1].name,
     creatorImage: mockProviders[1].profileImage,
-    creatorRating: 0, // CRITICAL FIX: Set to 0
+    creatorRating: 0,
     creatorReviewCount: 0,
     location: mockProviders[1].location!,
     category: 'Traiteur',
@@ -72,7 +72,7 @@ export const mockListings: Listing[] = [
     creatorType: 'business',
     creatorName: mockVenues[0].name,
     creatorImage: mockVenues[0].profileImage,
-    creatorRating: 0, // CRITICAL FIX: Set to 0
+    creatorRating: 0,
     creatorReviewCount: 0,
     location: mockVenues[0].location!,
     category: 'Lieu',
@@ -92,7 +92,7 @@ export const mockListings: Listing[] = [
     creatorType: 'provider',
     creatorName: mockProviders[2].name,
     creatorImage: mockProviders[2].profileImage,
-    creatorRating: 0, // CRITICAL FIX: Set to 0
+    creatorRating: 0,
     creatorReviewCount: 0,
     location: mockProviders[2].location!,
     category: 'Personnel',
@@ -113,7 +113,7 @@ export const mockListings: Listing[] = [
     creatorType: 'business',
     creatorName: mockVenues[2].name,
     creatorImage: mockVenues[2].profileImage,
-    creatorRating: 0, // CRITICAL FIX: Set to 0
+    creatorRating: 0,
     creatorReviewCount: 0,
     location: mockVenues[2].location!,
     category: 'Lieu',

@@ -107,7 +107,7 @@ export default function ListingDetailScreen() {
     }
   };
   
-  // Handle quote request
+  // Handle quote request - CRITICAL FIX: Allow venues to create quotes too
   const handleQuoteRequest = async () => {
     if (!isAuthenticated) {
       Alert.alert(
@@ -296,9 +296,9 @@ export default function ListingDetailScreen() {
             style={styles.contactButton}
           />
           
-          {/* CRITICAL FIX: Show quote button for providers, businesses, and when requesting quotes from providers */}
+          {/* CRITICAL FIX: Show quote button for providers, businesses, and when requesting quotes from providers/businesses */}
           {((user?.userType === 'provider' || user?.userType === 'business') || 
-            (listing.creatorType === 'provider' && user?.userType === 'client')) && (
+            ((listing.creatorType === 'provider' || listing.creatorType === 'business') && user?.userType === 'client')) && (
             <Button
               title={(user?.userType === 'provider' || user?.userType === 'business') ? "📋 Créer devis" : "📋 Demander devis"}
               variant="outline"

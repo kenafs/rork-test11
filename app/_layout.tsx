@@ -54,7 +54,7 @@ function RootLayoutNav() {
     
     const inAuthGroup = segments[0] === '(auth)';
     const inTabsGroup = segments[0] === '(tabs)';
-    const onLandingPage = segments.length === 0 || (segments.length === 1 && segments[0] === 'index');
+    const onLandingPage = segments.length === 0;
     
     console.log('Routing check:', { 
       isAuthenticated, 
