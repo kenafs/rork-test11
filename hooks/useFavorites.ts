@@ -31,12 +31,6 @@ export const useFavorites = create<FavoritesState>()(
       setCurrentUser: (userId: string | null) => {
         console.log('Setting current user in favorites:', userId);
         set({ currentUserId: userId });
-        
-        // CRITICAL FIX: When setting user to null (logout), don't clear favorites data
-        // Just clear the current user context
-        if (!userId) {
-          console.log('User logged out, clearing current user context but keeping favorites data');
-        }
       },
       
       addToFavorites: (listingId: string) => {
@@ -46,7 +40,6 @@ export const useFavorites = create<FavoritesState>()(
           return;
         }
         
-        // CRITICAL FIX: Ensure user-specific favorites isolation
         const currentUserFavorites = userFavorites[currentUserId] || [];
         if (!currentUserFavorites.includes(listingId)) {
           const newUserFavorites = {
@@ -70,7 +63,6 @@ export const useFavorites = create<FavoritesState>()(
           return;
         }
         
-        // CRITICAL FIX: Ensure user-specific favorites isolation
         const currentUserFavorites = userFavorites[currentUserId] || [];
         const newFavorites = currentUserFavorites.filter(id => id !== listingId);
         
@@ -93,10 +85,8 @@ export const useFavorites = create<FavoritesState>()(
           return false;
         }
         
-        // CRITICAL FIX: Check only current user's favorites
         const currentUserFavorites = userFavorites[currentUserId] || [];
         const isFav = currentUserFavorites.includes(listingId);
-        console.log(`Checking if ${listingId} is favorite for user ${currentUserId}:`, isFav);
         return isFav;
       },
       
@@ -107,7 +97,6 @@ export const useFavorites = create<FavoritesState>()(
           return [];
         }
         
-        // CRITICAL FIX: Return only current user's favorite listings
         const currentUserFavoriteIds = userFavorites[currentUserId] || [];
         console.log(`Getting favorite listings for user ${currentUserId}:`, currentUserFavoriteIds);
         return mockListings.filter(listing => currentUserFavoriteIds.includes(listing.id));
@@ -120,7 +109,6 @@ export const useFavorites = create<FavoritesState>()(
           return [];
         }
         
-        // CRITICAL FIX: Return only current user's favorites
         const currentUserFavorites = userFavorites[currentUserId] || [];
         console.log(`Getting favorites for user ${currentUserId}:`, currentUserFavorites);
         return currentUserFavorites;
@@ -145,7 +133,6 @@ export const useFavorites = create<FavoritesState>()(
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({ 
         userFavorites: state.userFavorites,
-        // CRITICAL FIX: Don't persist currentUserId - it should be set on login
       }),
     }
   )

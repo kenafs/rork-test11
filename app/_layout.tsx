@@ -51,22 +51,33 @@ function RootLayoutNav() {
   useEffect(() => {
     const inAuthGroup = segments[0] === '(auth)';
     const inTabsGroup = segments[0] === '(tabs)';
+    const onLandingPage = segments.length === 1 && segments[0] === 'index';
     
     console.log('Current segments:', segments);
     console.log('Is authenticated:', isAuthenticated);
     console.log('In auth group:', inAuthGroup);
     console.log('In tabs group:', inTabsGroup);
+    console.log('On landing page:', onLandingPage);
     
     // CRITICAL FIX: If user is not authenticated and trying to access protected routes
-    if (!isAuthenticated && inTabsGroup) {
+    if (!isAuthenticated && (inTabsGroup || segments.includes('quotes') || segments.includes('favorites') || segments.includes('my-listings'))) {
       console.log('User not authenticated, redirecting to landing page');
       router.replace('/');
+      return;
     }
     
     // CRITICAL FIX: If user is authenticated and on landing page, redirect to tabs
-    if (isAuthenticated && segments.length === 1 && segments[0] === 'index') {
+    if (isAuthenticated && onLandingPage) {
       console.log('User authenticated on landing page, redirecting to tabs');
       router.replace('/(tabs)');
+      return;
+    }
+    
+    // CRITICAL FIX: If user is not authenticated and not on landing page or auth pages, redirect to landing
+    if (!isAuthenticated && !onLandingPage && !inAuthGroup) {
+      console.log('User not authenticated and not on allowed pages, redirecting to landing page');
+      router.replace('/');
+      return;
     }
   }, [isAuthenticated, segments]);
 

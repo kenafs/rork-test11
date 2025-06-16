@@ -65,7 +65,7 @@ export default function QuotesScreen() {
       await acceptQuote(quoteId);
       Alert.alert('Succès', 'Devis accepté avec succès');
     } catch (error) {
-      Alert.alert('Erreur', 'Impossible d\'accepter le devis');
+      Alert.alert('Erreur', "Impossible d'accepter le devis");
     }
   };
 
@@ -104,7 +104,7 @@ export default function QuotesScreen() {
               await payQuote(quoteId);
               Alert.alert('Succès', 'Paiement effectué avec succès');
             } catch (error) {
-              Alert.alert('Erreur', 'Impossible d\'effectuer le paiement');
+              Alert.alert('Erreur', "Impossible d'effectuer le paiement");
             }
           }
         }
