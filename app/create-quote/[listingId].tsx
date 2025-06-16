@@ -47,7 +47,7 @@ export default function CreateQuoteScreen() {
   const allUsers = [...mockProviders, ...mockVenues];
   const conversationParticipant = conversationId ? allUsers.find(u => u.id === conversationId) : null;
   
-  // CRITICAL FIX: Both providers and business establishments can create quotes
+  // FIXED: Both providers and business establishments can create quotes
   if (!user || (user.userType !== 'provider' && user.userType !== 'business')) {
     return (
       <View style={styles.container}>
@@ -204,7 +204,7 @@ export default function CreateQuoteScreen() {
     }
   };
   
-  // CRITICAL FIX: Handle submit with proper message sending to RECIPIENT
+  // CRITICAL FIX: Handle submit with proper conversation history integration and correct recipient
   const handleSubmit = async () => {
     if (!title.trim()) {
       Alert.alert('Erreur', 'Veuillez saisir un titre pour le devis');
@@ -257,7 +257,6 @@ export default function CreateQuoteScreen() {
         
         if (!conversation) {
           console.log('Creating new conversation for quote with user:', targetUserId);
-          // CRITICAL FIX: Use only 2 arguments for createConversation
           conversationId = await createConversation(targetUserId);
         } else {
           conversationId = conversation.id;
@@ -276,10 +275,8 @@ ${description}
 Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
 
         console.log('Sending quote message to recipient:', targetUserId);
-        
         // CRITICAL FIX: Send message to targetUserId (recipient), not user.id (sender)
-        // The sendMessage function should handle the conversation correctly
-        await sendMessage(conversationId, quoteMessage);
+        await sendMessage(conversationId, quoteMessage, targetUserId);
         
         // Update contact with quote info for the RECIPIENT
         const targetUser = allUsers.find(u => u.id === targetUserId);

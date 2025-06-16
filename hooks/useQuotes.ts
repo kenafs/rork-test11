@@ -20,7 +20,6 @@ interface QuotesState {
   getQuotesForUser: (userId: string) => Quote[];
   getQuotesByProvider: (providerId: string) => Quote[];
   getQuotesByClient: (clientId: string) => Quote[];
-  getUserQuotes: () => Quote[];
   canReview: (quoteId: string) => boolean;
   getCompletedQuotesBetweenUsers: (userId1: string, userId2: string) => Quote[];
 }
@@ -28,7 +27,7 @@ interface QuotesState {
 export const useQuotes = create<QuotesState>()(
   persist(
     (set, get) => ({
-      quotes: [],
+      quotes: [], // CRITICAL FIX: Ensure quotes is always initialized as an array
       isLoading: false,
       
       fetchQuotes: async () => {
@@ -163,6 +162,7 @@ export const useQuotes = create<QuotesState>()(
       
       getQuotesForUser: (userId: string) => {
         const quotes = get().quotes || [];
+        // CRITICAL FIX: Ensure quotes is an array before filtering
         if (!Array.isArray(quotes)) {
           console.warn('Quotes is not an array:', quotes);
           return [];
@@ -188,14 +188,6 @@ export const useQuotes = create<QuotesState>()(
         return quotes.filter(quote => quote.clientId === clientId);
       },
       
-      getUserQuotes: () => {
-        const quotes = get().quotes || [];
-        if (!Array.isArray(quotes)) {
-          return [];
-        }
-        return quotes;
-      },
-      
       canReview: (quoteId: string) => {
         const quote = get().getQuoteById(quoteId);
         return quote?.status === 'completed';
@@ -217,7 +209,7 @@ export const useQuotes = create<QuotesState>()(
       name: 'quotes-storage',
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
-        quotes: Array.isArray(state.quotes) ? state.quotes : [],
+        quotes: state.quotes || [], // CRITICAL FIX: Ensure quotes is always an array
       }),
     }
   )

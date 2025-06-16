@@ -21,7 +21,7 @@ export default function QuotesScreen() {
     fetchQuotes();
   }, []);
   
-  // CRITICAL FIX: Get quotes based on user type and handle all user types properly
+  // FIXED: Get quotes based on user type
   const userQuotes = user ? getQuotesForUser(user.id) : [];
   
   const getStatusColor = (status: string) => {
@@ -65,7 +65,7 @@ export default function QuotesScreen() {
       await acceptQuote(quoteId);
       Alert.alert('Succès', 'Devis accepté avec succès');
     } catch (error) {
-      Alert.alert('Erreur', "Impossible d'accepter le devis");
+      Alert.alert('Erreur', 'Impossible d\'accepter le devis');
     }
   };
 
@@ -104,7 +104,7 @@ export default function QuotesScreen() {
               await payQuote(quoteId);
               Alert.alert('Succès', 'Paiement effectué avec succès');
             } catch (error) {
-              Alert.alert('Erreur', "Impossible d'effectuer le paiement");
+              Alert.alert('Erreur', 'Impossible d\'effectuer le paiement');
             }
           }
         }
@@ -359,10 +359,7 @@ export default function QuotesScreen() {
                     <Text style={styles.pdfButtonText}>PDF</Text>
                   </TouchableOpacity>
                   
-                  {/* CRITICAL FIX: Handle business accounts properly - they can be both clients and providers */}
-                  {((user.userType === 'client') || 
-                    (user.userType === 'business' && quote.clientId === user.id)) && 
-                   quote.status === 'pending' && (
+                  {(user.userType === 'client' || user.userType === 'business') && quote.status === 'pending' && (
                     <>
                       <TouchableOpacity 
                         style={styles.acceptButton}
@@ -382,10 +379,7 @@ export default function QuotesScreen() {
                     </>
                   )}
                   
-                  {/* Payment button for clients and businesses receiving quotes */}
-                  {((user.userType === 'client') || 
-                    (user.userType === 'business' && quote.clientId === user.id)) && 
-                   quote.status === 'accepted' && (
+                  {(user.userType === 'client' || user.userType === 'business') && quote.status === 'accepted' && (
                     <TouchableOpacity 
                       style={styles.payButton}
                       onPress={() => handlePayQuote(quote.id)}
@@ -395,10 +389,7 @@ export default function QuotesScreen() {
                     </TouchableOpacity>
                   )}
                   
-                  {/* Complete button for providers and businesses sending quotes */}
-                  {((user.userType === 'provider') || 
-                    (user.userType === 'business' && quote.providerId === user.id)) && 
-                   quote.status === 'paid' && (
+                  {user.userType === 'provider' && quote.status === 'paid' && (
                     <TouchableOpacity 
                       style={styles.completeButton}
                       onPress={() => handleCompleteQuote(quote.id)}
@@ -444,7 +435,7 @@ export default function QuotesScreen() {
         )}
       </ScrollView>
 
-      {/* CRITICAL FIX: Enhanced Quote Preview Modal with better PDF preview functionality */}
+      {/* Quote Preview Modal - FIXED: Added PDF preview functionality */}
       <Modal
         visible={showPreview}
         animationType="slide"

@@ -81,11 +81,8 @@ export interface Listing {
   location: Location;
   category: string;
   price?: number;
-  priceType?: 'fixed' | 'hourly' | 'daily' | 'negotiable';
-  date?: number;
   images?: string[];
   tags?: string[];
-  status?: 'active' | 'inactive' | 'completed';
   createdAt: number;
   updatedAt: number;
 }
