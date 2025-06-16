@@ -10,8 +10,8 @@ export const mockListings: Listing[] = [
     creatorType: 'provider',
     creatorName: mockProviders[0].name,
     creatorImage: mockProviders[0].profileImage,
-    creatorRating: mockProviders[0].rating,
-    creatorReviewCount: mockProviders[0].reviewCount,
+    creatorRating: 0, // CRITICAL FIX: Set to 0
+    creatorReviewCount: 0,
     location: mockProviders[0].location!,
     category: 'DJ',
     price: 800,
@@ -31,8 +31,8 @@ export const mockListings: Listing[] = [
     creatorType: 'business',
     creatorName: mockVenues[0].name,
     creatorImage: mockVenues[0].profileImage,
-    creatorRating: mockVenues[0].rating,
-    creatorReviewCount: mockVenues[0].reviewCount,
+    creatorRating: 0, // CRITICAL FIX: Set to 0
+    creatorReviewCount: 0,
     location: mockVenues[0].location!,
     category: 'Personnel',
     price: 250,
@@ -52,8 +52,8 @@ export const mockListings: Listing[] = [
     creatorType: 'provider',
     creatorName: mockProviders[1].name,
     creatorImage: mockProviders[1].profileImage,
-    creatorRating: mockProviders[1].rating,
-    creatorReviewCount: mockProviders[1].reviewCount,
+    creatorRating: 0, // CRITICAL FIX: Set to 0
+    creatorReviewCount: 0,
     location: mockProviders[1].location!,
     category: 'Traiteur',
     price: 45, // per person
@@ -72,8 +72,8 @@ export const mockListings: Listing[] = [
     creatorType: 'business',
     creatorName: mockVenues[0].name,
     creatorImage: mockVenues[0].profileImage,
-    creatorRating: mockVenues[0].rating,
-    creatorReviewCount: mockVenues[0].reviewCount,
+    creatorRating: 0, // CRITICAL FIX: Set to 0
+    creatorReviewCount: 0,
     location: mockVenues[0].location!,
     category: 'Lieu',
     price: 3000,
@@ -92,8 +92,8 @@ export const mockListings: Listing[] = [
     creatorType: 'provider',
     creatorName: mockProviders[2].name,
     creatorImage: mockProviders[2].profileImage,
-    creatorRating: mockProviders[2].rating,
-    creatorReviewCount: mockProviders[2].reviewCount,
+    creatorRating: 0, // CRITICAL FIX: Set to 0
+    creatorReviewCount: 0,
     location: mockProviders[2].location!,
     category: 'Personnel',
     price: 1200,
@@ -113,8 +113,8 @@ export const mockListings: Listing[] = [
     creatorType: 'business',
     creatorName: mockVenues[2].name,
     creatorImage: mockVenues[2].profileImage,
-    creatorRating: mockVenues[2].rating,
-    creatorReviewCount: mockVenues[2].reviewCount,
+    creatorRating: 0, // CRITICAL FIX: Set to 0
+    creatorReviewCount: 0,
     location: mockVenues[2].location!,
     category: 'Lieu',
     price: 12000,
