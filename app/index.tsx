@@ -31,14 +31,6 @@ export default function LandingScreen() {
   const scrollY = useSharedValue(0);
   const sparkleRotation = useSharedValue(0);
   
-  // CRITICAL FIX: Redirect authenticated users to main app
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      console.log('User is authenticated, redirecting to main app');
-      router.replace('/(tabs)');
-    }
-  }, [isAuthenticated, user]);
-  
   // Sparkle animation
   useEffect(() => {
     sparkleRotation.value = withRepeat(
@@ -48,10 +40,13 @@ export default function LandingScreen() {
     );
   }, []);
   
-  // CRITICAL FIX: Show landing page only for non-authenticated users
-  if (isAuthenticated && user) {
-    return null; // Will redirect via useEffect
-  }
+  // CRITICAL FIX: Move redirect logic after all hooks
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      console.log('User is authenticated, redirecting to main app');
+      router.replace('/(tabs)');
+    }
+  }, [isAuthenticated, user]);
   
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -84,6 +79,11 @@ export default function LandingScreen() {
       transform: [{ rotate: `${sparkleRotation.value}deg` }],
     };
   });
+  
+  // CRITICAL FIX: Show landing page only for non-authenticated users
+  if (isAuthenticated && user) {
+    return null; // Will redirect via useEffect
+  }
   
   const features = [
     {

@@ -19,7 +19,7 @@
         "expo-brightness": "~13.1.4",
         "expo-constants": "~17.1.6",
         "expo-device": "~7.1.4",
-        "expo-font": "~13.3.0",
+        "expo-font": "~13.3.1",
         "expo-haptics": "~14.1.4",
         "expo-image": "~2.3.0",
         "expo-image-picker": "~16.1.4",
@@ -731,7 +731,7 @@
 
     "expo-file-system": ["expo-file-system@18.1.8", "", { "peerDependencies": { "expo": "*", "react-native": "*" } }, "sha512-1HXpunpRMGnoIw0+f2urjUNaePAvac1X9wIwVRsGJTw7A2WHBFATRuFB7jUOhZac/qK1MDm0GZsggzoRi1oteQ=="],
 
-    "expo-font": ["expo-font@13.3.0", "", { "dependencies": { "fontfaceobserver": "^2.1.0" }, "peerDependencies": { "expo": "*", "react": "*" } }, "sha512-TdbHoxCfLWN9Uvnqsrcak+5EkDCbNIWfgtNWx3JZ6sD9WYB7gvbS+Eu5YlZ85NvCOSJ9Khmw4mFQxEi2LUPZfQ=="],
+    "expo-font": ["expo-font@13.3.1", "", { "dependencies": { "fontfaceobserver": "^2.1.0" }, "peerDependencies": { "expo": "*", "react": "*" } }, "sha512-d+xrHYvSM9WB42wj8vP9OOFWyxed5R1evphfDb6zYBmC1dA9Hf89FpT7TNFtj2Bk3clTnpmVqQTCYbbA2P3CLg=="],
 
     "expo-haptics": ["expo-haptics@14.1.4", "", { "peerDependencies": { "expo": "*" } }, "sha512-QZdE3NMX74rTuIl82I+n12XGwpDWKb8zfs5EpwsnGi/D/n7O2Jd4tO5ivH+muEG/OCJOMq5aeaVDqqaQOhTkcA=="],
 
@@ -1552,6 +1552,8 @@
     "expo/@expo/vector-icons": ["@expo/vector-icons@14.0.4", "", { "dependencies": { "prop-types": "^15.8.1" } }, "sha512-+yKshcbpDfbV4zoXOgHxCwh7lkE9VVTT5T03OUlBsqfze1PLy6Hi4jp1vSb1GVbY6eskvMIivGVc9SKzIv0oEQ=="],
 
     "expo/expo-constants": ["expo-constants@17.1.4", "", { "dependencies": { "@expo/config": "~11.0.6", "@expo/env": "~1.0.4" }, "peerDependencies": { "expo": "*", "react-native": "*" } }, "sha512-0gI7OAyCsiCDxdPP+tDx/WiMMRoViTdDJD5lRBzNKvN+8gZbJjG6G4HMOEEHE7ReXkhwHW0u1mP42STHJRXJiw=="],
+
+    "expo/expo-font": ["expo-font@13.3.0", "", { "dependencies": { "fontfaceobserver": "^2.1.0" }, "peerDependencies": { "expo": "*", "react": "*" } }, "sha512-TdbHoxCfLWN9Uvnqsrcak+5EkDCbNIWfgtNWx3JZ6sD9WYB7gvbS+Eu5YlZ85NvCOSJ9Khmw4mFQxEi2LUPZfQ=="],
 
     "expo-asset/expo-constants": ["expo-constants@17.1.4", "", { "dependencies": { "@expo/config": "~11.0.6", "@expo/env": "~1.0.4" }, "peerDependencies": { "expo": "*", "react-native": "*" } }, "sha512-0gI7OAyCsiCDxdPP+tDx/WiMMRoViTdDJD5lRBzNKvN+8gZbJjG6G4HMOEEHE7ReXkhwHW0u1mP42STHJRXJiw=="],
 

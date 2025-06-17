@@ -183,7 +183,7 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
       
-      {/* Enhanced Header with Blur Effect */}
+      {/* Enhanced Header with Blur Effect - FIXED: Better centering and alignment */}
       <Animated.View style={[styles.header, headerStyle]}>
         <BlurView intensity={80} style={styles.headerBlur}>
           <LinearGradient
@@ -193,10 +193,12 @@ export default function HomeScreen() {
             end={{ x: 1, y: 1 }}
           >
             <Animated.View entering={FadeIn.delay(200)} style={styles.headerContent}>
-              <Text style={styles.welcomeText}>{getWelcomeMessage()}</Text>
-              <Text style={styles.subtitleText}>{getSubtitle()}</Text>
+              <View style={styles.welcomeSection}>
+                <Text style={styles.welcomeText}>{getWelcomeMessage()}</Text>
+                <Text style={styles.subtitleText}>{getSubtitle()}</Text>
+              </View>
               
-              {/* Enhanced Stats Row with Glassmorphism */}
+              {/* Enhanced Stats Row with Glassmorphism - FIXED: Better spacing and alignment */}
               <Animated.View entering={SlideInDown.delay(400)} style={styles.statsRow}>
                 {[
                   { icon: Heart, value: safeFavorites.length || 0, label: 'Favoris', color: '#FF6B6B' },
@@ -207,6 +209,7 @@ export default function HomeScreen() {
                   <Animated.View 
                     key={`stat-${index}`}
                     entering={ZoomIn.delay(600 + index * 100)}
+                    style={styles.statCardWrapper}
                   >
                     <BlurView intensity={30} style={styles.statCard}>
                       <stat.icon size={16} color={stat.color} />
@@ -218,7 +221,7 @@ export default function HomeScreen() {
               </Animated.View>
               
               {user && user.userType !== 'client' && (
-                <Animated.View entering={SlideInDown.delay(800)}>
+                <Animated.View entering={SlideInDown.delay(800)} style={styles.createButtonContainer}>
                   <TouchableOpacity 
                     style={styles.createButton}
                     onPress={handleCreatePress}
@@ -348,34 +351,46 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
   headerContent: {
-    alignItems: 'flex-start',
+    alignItems: 'center', // FIXED: Center all content
+  },
+  welcomeSection: {
+    alignItems: 'center', // FIXED: Center welcome section
+    marginBottom: 24,
   },
   welcomeText: {
     fontSize: 32,
     fontWeight: '800',
     color: '#fff',
     marginBottom: 8,
+    textAlign: 'center', // FIXED: Center text
   },
   subtitleText: {
     fontSize: 16,
     color: 'rgba(255, 255, 255, 0.9)',
-    marginBottom: 24,
     lineHeight: 22,
+    textAlign: 'center', // FIXED: Center text
+    paddingHorizontal: 20,
   },
   statsRow: {
     flexDirection: 'row',
+    justifyContent: 'center', // FIXED: Center stats row
     gap: 10,
     marginBottom: 24,
     width: '100%',
+    paddingHorizontal: 10,
+  },
+  statCardWrapper: {
+    flex: 1,
+    maxWidth: 80, // FIXED: Limit max width for better alignment
   },
   statCard: {
-    flex: 1,
     borderRadius: 16,
     padding: 12,
     alignItems: 'center',
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
+    minHeight: 80, // FIXED: Consistent height
   },
   statCardNumber: {
     fontSize: 16,
@@ -388,14 +403,21 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: 'rgba(255, 255, 255, 0.8)',
     fontWeight: '500',
+    textAlign: 'center',
+  },
+  createButtonContainer: {
+    alignItems: 'center', // FIXED: Center create button
+    width: '100%',
   },
   createButton: {
     borderRadius: 25,
     overflow: 'hidden',
+    minWidth: 200, // FIXED: Consistent button width
   },
   createButtonBlur: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center', // FIXED: Center button content
     paddingVertical: 12,
     paddingHorizontal: 20,
     gap: 8,
