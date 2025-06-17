@@ -11,6 +11,15 @@ import Colors from '@/constants/colors';
 import Button from '@/components/Button';
 import { Plus, Trash2, Calculator, FileText } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
+import Animated, { 
+  FadeIn, 
+  SlideInDown, 
+  ZoomIn,
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring
+} from 'react-native-reanimated';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import * as Haptics from 'expo-haptics';
@@ -37,6 +46,8 @@ export default function CreateQuoteScreen() {
   ]);
   const [validDays, setValidDays] = useState('30');
   
+  const animatedScale = useSharedValue(1);
+  
   // Find the listing or handle conversation quotes
   const listing = listingId?.startsWith('conversation-') 
     ? null 
@@ -54,7 +65,7 @@ export default function CreateQuoteScreen() {
     return (
       <View style={styles.container}>
         <Stack.Screen options={{ title: 'Créer un devis' }} />
-        <View style={styles.errorContainer}>
+        <Animated.View entering={FadeIn} style={styles.errorContainer}>
           <FileText size={64} color={Colors.textLight} />
           <Text style={styles.errorTitle}>Accès restreint</Text>
           <Text style={styles.errorText}>
@@ -65,16 +76,20 @@ export default function CreateQuoteScreen() {
             onPress={() => router.back()}
             style={styles.backButton}
           />
-        </View>
+        </Animated.View>
       </View>
     );
   }
   
-  // Add new item
+  // Add new item with animation
   const addItem = () => {
     if (Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
+    animatedScale.value = withSpring(0.95, { damping: 15 }, () => {
+      animatedScale.value = withSpring(1);
+    });
+    
     const newItem: QuoteItem = {
       id: `item-${Date.now()}-${Math.random()}`,
       name: '',
@@ -329,6 +344,12 @@ Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
     }
   };
   
+  const animatedButtonStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: animatedScale.value }],
+    };
+  });
+  
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ 
@@ -344,25 +365,29 @@ Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
         <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
-          <LinearGradient
-            colors={[Colors.primary, Colors.secondary]}
-            style={styles.header}
-          >
-            <View style={styles.headerContent}>
-              <View style={styles.headerIcon}>
-                <FileText size={32} color="#fff" />
-              </View>
-              <Text style={styles.title}>💰 Créer un devis</Text>
-              {listing && (
-                <Text style={styles.subtitle}>Pour: {listing.title}</Text>
-              )}
-              {conversationParticipant && (
-                <Text style={styles.subtitle}>Pour: {conversationParticipant.name}</Text>
-              )}
-            </View>
-          </LinearGradient>
+          <Animated.View entering={FadeIn.delay(200)}>
+            <BlurView intensity={20} style={styles.header}>
+              <LinearGradient
+                colors={[Colors.primary, Colors.secondary]}
+                style={styles.headerGradient}
+              >
+                <View style={styles.headerContent}>
+                  <Animated.View entering={ZoomIn.delay(400)} style={styles.headerIcon}>
+                    <FileText size={32} color="#fff" />
+                  </Animated.View>
+                  <Text style={styles.title}>💰 Créer un devis</Text>
+                  {listing && (
+                    <Text style={styles.subtitle}>Pour: {listing.title}</Text>
+                  )}
+                  {conversationParticipant && (
+                    <Text style={styles.subtitle}>Pour: {conversationParticipant.name}</Text>
+                  )}
+                </View>
+              </LinearGradient>
+            </BlurView>
+          </Animated.View>
           
-          <View style={styles.section}>
+          <Animated.View entering={SlideInDown.delay(300)} style={styles.section}>
             <Text style={styles.sectionTitle}>📝 Informations générales</Text>
             
             <View style={styles.formGroup}>
@@ -401,115 +426,123 @@ Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
                 placeholderTextColor={Colors.textLight}
               />
             </View>
-          </View>
+          </Animated.View>
           
-          <View style={styles.section}>
+          <Animated.View entering={SlideInDown.delay(400)} style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>📋 Éléments du devis</Text>
-              <TouchableOpacity style={styles.addButton} onPress={addItem}>
-                <Plus size={20} color="#fff" />
-              </TouchableOpacity>
+              <Animated.View style={animatedButtonStyle}>
+                <TouchableOpacity style={styles.addButton} onPress={addItem}>
+                  <BlurView intensity={80} style={styles.addButtonBlur}>
+                    <Plus size={20} color="#fff" />
+                  </BlurView>
+                </TouchableOpacity>
+              </Animated.View>
             </View>
             
             {items.map((item, index) => (
-              <LinearGradient
+              <Animated.View
                 key={`quote-item-${item.id}`}
-                colors={['#FFFFFF', '#F8FAFC']}
-                style={styles.itemCard}
+                entering={SlideInDown.delay(500 + index * 100)}
               >
-                <View style={styles.itemHeader}>
-                  <Text style={styles.itemNumber}>Élément {index + 1}</Text>
-                  {items.length > 1 && (
-                    <TouchableOpacity
-                      style={styles.removeButton}
-                      onPress={() => removeItem(item.id)}
-                    >
-                      <Trash2 size={16} color={Colors.error} />
-                    </TouchableOpacity>
-                  )}
-                </View>
-                
-                <View style={styles.formGroup}>
-                  <Text style={styles.label}>Nom/Description *</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={item.name}
-                    onChangeText={(value) => updateItem(item.id, 'name', value)}
-                    placeholder="Ex: Animation musicale"
-                    placeholderTextColor={Colors.textLight}
-                  />
-                </View>
-                
-                <View style={styles.formGroup}>
-                  <Text style={styles.label}>Description détaillée</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={item.description || ''}
-                    onChangeText={(value) => updateItem(item.id, 'description', value)}
-                    placeholder="Détails supplémentaires (optionnel)"
-                    placeholderTextColor={Colors.textLight}
-                  />
-                </View>
-                
-                <View style={styles.row}>
-                  <View style={styles.halfWidth}>
-                    <Text style={styles.label}>Quantité *</Text>
+                <BlurView intensity={10} style={styles.itemCard}>
+                  <View style={styles.itemHeader}>
+                    <Text style={styles.itemNumber}>Élément {index + 1}</Text>
+                    {items.length > 1 && (
+                      <TouchableOpacity
+                        style={styles.removeButton}
+                        onPress={() => removeItem(item.id)}
+                      >
+                        <Trash2 size={16} color={Colors.error} />
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                  
+                  <View style={styles.formGroup}>
+                    <Text style={styles.label}>Nom/Description *</Text>
                     <TextInput
                       style={styles.input}
-                      value={item.quantity.toString()}
-                      onChangeText={(value) => updateItem(item.id, 'quantity', parseInt(value) || 1)}
-                      keyboardType="numeric"
+                      value={item.name}
+                      onChangeText={(value) => updateItem(item.id, 'name', value)}
+                      placeholder="Ex: Animation musicale"
                       placeholderTextColor={Colors.textLight}
                     />
                   </View>
                   
-                  <View style={styles.halfWidth}>
-                    <Text style={styles.label}>Prix unitaire (€) *</Text>
+                  <View style={styles.formGroup}>
+                    <Text style={styles.label}>Description détaillée</Text>
                     <TextInput
                       style={styles.input}
-                      value={item.unitPrice.toString()}
-                      onChangeText={(value) => updateItem(item.id, 'unitPrice', parseFloat(value) || 0)}
-                      keyboardType="numeric"
+                      value={item.description || ''}
+                      onChangeText={(value) => updateItem(item.id, 'description', value)}
+                      placeholder="Détails supplémentaires (optionnel)"
                       placeholderTextColor={Colors.textLight}
                     />
                   </View>
-                </View>
-                
-                <View style={styles.totalRow}>
-                  <Text style={styles.totalLabel}>Total:</Text>
-                  <Text style={styles.totalValue}>{(item.total || 0).toFixed(2)}€</Text>
-                </View>
-              </LinearGradient>
+                  
+                  <View style={styles.row}>
+                    <View style={styles.halfWidth}>
+                      <Text style={styles.label}>Quantité *</Text>
+                      <TextInput
+                        style={styles.input}
+                        value={item.quantity.toString()}
+                        onChangeText={(value) => updateItem(item.id, 'quantity', parseInt(value) || 1)}
+                        keyboardType="numeric"
+                        placeholderTextColor={Colors.textLight}
+                      />
+                    </View>
+                    
+                    <View style={styles.halfWidth}>
+                      <Text style={styles.label}>Prix unitaire (€) *</Text>
+                      <TextInput
+                        style={styles.input}
+                        value={item.unitPrice.toString()}
+                        onChangeText={(value) => updateItem(item.id, 'unitPrice', parseFloat(value) || 0)}
+                        keyboardType="numeric"
+                        placeholderTextColor={Colors.textLight}
+                      />
+                    </View>
+                  </View>
+                  
+                  <View style={styles.totalRow}>
+                    <Text style={styles.totalLabel}>Total:</Text>
+                    <Text style={styles.totalValue}>{(item.total || 0).toFixed(2)}€</Text>
+                  </View>
+                </BlurView>
+              </Animated.View>
             ))}
-          </View>
+          </Animated.View>
           
-          <LinearGradient
-            colors={['rgba(30, 58, 138, 0.05)', 'rgba(59, 130, 246, 0.05)']}
-            style={styles.summaryCard}
-          >
-            <View style={styles.summaryRow}>
-              <Calculator size={24} color={Colors.primary} />
-              <Text style={styles.summaryTitle}>Total du devis</Text>
-            </View>
-            <Text style={styles.summaryAmount}>{totalAmount.toFixed(2)}€</Text>
-            <Text style={styles.summaryNote}>
-              Valide pendant {validDays} jours
-            </Text>
-          </LinearGradient>
+          <Animated.View entering={ZoomIn.delay(600)}>
+            <BlurView intensity={20} style={styles.summaryCard}>
+              <LinearGradient
+                colors={['rgba(30, 58, 138, 0.1)', 'rgba(59, 130, 246, 0.1)']}
+                style={styles.summaryGradient}
+              >
+                <View style={styles.summaryRow}>
+                  <Calculator size={24} color={Colors.primary} />
+                  <Text style={styles.summaryTitle}>Total du devis</Text>
+                </View>
+                <Text style={styles.summaryAmount}>{totalAmount.toFixed(2)}€</Text>
+                <Text style={styles.summaryNote}>
+                  Valide pendant {validDays} jours
+                </Text>
+              </LinearGradient>
+            </BlurView>
+          </Animated.View>
         </ScrollView>
         
-        <LinearGradient
-          colors={['rgba(248, 250, 252, 0.95)', '#FFFFFF']}
-          style={styles.footer}
-        >
-          <Button
-            title="📤 Envoyer le devis"
-            onPress={handleSubmit}
-            loading={isLoading}
-            fullWidth
-            style={styles.submitButton}
-          />
-        </LinearGradient>
+        <Animated.View entering={SlideInDown.delay(800)}>
+          <BlurView intensity={80} style={styles.footer}>
+            <Button
+              title="📤 Envoyer le devis"
+              onPress={handleSubmit}
+              loading={isLoading}
+              fullWidth
+              style={styles.submitButton}
+            />
+          </BlurView>
+        </Animated.View>
       </KeyboardAvoidingView>
     </View>
   );
@@ -524,10 +557,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
+    marginBottom: 20,
+    borderRadius: 24,
+    overflow: 'hidden',
+    marginHorizontal: 20,
+    marginTop: 20,
+  },
+  headerGradient: {
     paddingTop: 20,
     paddingBottom: 20,
     paddingHorizontal: 20,
-    marginBottom: 20,
     alignItems: 'center',
   },
   headerContent: {
@@ -552,7 +591,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 120,
+    paddingBottom: 140,
   },
   section: {
     marginBottom: 32,
@@ -570,17 +609,17 @@ const styles = StyleSheet.create({
     color: Colors.text,
   },
   addButton: {
-    backgroundColor: Colors.primary,
     width: 44,
     height: 44,
     borderRadius: 22,
+    overflow: 'hidden',
+  },
+  addButtonBlur: {
+    width: 44,
+    height: 44,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
+    backgroundColor: Colors.primary,
   },
   formGroup: {
     marginBottom: 16,
@@ -595,29 +634,28 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: Colors.border,
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
     fontSize: 16,
     color: Colors.text,
     shadowColor: Colors.shadow,
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   textArea: {
     minHeight: 100,
     textAlignVertical: 'top',
   },
   itemCard: {
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 20,
     marginBottom: 16,
-    shadowColor: Colors.shadow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
   },
   itemHeader: {
     flexDirection: 'row',
@@ -660,14 +698,14 @@ const styles = StyleSheet.create({
     color: Colors.primary,
   },
   summaryCard: {
-    borderRadius: 16,
-    padding: 24,
+    borderRadius: 20,
     marginHorizontal: 20,
-    shadowColor: Colors.shadow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 6,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(30, 58, 138, 0.2)',
+  },
+  summaryGradient: {
+    padding: 24,
   },
   summaryRow: {
     flexDirection: 'row',
@@ -696,20 +734,15 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: Platform.OS === 'ios' ? 34 : 20,
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
-    shadowColor: Colors.shadowDark,
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 10,
+    borderTopColor: 'rgba(255, 255, 255, 0.2)',
   },
   submitButton: {
     backgroundColor: Colors.primary,
     shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 6 },
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 10,
+    shadowRadius: 16,
+    elevation: 12,
   },
   errorContainer: {
     flex: 1,

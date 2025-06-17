@@ -6,13 +6,30 @@ import { useAuth } from '@/hooks/useAuth';
 import Colors from '@/constants/colors';
 import Button from '@/components/Button';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Sparkles, Users, Calendar, Star, ArrowRight, Heart, MessageCircle } from 'lucide-react-native';
+import { BlurView } from 'expo-blur';
+import Animated, { 
+  FadeIn, 
+  SlideInDown, 
+  ZoomIn,
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withTiming,
+  interpolate,
+  Extrapolate,
+  useAnimatedScrollHandler
+} from 'react-native-reanimated';
+import { Sparkles, Users, Calendar, Star, ArrowRight, Heart, MessageCircle, TrendingUp } from 'lucide-react-native';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
+const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
 export default function LandingScreen() {
   const router = useRouter();
   const { isAuthenticated, user } = useAuth();
+  
+  const scrollY = useSharedValue(0);
+  const sparkleRotation = useSharedValue(0);
   
   // CRITICAL FIX: Redirect authenticated users to main app
   useEffect(() => {
@@ -22,35 +39,80 @@ export default function LandingScreen() {
     }
   }, [isAuthenticated, user]);
   
+  // Sparkle animation
+  useEffect(() => {
+    sparkleRotation.value = withRepeat(
+      withTiming(360, { duration: 3000 }),
+      -1,
+      false
+    );
+  }, []);
+  
   // CRITICAL FIX: Show landing page only for non-authenticated users
   if (isAuthenticated && user) {
     return null; // Will redirect via useEffect
   }
+  
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+    },
+  });
+  
+  const headerStyle = useAnimatedStyle(() => {
+    const translateY = interpolate(
+      scrollY.value,
+      [0, 200],
+      [0, -50],
+      Extrapolate.CLAMP
+    );
+    
+    const scale = interpolate(
+      scrollY.value,
+      [0, 200],
+      [1, 0.9],
+      Extrapolate.CLAMP
+    );
+    
+    return {
+      transform: [{ translateY }, { scale }],
+    };
+  });
+  
+  const sparkleStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ rotate: `${sparkleRotation.value}deg` }],
+    };
+  });
   
   const features = [
     {
       icon: Users,
       title: 'Trouvez des prestataires',
       description: 'Découvrez des professionnels qualifiés pour vos événements',
-      color: '#6366F1'
+      color: '#6366F1',
+      gradient: ['#6366F1', '#8B5CF6']
     },
     {
       icon: Calendar,
       title: 'Organisez facilement',
       description: 'Planifiez et gérez tous vos événements en un seul endroit',
-      color: '#EC4899'
+      color: '#EC4899',
+      gradient: ['#EC4899', '#F97316']
     },
     {
       icon: Star,
       title: 'Avis vérifiés',
       description: 'Consultez les avis authentiques de la communauté',
-      color: '#F59E0B'
+      color: '#F59E0B',
+      gradient: ['#F59E0B', '#EF4444']
     },
     {
       icon: Heart,
       title: 'Favoris personnalisés',
       description: 'Sauvegardez vos prestataires et lieux préférés',
-      color: '#EF4444'
+      color: '#EF4444',
+      gradient: ['#EF4444', '#EC4899']
     }
   ];
   
@@ -79,172 +141,207 @@ export default function LandingScreen() {
   ];
   
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* Hero Section */}
-      <LinearGradient
-        colors={[Colors.primary, Colors.secondary] as const}
-        style={styles.hero}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
+    <View style={styles.container}>
+      <AnimatedScrollView 
+        style={styles.scrollView} 
+        showsVerticalScrollIndicator={false}
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
       >
-        <View style={styles.heroContent}>
-          <View style={styles.logoContainer}>
-            <Sparkles size={40} color="#fff" />
-            <Text style={styles.logoText}>EventApp</Text>
-          </View>
+        {/* Hero Section with Parallax */}
+        <Animated.View style={[styles.hero, headerStyle]}>
+          <LinearGradient
+            colors={[Colors.primary, Colors.secondary]}
+            style={styles.heroGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <BlurView intensity={20} style={styles.heroBlur}>
+              <Animated.View entering={FadeIn.delay(200)} style={styles.heroContent}>
+                <View style={styles.logoContainer}>
+                  <Animated.View style={sparkleStyle}>
+                    <Sparkles size={40} color="#fff" />
+                  </Animated.View>
+                  <Text style={styles.logoText}>EventApp</Text>
+                </View>
+                
+                <Animated.Text entering={SlideInDown.delay(400)} style={styles.heroTitle}>
+                  Organisez des événements{'\n'}
+                  <Text style={styles.heroTitleAccent}>inoubliables</Text>
+                </Animated.Text>
+                
+                <Animated.Text entering={FadeIn.delay(600)} style={styles.heroSubtitle}>
+                  Connectez-vous avec les meilleurs prestataires et lieux pour créer des moments magiques
+                </Animated.Text>
+                
+                <Animated.View entering={SlideInDown.delay(800)} style={styles.heroButtons}>
+                  <Button
+                    title="🚀 Commencer"
+                    onPress={() => router.push('/(auth)/demo')}
+                    style={styles.primaryButton}
+                    textStyle={styles.primaryButtonText}
+                  />
+                  <Button
+                    title="Se connecter"
+                    onPress={() => router.push('/(auth)/login')}
+                    variant="outline"
+                    style={styles.secondaryButton}
+                    textStyle={styles.secondaryButtonText}
+                  />
+                </Animated.View>
+              </Animated.View>
+              
+              <Animated.View entering={ZoomIn.delay(1000)} style={styles.heroImageContainer}>
+                <Image 
+                  source={{ uri: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=400&h=300&fit=crop' }}
+                  style={styles.heroImage}
+                  transition={1000}
+                />
+              </Animated.View>
+            </BlurView>
+          </LinearGradient>
+        </Animated.View>
+        
+        {/* Features Section with Staggered Animation */}
+        <View style={styles.section}>
+          <Animated.Text entering={FadeIn.delay(1200)} style={styles.sectionTitle}>
+            ✨ Pourquoi choisir EventApp ?
+          </Animated.Text>
+          <Animated.Text entering={FadeIn.delay(1300)} style={styles.sectionSubtitle}>
+            Découvrez tous les avantages de notre plateforme
+          </Animated.Text>
           
-          <Text style={styles.heroTitle}>
-            Organisez des événements{'\n'}
-            <Text style={styles.heroTitleAccent}>inoubliables</Text>
-          </Text>
-          
-          <Text style={styles.heroSubtitle}>
-            Connectez-vous avec les meilleurs prestataires et lieux pour créer des moments magiques
-          </Text>
-          
-          <View style={styles.heroButtons}>
-            <Button
-              title="🚀 Commencer"
-              onPress={() => router.push('/(auth)/demo')}
-              style={styles.primaryButton}
-              textStyle={styles.primaryButtonText}
-            />
-            <Button
-              title="Se connecter"
-              onPress={() => router.push('/(auth)/login')}
-              variant="outline"
-              style={styles.secondaryButton}
-              textStyle={styles.secondaryButtonText}
-            />
+          <View style={styles.featuresGrid}>
+            {features.map((feature, index) => (
+              <Animated.View 
+                key={`feature-${index}`}
+                entering={SlideInDown.delay(1400 + index * 200)}
+              >
+                <BlurView intensity={20} style={styles.featureCard}>
+                  <LinearGradient
+                    colors={feature.gradient}
+                    style={styles.featureIconContainer}
+                  >
+                    <feature.icon size={28} color="#fff" />
+                  </LinearGradient>
+                  <Text style={styles.featureTitle}>{feature.title}</Text>
+                  <Text style={styles.featureDescription}>{feature.description}</Text>
+                </BlurView>
+              </Animated.View>
+            ))}
           </View>
         </View>
         
-        <View style={styles.heroImageContainer}>
-          <Image 
-            source={{ uri: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=400&h=300&fit=crop' }}
-            style={styles.heroImage}
-          />
-        </View>
-      </LinearGradient>
-      
-      {/* Features Section */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>✨ Pourquoi choisir EventApp ?</Text>
-        <Text style={styles.sectionSubtitle}>
-          Découvrez tous les avantages de notre plateforme
-        </Text>
-        
-        <View style={styles.featuresGrid}>
-          {features.map((feature, index) => (
-            <View key={`feature-${index}`} style={styles.featureCard}>
-              <View style={[styles.featureIcon, { backgroundColor: `${feature.color}20` }]}>
-                <feature.icon size={28} color={feature.color} />
-              </View>
-              <Text style={styles.featureTitle}>{feature.title}</Text>
-              <Text style={styles.featureDescription}>{feature.description}</Text>
-            </View>
-          ))}
-        </View>
-      </View>
-      
-      {/* Stats Section */}
-      <View style={styles.statsSection}>
-        <LinearGradient
-          colors={['#F8FAFC', '#E2E8F0'] as const}
-          style={styles.statsContainer}
-        >
-          <Text style={styles.statsTitle}>🎯 EventApp en chiffres</Text>
-          <View style={styles.statsGrid}>
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>500+</Text>
-              <Text style={styles.statLabel}>Prestataires</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>1000+</Text>
-              <Text style={styles.statLabel}>Événements</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>98%</Text>
-              <Text style={styles.statLabel}>Satisfaction</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>50+</Text>
-              <Text style={styles.statLabel}>Villes</Text>
-            </View>
-          </View>
-        </LinearGradient>
-      </View>
-      
-      {/* Testimonials Section */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>💬 Ce que disent nos utilisateurs</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.testimonialsScroll}>
-          {testimonials.map((testimonial, index) => (
-            <View key={`testimonial-${index}`} style={styles.testimonialCard}>
-              <View style={styles.testimonialHeader}>
-                <Image source={{ uri: testimonial.image }} style={styles.testimonialImage} />
-                <View style={styles.testimonialInfo}>
-                  <Text style={styles.testimonialName}>{testimonial.name}</Text>
-                  <Text style={styles.testimonialRole}>{testimonial.role}</Text>
-                </View>
-                <View style={styles.testimonialRating}>
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Text key={`star-${index}-${i}`} style={styles.star}>⭐</Text>
-                  ))}
-                </View>
-              </View>
-              <Text style={styles.testimonialComment}>{testimonial.comment}</Text>
-            </View>
-          ))}
-        </ScrollView>
-      </View>
-      
-      {/* CTA Section */}
-      <View style={styles.ctaSection}>
-        <LinearGradient
-          colors={[Colors.primary, Colors.secondary] as const}
-          style={styles.ctaContainer}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
-          <Text style={styles.ctaTitle}>🎉 Prêt à commencer ?</Text>
-          <Text style={styles.ctaSubtitle}>
-            Rejoignez des milliers d'utilisateurs qui font confiance à EventApp
-          </Text>
-          <View style={styles.ctaButtons}>
-            <Button
-              title="Essayer gratuitement"
-              onPress={() => router.push('/(auth)/demo')}
-              style={styles.ctaButton}
-              textStyle={styles.ctaButtonText}
-            />
-            <TouchableOpacity 
-              style={styles.ctaSecondaryButton}
-              onPress={() => router.push('/(auth)/register')}
+        {/* Stats Section with Animated Numbers */}
+        <Animated.View entering={FadeIn.delay(2000)} style={styles.statsSection}>
+          <BlurView intensity={30} style={styles.statsContainer}>
+            <LinearGradient
+              colors={['rgba(248, 250, 252, 0.9)', 'rgba(226, 232, 240, 0.9)']}
+              style={styles.statsGradient}
             >
-              <Text style={styles.ctaSecondaryText}>Créer un compte</Text>
-              <ArrowRight size={16} color="#fff" />
-            </TouchableOpacity>
-          </View>
-        </LinearGradient>
-      </View>
-      
-      {/* Footer */}
-      <View style={styles.footer}>
-        <View style={styles.footerContent}>
-          <View style={styles.footerLogo}>
-            <Sparkles size={24} color={Colors.primary} />
-            <Text style={styles.footerLogoText}>EventApp</Text>
-          </View>
-          <Text style={styles.footerText}>
-            La plateforme de référence pour organiser vos événements
-          </Text>
-          <Text style={styles.footerCopyright}>
-            © 2024 EventApp. Tous droits réservés.
-          </Text>
+              <Text style={styles.statsTitle}>🎯 EventApp en chiffres</Text>
+              <View style={styles.statsGrid}>
+                {[
+                  { number: '500+', label: 'Prestataires', icon: Users },
+                  { number: '1000+', label: 'Événements', icon: Calendar },
+                  { number: '98%', label: 'Satisfaction', icon: Star },
+                  { number: '50+', label: 'Villes', icon: TrendingUp },
+                ].map((stat, index) => (
+                  <Animated.View 
+                    key={`stat-${index}`}
+                    entering={ZoomIn.delay(2200 + index * 100)}
+                    style={styles.statItem}
+                  >
+                    <stat.icon size={20} color={Colors.primary} />
+                    <Text style={styles.statNumber}>{stat.number}</Text>
+                    <Text style={styles.statLabel}>{stat.label}</Text>
+                  </Animated.View>
+                ))}
+              </View>
+            </LinearGradient>
+          </BlurView>
+        </Animated.View>
+        
+        {/* Testimonials with Horizontal Scroll */}
+        <View style={styles.section}>
+          <Animated.Text entering={FadeIn.delay(2400)} style={styles.sectionTitle}>
+            💬 Ce que disent nos utilisateurs
+          </Animated.Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.testimonialsScroll}>
+            {testimonials.map((testimonial, index) => (
+              <Animated.View 
+                key={`testimonial-${index}`}
+                entering={SlideInDown.delay(2600 + index * 200)}
+              >
+                <BlurView intensity={20} style={styles.testimonialCard}>
+                  <View style={styles.testimonialHeader}>
+                    <Image source={{ uri: testimonial.image }} style={styles.testimonialImage} />
+                    <View style={styles.testimonialInfo}>
+                      <Text style={styles.testimonialName}>{testimonial.name}</Text>
+                      <Text style={styles.testimonialRole}>{testimonial.role}</Text>
+                    </View>
+                    <View style={styles.testimonialRating}>
+                      {[...Array(testimonial.rating)].map((_, i) => (
+                        <Text key={`star-${index}-${i}`} style={styles.star}>⭐</Text>
+                      ))}
+                    </View>
+                  </View>
+                  <Text style={styles.testimonialComment}>{testimonial.comment}</Text>
+                </BlurView>
+              </Animated.View>
+            ))}
+          </ScrollView>
         </View>
-      </View>
-    </ScrollView>
+        
+        {/* CTA Section with Gradient Animation */}
+        <Animated.View entering={SlideInDown.delay(3000)} style={styles.ctaSection}>
+          <BlurView intensity={40} style={styles.ctaBlur}>
+            <LinearGradient
+              colors={[Colors.primary, Colors.secondary]}
+              style={styles.ctaContainer}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <Text style={styles.ctaTitle}>🎉 Prêt à commencer ?</Text>
+              <Text style={styles.ctaSubtitle}>
+                Rejoignez des milliers d'utilisateurs qui font confiance à EventApp
+              </Text>
+              <View style={styles.ctaButtons}>
+                <Button
+                  title="Essayer gratuitement"
+                  onPress={() => router.push('/(auth)/demo')}
+                  style={styles.ctaButton}
+                  textStyle={styles.ctaButtonText}
+                />
+                <TouchableOpacity 
+                  style={styles.ctaSecondaryButton}
+                  onPress={() => router.push('/(auth)/register')}
+                >
+                  <Text style={styles.ctaSecondaryText}>Créer un compte</Text>
+                  <ArrowRight size={16} color="#fff" />
+                </TouchableOpacity>
+              </View>
+            </LinearGradient>
+          </BlurView>
+        </Animated.View>
+        
+        {/* Footer */}
+        <Animated.View entering={FadeIn.delay(3200)} style={styles.footer}>
+          <View style={styles.footerContent}>
+            <View style={styles.footerLogo}>
+              <Sparkles size={24} color={Colors.primary} />
+              <Text style={styles.footerLogoText}>EventApp</Text>
+            </View>
+            <Text style={styles.footerText}>
+              La plateforme de référence pour organiser vos événements
+            </Text>
+            <Text style={styles.footerCopyright}>
+              © 2024 EventApp. Tous droits réservés.
+            </Text>
+          </View>
+        </Animated.View>
+      </AnimatedScrollView>
+    </View>
   );
 }
 
@@ -253,33 +350,46 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
+  scrollView: {
+    flex: 1,
+  },
   hero: {
+    height: height * 0.9,
+    position: 'relative',
+  },
+  heroGradient: {
+    flex: 1,
+  },
+  heroBlur: {
+    flex: 1,
     paddingTop: 60,
     paddingBottom: 40,
     paddingHorizontal: 20,
   },
   heroContent: {
+    flex: 1,
     alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 30,
   },
   logoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 30,
   },
   logoText: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: '800',
     color: '#fff',
     marginLeft: 12,
   },
   heroTitle: {
-    fontSize: 32,
+    fontSize: 36,
     fontWeight: '800',
     color: '#fff',
     textAlign: 'center',
-    marginBottom: 16,
-    lineHeight: 40,
+    marginBottom: 20,
+    lineHeight: 44,
   },
   heroTitleAccent: {
     color: '#FDE68A',
@@ -289,21 +399,22 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
     lineHeight: 26,
-    marginBottom: 32,
+    marginBottom: 40,
+    paddingHorizontal: 20,
   },
   heroButtons: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 20,
+    gap: 16,
+    marginBottom: 30,
   },
   primaryButton: {
     backgroundColor: '#fff',
-    paddingHorizontal: 24,
+    paddingHorizontal: 28,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 12,
   },
   primaryButtonText: {
     color: Colors.primary,
@@ -312,7 +423,7 @@ const styles = StyleSheet.create({
   secondaryButton: {
     borderColor: 'rgba(255, 255, 255, 0.3)',
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    paddingHorizontal: 24,
+    paddingHorizontal: 28,
   },
   secondaryButtonText: {
     color: '#fff',
@@ -323,59 +434,67 @@ const styles = StyleSheet.create({
   },
   heroImage: {
     width: width - 40,
-    height: 200,
-    borderRadius: 20,
+    height: 220,
+    borderRadius: 24,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 10,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.4,
+    shadowRadius: 24,
+    elevation: 16,
   },
   section: {
     padding: 20,
-    paddingTop: 40,
+    paddingTop: 60,
   },
   sectionTitle: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: '800',
     color: Colors.text,
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   sectionSubtitle: {
-    fontSize: 16,
+    fontSize: 17,
     color: Colors.textLight,
     textAlign: 'center',
-    marginBottom: 32,
-    lineHeight: 24,
+    marginBottom: 40,
+    lineHeight: 26,
   },
   featuresGrid: {
-    gap: 20,
+    gap: 24,
   },
   featureCard: {
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 24,
+    padding: 28,
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 12,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
-  featureIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+  featureIconContainer: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
   },
   featureTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '700',
     color: Colors.text,
-    marginBottom: 8,
+    marginBottom: 12,
     textAlign: 'center',
   },
   featureDescription: {
@@ -386,18 +505,26 @@ const styles = StyleSheet.create({
   },
   statsSection: {
     padding: 20,
-    paddingTop: 40,
+    paddingTop: 60,
   },
   statsContainer: {
-    borderRadius: 20,
-    padding: 32,
+    borderRadius: 24,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 12,
+  },
+  statsGradient: {
+    padding: 36,
     alignItems: 'center',
   },
   statsTitle: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '800',
     color: Colors.text,
-    marginBottom: 24,
+    marginBottom: 32,
     textAlign: 'center',
   },
   statsGrid: {
@@ -409,12 +536,13 @@ const styles = StyleSheet.create({
   statItem: {
     alignItems: 'center',
     minWidth: '45%',
-    marginBottom: 20,
+    marginBottom: 24,
   },
   statNumber: {
-    fontSize: 32,
+    fontSize: 36,
     fontWeight: '800',
     color: Colors.primary,
+    marginTop: 8,
     marginBottom: 4,
   },
   statLabel: {
@@ -427,33 +555,36 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   testimonialCard: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
-    marginRight: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 20,
+    padding: 24,
+    marginRight: 20,
     width: width - 80,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   testimonialHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   testimonialImage: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    marginRight: 12,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    marginRight: 16,
   },
   testimonialInfo: {
     flex: 1,
   },
   testimonialName: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '700',
     color: Colors.text,
     marginBottom: 2,
@@ -469,46 +600,54 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   testimonialComment: {
-    fontSize: 14,
+    fontSize: 15,
     color: Colors.text,
-    lineHeight: 20,
+    lineHeight: 22,
     fontStyle: 'italic',
   },
   ctaSection: {
     padding: 20,
-    paddingTop: 40,
+    paddingTop: 60,
+  },
+  ctaBlur: {
+    borderRadius: 24,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.3,
+    shadowRadius: 24,
+    elevation: 16,
   },
   ctaContainer: {
-    borderRadius: 20,
-    padding: 32,
+    padding: 36,
     alignItems: 'center',
   },
   ctaTitle: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: '800',
     color: '#fff',
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   ctaSubtitle: {
-    fontSize: 16,
+    fontSize: 17,
     color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 24,
+    marginBottom: 32,
+    lineHeight: 26,
   },
   ctaButtons: {
-    gap: 12,
+    gap: 16,
     alignItems: 'center',
   },
   ctaButton: {
     backgroundColor: '#fff',
-    paddingHorizontal: 32,
+    paddingHorizontal: 36,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 12,
   },
   ctaButtonText: {
     color: Colors.primary,
@@ -518,7 +657,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginTop: 8,
+    marginTop: 12,
   },
   ctaSecondaryText: {
     fontSize: 16,
@@ -529,7 +668,7 @@ const styles = StyleSheet.create({
   footer: {
     backgroundColor: Colors.backgroundAlt,
     padding: 40,
-    paddingBottom: 60,
+    paddingBottom: 80,
   },
   footerContent: {
     alignItems: 'center',
@@ -537,10 +676,10 @@ const styles = StyleSheet.create({
   footerLogo: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
   },
   footerLogoText: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '800',
     color: Colors.primary,
     marginLeft: 8,
@@ -549,7 +688,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.textLight,
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
     lineHeight: 24,
   },
   footerCopyright: {

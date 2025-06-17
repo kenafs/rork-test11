@@ -63,6 +63,11 @@ export default {
   overlay: 'rgba(15, 23, 42, 0.5)',
   overlayLight: 'rgba(248, 250, 252, 0.9)',
   
+  // Glass morphism colors
+  glass: 'rgba(255, 255, 255, 0.1)',
+  glassDark: 'rgba(15, 23, 42, 0.1)',
+  glassBlur: 'rgba(255, 255, 255, 0.05)',
+  
 } as const;
 
 // Premium gradient combinations
@@ -83,4 +88,8 @@ export const gradients = {
   // Premium effects
   glass: ['rgba(248, 250, 252, 0.1)', 'rgba(248, 250, 252, 0.05)'] as const,
   darkGlass: ['rgba(15, 23, 42, 0.1)', 'rgba(15, 23, 42, 0.05)'] as const,
+  
+  // Shimmer effects
+  shimmer: ['rgba(255, 255, 255, 0)', 'rgba(255, 255, 255, 0.5)', 'rgba(255, 255, 255, 0)'] as const,
+  shimmerDark: ['rgba(15, 23, 42, 0)', 'rgba(15, 23, 42, 0.3)', 'rgba(15, 23, 42, 0)'] as const,
 };

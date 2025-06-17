@@ -12,7 +12,23 @@ import RatingStars from '@/components/RatingStars';
 import Button from '@/components/Button';
 import { MapPin, Star, Clock, ChevronLeft, Share, Heart, MessageCircle, Calculator } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
+import Animated, { 
+  useSharedValue, 
+  useAnimatedStyle, 
+  withSpring, 
+  withTiming,
+  interpolate,
+  Extrapolate,
+  runOnJS,
+  useAnimatedScrollHandler,
+  FadeIn,
+  SlideInDown,
+  ZoomIn
+} from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
+
+const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
 export default function ListingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -21,6 +37,9 @@ export default function ListingDetailScreen() {
   const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
   const { createConversation } = useMessages();
   const { getListingById } = useListings();
+  
+  const scrollY = useSharedValue(0);
+  const [imageLoaded, setImageLoaded] = useState(false);
   
   // Find the listing by ID using the new method
   const listing = getListingById(id as string);
@@ -47,6 +66,47 @@ export default function ListingDetailScreen() {
     ? `${listing.price.toLocaleString('fr-FR')}€${listing.category === 'Catering' ? '/pers' : ''}`
     : 'Prix sur demande';
   
+  // Scroll handler for parallax effect
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+    },
+  });
+  
+  // Animated styles for parallax and blur effects
+  const headerStyle = useAnimatedStyle(() => {
+    const translateY = interpolate(
+      scrollY.value,
+      [0, 300],
+      [0, -150],
+      Extrapolate.CLAMP
+    );
+    
+    const scale = interpolate(
+      scrollY.value,
+      [0, 300],
+      [1, 1.2],
+      Extrapolate.CLAMP
+    );
+    
+    return {
+      transform: [{ translateY }, { scale }],
+    };
+  });
+  
+  const blurStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(
+      scrollY.value,
+      [200, 300],
+      [0, 1],
+      Extrapolate.CLAMP
+    );
+    
+    return {
+      opacity,
+    };
+  });
+  
   // Handle favorite toggle
   const toggleFavorite = () => {
     if (!isAuthenticated) {
@@ -55,7 +115,7 @@ export default function ListingDetailScreen() {
     }
     
     if (Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
     
     if (isFavorite(listing.id)) {
@@ -159,14 +219,21 @@ export default function ListingDetailScreen() {
   
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Image Gallery */}
-        <View style={styles.imageContainer}>
+      <AnimatedScrollView 
+        contentContainerStyle={styles.scrollContent}
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Image Gallery with Parallax */}
+        <Animated.View style={[styles.imageContainer, headerStyle]}>
           {listing.images && listing.images.length > 0 ? (
             <Image 
               source={{ uri: listing.images[0] }} 
               style={styles.image}
               contentFit="cover"
+              onLoad={() => setImageLoaded(true)}
+              transition={500}
             />
           ) : (
             <LinearGradient
@@ -177,180 +244,210 @@ export default function ListingDetailScreen() {
             </LinearGradient>
           )}
           
-          <TouchableOpacity 
-            style={styles.backButton}
-            onPress={() => router.back()}
-          >
-            <ChevronLeft size={24} color="#fff" />
-          </TouchableOpacity>
-          
-          <View style={styles.imageActions}>
-            <TouchableOpacity 
-              style={styles.imageActionButton}
-              onPress={handleShare}
-            >
-              <Share size={20} color="#fff" />
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={styles.imageActionButton}
-              onPress={toggleFavorite}
-            >
-              <Heart 
-                size={20} 
-                color="#fff" 
-                fill={isListingFavorite ? '#fff' : 'transparent'} 
-              />
-            </TouchableOpacity>
-          </View>
-          
           <LinearGradient
-            colors={[Colors.primary, Colors.secondary]}
-            style={styles.categoryBadge}
-          >
-            <Text style={styles.categoryText}>{listing.category}</Text>
-          </LinearGradient>
-          
-          <LinearGradient
-            colors={['transparent', 'rgba(15, 23, 42, 0.8)']}
+            colors={['rgba(15, 23, 42, 0.6)', 'transparent', 'rgba(15, 23, 42, 0.8)']}
             style={styles.imageOverlay}
           />
-        </View>
-        
-        {/* Listing Details */}
-        <View style={styles.detailsContainer}>
-          <Text style={styles.title}>{listing.title}</Text>
           
+          <BlurView intensity={80} style={styles.categoryBadge}>
+            <Text style={styles.categoryText}>{listing.category}</Text>
+          </BlurView>
+        </Animated.View>
+        
+        {/* Floating Header Controls */}
+        <View style={styles.headerControls}>
           <TouchableOpacity 
-            style={styles.creatorContainer}
-            onPress={() => router.push(`/profile/${listing.createdBy}`)}
+            style={styles.headerButton}
+            onPress={() => router.back()}
           >
-            <View style={styles.creatorInfo}>
-              {listing.creatorImage ? (
-                <Image 
-                  source={{ uri: listing.creatorImage }} 
-                  style={styles.creatorImage}
-                />
-              ) : (
-                <LinearGradient
-                  colors={[Colors.primary, Colors.secondary]}
-                  style={[styles.creatorImage, styles.creatorImagePlaceholder]}
-                >
-                  <Text style={styles.creatorImageText}>
-                    {listing.creatorName.charAt(0)}
-                  </Text>
-                </LinearGradient>
-              )}
-              
-              <View>
-                <Text style={styles.creatorName}>{listing.creatorName}</Text>
-                {listing.creatorRating && (
-                  <RatingStars 
-                    rating={listing.creatorRating} 
-                    size="small" 
-                    showNumber={false}
-                  />
-                )}
-              </View>
-            </View>
-            
-            <LinearGradient
-              colors={['rgba(30, 58, 138, 0.1)', 'rgba(59, 130, 246, 0.1)']}
-              style={styles.typeBadge}
-            >
-              <Text style={styles.typeText}>
-                {listing.creatorType === 'provider' ? 'Prestataire' : 
-                 listing.creatorType === 'business' ? 'Établissement' : 'Client'}
-              </Text>
-            </LinearGradient>
+            <BlurView intensity={80} style={styles.headerButtonBlur}>
+              <ChevronLeft size={24} color="#fff" />
+            </BlurView>
           </TouchableOpacity>
           
-          <View style={styles.infoContainer}>
-            {listing.location && listing.location.city && (
-              <View style={styles.infoItem}>
-                <MapPin size={18} color={Colors.primary} style={styles.infoIcon} />
-                <Text style={styles.infoText}>{listing.location.city}</Text>
-              </View>
-            )}
+          <View style={styles.headerActions}>
+            <TouchableOpacity 
+              style={styles.headerButton}
+              onPress={handleShare}
+            >
+              <BlurView intensity={80} style={styles.headerButtonBlur}>
+                <Share size={20} color="#fff" />
+              </BlurView>
+            </TouchableOpacity>
             
-            <View style={styles.infoItem}>
-              <Clock size={18} color={Colors.primary} style={styles.infoIcon} />
-              <Text style={styles.infoText}>
-                Publié le {new Date(listing.createdAt).toLocaleDateString('fr-FR')}
-              </Text>
-            </View>
-            
-            {listing.tags && listing.tags.length > 0 && (
-              <View style={styles.tagsContainer}>
-                {listing.tags.map((tag, index) => (
-                  <LinearGradient
-                    key={`tag-${listing.id}-${index}`}
-                    colors={['rgba(30, 58, 138, 0.1)', 'rgba(59, 130, 246, 0.1)']}
-                    style={styles.tag}
-                  >
-                    <Text style={styles.tagText}>{tag}</Text>
-                  </LinearGradient>
-                ))}
-              </View>
-            )}
+            <TouchableOpacity 
+              style={styles.headerButton}
+              onPress={toggleFavorite}
+            >
+              <BlurView intensity={80} style={styles.headerButtonBlur}>
+                <Heart 
+                  size={20} 
+                  color="#fff" 
+                  fill={isListingFavorite ? '#fff' : 'transparent'} 
+                />
+              </BlurView>
+            </TouchableOpacity>
           </View>
-          
-          <View style={styles.divider} />
-          
-          <Text style={styles.sectionTitle}>Description</Text>
-          <Text style={styles.description}>{listing.description}</Text>
-          
-          <View style={styles.divider} />
-          
-          <LinearGradient
-            colors={['rgba(30, 58, 138, 0.05)', 'rgba(59, 130, 246, 0.05)']}
-            style={styles.priceContainer}
-          >
-            <Text style={styles.priceLabel}>Prix</Text>
-            <Text style={styles.price}>{formattedPrice}</Text>
-          </LinearGradient>
         </View>
-      </ScrollView>
+        
+        {/* Content Card with Animated Entry */}
+        <Animated.View 
+          entering={SlideInDown.delay(300).springify()}
+          style={styles.contentCard}
+        >
+          <View style={styles.detailsContainer}>
+            <Animated.Text 
+              entering={FadeIn.delay(400)}
+              style={styles.title}
+            >
+              {listing.title}
+            </Animated.Text>
+            
+            <Animated.View 
+              entering={FadeIn.delay(500)}
+              style={styles.creatorContainer}
+            >
+              <TouchableOpacity 
+                style={styles.creatorInfo}
+                onPress={() => router.push(`/profile/${listing.createdBy}`)}
+              >
+                {listing.creatorImage ? (
+                  <Image 
+                    source={{ uri: listing.creatorImage }} 
+                    style={styles.creatorImage}
+                  />
+                ) : (
+                  <LinearGradient
+                    colors={[Colors.primary, Colors.secondary]}
+                    style={[styles.creatorImage, styles.creatorImagePlaceholder]}
+                  >
+                    <Text style={styles.creatorImageText}>
+                      {listing.creatorName.charAt(0)}
+                    </Text>
+                  </LinearGradient>
+                )}
+                
+                <View style={styles.creatorDetails}>
+                  <Text style={styles.creatorName}>{listing.creatorName}</Text>
+                  {listing.creatorRating && (
+                    <RatingStars 
+                      rating={listing.creatorRating} 
+                      size="small" 
+                      showNumber={false}
+                    />
+                  )}
+                </View>
+              </TouchableOpacity>
+              
+              <BlurView intensity={20} style={styles.typeBadge}>
+                <Text style={styles.typeText}>
+                  {listing.creatorType === 'provider' ? 'Prestataire' : 
+                   listing.creatorType === 'business' ? 'Établissement' : 'Client'}
+                </Text>
+              </BlurView>
+            </Animated.View>
+            
+            <Animated.View 
+              entering={FadeIn.delay(600)}
+              style={styles.infoContainer}
+            >
+              {listing.location && listing.location.city && (
+                <View style={styles.infoItem}>
+                  <MapPin size={18} color={Colors.primary} style={styles.infoIcon} />
+                  <Text style={styles.infoText}>{listing.location.city}</Text>
+                </View>
+              )}
+              
+              <View style={styles.infoItem}>
+                <Clock size={18} color={Colors.primary} style={styles.infoIcon} />
+                <Text style={styles.infoText}>
+                  Publié le {new Date(listing.createdAt).toLocaleDateString('fr-FR')}
+                </Text>
+              </View>
+              
+              {listing.tags && listing.tags.length > 0 && (
+                <View style={styles.tagsContainer}>
+                  {listing.tags.map((tag, index) => (
+                    <Animated.View
+                      key={`tag-${listing.id}-${index}`}
+                      entering={ZoomIn.delay(700 + index * 100)}
+                    >
+                      <BlurView intensity={20} style={styles.tag}>
+                        <Text style={styles.tagText}>{tag}</Text>
+                      </BlurView>
+                    </Animated.View>
+                  ))}
+                </View>
+              )}
+            </Animated.View>
+            
+            <View style={styles.divider} />
+            
+            <Animated.View entering={FadeIn.delay(800)}>
+              <Text style={styles.sectionTitle}>Description</Text>
+              <Text style={styles.description}>{listing.description}</Text>
+            </Animated.View>
+            
+            <View style={styles.divider} />
+            
+            <Animated.View entering={SlideInDown.delay(900)}>
+              <BlurView intensity={10} style={styles.priceContainer}>
+                <Text style={styles.priceLabel}>Prix</Text>
+                <Text style={styles.price}>{formattedPrice}</Text>
+              </BlurView>
+            </Animated.View>
+          </View>
+        </Animated.View>
+      </AnimatedScrollView>
       
-      {/* Action Buttons */}
+      {/* Floating Action Buttons */}
       {!isOwnListing && (
-        <LinearGradient
-          colors={['rgba(248, 250, 252, 0.95)', '#FFFFFF']}
+        <Animated.View 
+          entering={SlideInDown.delay(1000)}
           style={styles.actionContainer}
         >
-          <Button
-            title="💬 Contacter"
-            onPress={handleContact}
-            style={styles.contactButton}
-          />
-          
-          {/* FIXED: Show quote button for providers, business venues, and when requesting quotes from providers/venues */}
-          {(user?.userType === 'provider' || user?.userType === 'business' || 
-            (listing.creatorType === 'provider' && user?.userType === 'client') ||
-            (listing.creatorType === 'business' && user?.userType === 'client')) && (
+          <BlurView intensity={80} style={styles.actionBlur}>
             <Button
-              title={user?.userType === 'provider' || user?.userType === 'business' ? "📋 Créer devis" : "📋 Demander devis"}
-              variant="outline"
-              onPress={handleQuoteRequest}
-              style={styles.quoteButton}
+              title="💬 Contacter"
+              onPress={handleContact}
+              style={styles.contactButton}
             />
-          )}
-        </LinearGradient>
+            
+            {/* FIXED: Show quote button for providers, business venues, and when requesting quotes from providers/venues */}
+            {(user?.userType === 'provider' || user?.userType === 'business' || 
+              (listing.creatorType === 'provider' && user?.userType === 'client') ||
+              (listing.creatorType === 'business' && user?.userType === 'client')) && (
+              <Button
+                title={user?.userType === 'provider' || user?.userType === 'business' ? "📋 Créer devis" : "📋 Demander devis"}
+                variant="outline"
+                onPress={handleQuoteRequest}
+                style={styles.quoteButton}
+              />
+            )}
+          </BlurView>
+        </Animated.View>
       )}
       
       {/* Edit Button for Own Listings */}
       {isOwnListing && (
-        <LinearGradient
-          colors={['rgba(248, 250, 252, 0.95)', '#FFFFFF']}
+        <Animated.View 
+          entering={SlideInDown.delay(1000)}
           style={styles.actionContainer}
         >
-          <Button
-            title="Modifier l'annonce"
-            onPress={() => router.push(`/edit-listing/${listing.id}`)}
-            fullWidth
-          />
-        </LinearGradient>
+          <BlurView intensity={80} style={styles.actionBlur}>
+            <Button
+              title="Modifier l'annonce"
+              onPress={() => router.push(`/edit-listing/${listing.id}`)}
+              fullWidth
+            />
+          </BlurView>
+        </Animated.View>
       )}
+      
+      {/* Animated Blur Overlay for Header */}
+      <Animated.View style={[styles.headerBlurOverlay, blurStyle]} pointerEvents="none">
+        <BlurView intensity={80} style={StyleSheet.absoluteFill} />
+      </Animated.View>
     </View>
   );
 }
@@ -361,11 +458,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   scrollContent: {
-    paddingBottom: 120,
+    paddingBottom: 140,
   },
   imageContainer: {
+    height: 400,
     position: 'relative',
-    height: 320,
   },
   image: {
     width: '100%',
@@ -378,130 +475,152 @@ const styles = StyleSheet.create({
   placeholderText: {
     color: '#fff',
     fontWeight: '700',
-    fontSize: 20,
-  },
-  backButton: {
-    position: 'absolute',
-    top: 50,
-    left: 20,
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(15, 23, 42, 0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: Colors.shadowDark,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  imageActions: {
-    position: 'absolute',
-    top: 50,
-    right: 20,
-    flexDirection: 'row',
-    gap: 12,
-  },
-  imageActionButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(15, 23, 42, 0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: Colors.shadowDark,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  categoryBadge: {
-    position: 'absolute',
-    bottom: 24,
-    left: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    shadowColor: Colors.shadowDark,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  categoryText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: 24,
   },
   imageOverlay: {
     position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     bottom: 0,
+  },
+  categoryBadge: {
+    position: 'absolute',
+    bottom: 30,
+    left: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 25,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  categoryText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  headerControls: {
+    position: 'absolute',
+    top: 50,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    zIndex: 10,
+  },
+  headerButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    overflow: 'hidden',
+  },
+  headerButtonBlur: {
+    width: 48,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  headerBlurOverlay: {
+    position: 'absolute',
+    top: 0,
     left: 0,
     right: 0,
     height: 100,
+    zIndex: 5,
+  },
+  contentCard: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    marginTop: -32,
+    shadowColor: Colors.shadowDark,
+    shadowOffset: { width: 0, height: -8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 24,
+    elevation: 16,
+    zIndex: 1,
   },
   detailsContainer: {
-    padding: 24,
+    padding: 28,
   },
   title: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: '800',
     color: Colors.text,
-    marginBottom: 20,
-    lineHeight: 36,
+    marginBottom: 24,
+    lineHeight: 40,
   },
   creatorContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 24,
-    padding: 16,
+    marginBottom: 28,
+    padding: 20,
     backgroundColor: Colors.surfaceElevated,
-    borderRadius: 16,
+    borderRadius: 20,
   },
   creatorInfo: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
   },
   creatorImage: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     marginRight: 16,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   creatorImagePlaceholder: {
     justifyContent: 'center',
     alignItems: 'center',
   },
   creatorImageText: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '700',
     color: '#fff',
   },
+  creatorDetails: {
+    flex: 1,
+  },
   creatorName: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: '700',
     color: Colors.text,
     marginBottom: 4,
   },
   typeBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(30, 58, 138, 0.2)',
   },
   typeText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '700',
     color: Colors.primary,
   },
   infoContainer: {
-    marginBottom: 24,
+    marginBottom: 28,
   },
   infoItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   infoIcon: {
     marginRight: 12,
@@ -514,49 +633,55 @@ const styles = StyleSheet.create({
   tagsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
-    marginTop: 8,
+    gap: 10,
+    marginTop: 12,
   },
   tag: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(30, 58, 138, 0.2)',
   },
   tagText: {
-    fontSize: 12,
+    fontSize: 13,
     color: Colors.primary,
     fontWeight: '600',
   },
   divider: {
     height: 1,
     backgroundColor: Colors.border,
-    marginVertical: 24,
+    marginVertical: 28,
   },
   sectionTitle: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '700',
     color: Colors.text,
     marginBottom: 16,
   },
   description: {
-    fontSize: 16,
+    fontSize: 17,
     color: Colors.text,
-    lineHeight: 26,
+    lineHeight: 28,
   },
   priceContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
-    borderRadius: 16,
+    padding: 24,
+    borderRadius: 20,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(30, 58, 138, 0.1)',
   },
   priceLabel: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '600',
     color: Colors.text,
   },
   price: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: '800',
     color: Colors.primary,
   },
@@ -565,24 +690,31 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
+  },
+  actionBlur: {
     flexDirection: 'row',
     padding: 20,
-    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
-    shadowColor: Colors.shadowDark,
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 10,
+    borderTopColor: 'rgba(255, 255, 255, 0.2)',
   },
   contactButton: {
     flex: 1,
     marginRight: 8,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 12,
   },
   quoteButton: {
     flex: 1,
     marginLeft: 8,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 10,
   },
   notFoundContainer: {
     flex: 1,

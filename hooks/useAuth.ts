@@ -110,7 +110,7 @@ export const useAuth = create<AuthState>()(
           // Simulate logout delay
           await new Promise(resolve => setTimeout(resolve, 500));
           
-          // Clear all auth state
+          // Clear all auth state FIRST
           set({ 
             user: null, 
             isAuthenticated: false, 
@@ -120,12 +120,25 @@ export const useAuth = create<AuthState>()(
           console.log('User logged out successfully');
           
           // CRITICAL FIX: Force redirect to landing page after logout
-          const { router } = await import('expo-router');
-          
-          // Use replace to ensure we can't go back to authenticated screens
-          router.replace('/');
-          
-          console.log('Redirected to landing page');
+          setTimeout(async () => {
+            try {
+              const { router } = await import('expo-router');
+              
+              // Use replace to ensure we can't go back to authenticated screens
+              router.replace('/');
+              
+              console.log('Redirected to landing page');
+            } catch (redirectError) {
+              console.error('Redirect error:', redirectError);
+              // Fallback: try to navigate to index
+              try {
+                const { router } = await import('expo-router');
+                router.push('/');
+              } catch (fallbackError) {
+                console.error('Fallback redirect error:', fallbackError);
+              }
+            }
+          }, 100);
           
         } catch (error) {
           console.error('Logout error:', error);
@@ -137,12 +150,14 @@ export const useAuth = create<AuthState>()(
           });
           
           // Still try to redirect even if there was an error
-          try {
-            const { router } = await import('expo-router');
-            router.replace('/');
-          } catch (redirectError) {
-            console.error('Redirect error:', redirectError);
-          }
+          setTimeout(async () => {
+            try {
+              const { router } = await import('expo-router');
+              router.replace('/');
+            } catch (redirectError) {
+              console.error('Error redirect error:', redirectError);
+            }
+          }, 100);
         }
       },
       
