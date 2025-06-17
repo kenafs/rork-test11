@@ -17,14 +17,11 @@ import Animated, {
   Extrapolate,
   runOnJS
 } from 'react-native-reanimated';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 
 interface ListingCardProps {
   listing: Listing;
 }
-
-const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
 export default function ListingCard({ listing }: ListingCardProps) {
   const router = useRouter();
@@ -52,18 +49,17 @@ export default function ListingCard({ listing }: ListingCardProps) {
     return <Text style={styles.priceText}>{price}€</Text>;
   };
   
-  // Gesture handling for premium interactions
-  const tapGesture = Gesture.Tap()
-    .onBegin(() => {
-      scale.value = withSpring(0.98, { damping: 15, stiffness: 300 });
-      if (Platform.OS !== 'web') {
-        runOnJS(Haptics.impactAsync)(Haptics.ImpactFeedbackStyle.Light);
-      }
-    })
-    .onFinalize(() => {
-      scale.value = withSpring(1, { damping: 15, stiffness: 300 });
-      runOnJS(handlePress)();
-    });
+  // FIXED: Improved touch handling with better sensitivity
+  const handlePressIn = () => {
+    scale.value = withSpring(0.98, { damping: 15, stiffness: 300 });
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+  };
+  
+  const handlePressOut = () => {
+    scale.value = withSpring(1, { damping: 15, stiffness: 300 });
+  };
   
   const animatedStyle = useAnimatedStyle(() => {
     return {
@@ -98,114 +94,116 @@ export default function ListingCard({ listing }: ListingCardProps) {
   });
   
   return (
-    <GestureDetector gesture={tapGesture}>
-      <AnimatedTouchableOpacity 
-        style={[styles.container, animatedStyle, cardShadowStyle]}
-        activeOpacity={1}
-      >
-        <View style={styles.imageContainer}>
-          {listing.images && listing.images.length > 0 ? (
-            <Image 
-              source={{ uri: listing.images[0] }} 
-              style={styles.image}
-              contentFit="cover"
-              transition={300}
-            />
-          ) : (
-            <LinearGradient
-              colors={[Colors.primary, Colors.secondary]}
-              style={styles.placeholderImage}
-            >
-              <Text style={styles.placeholderText}>📷</Text>
-            </LinearGradient>
-          )}
-          
-          <BlurView intensity={80} style={styles.categoryBadge}>
-            <Text style={styles.categoryText}>{listing.category}</Text>
-          </BlurView>
-          
-          <LinearGradient
-            colors={['transparent', 'rgba(15, 23, 42, 0.8)']}
-            style={styles.imageOverlay}
+    <TouchableOpacity 
+      style={[styles.container, animatedStyle, cardShadowStyle]}
+      onPress={handlePress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      activeOpacity={0.95}
+      delayPressIn={50} // FIXED: Add delay to prevent accidental taps while scrolling
+    >
+      <View style={styles.imageContainer}>
+        {listing.images && listing.images.length > 0 ? (
+          <Image 
+            source={{ uri: listing.images[0] }} 
+            style={styles.image}
+            contentFit="cover"
+            transition={300}
           />
-        </View>
+        ) : (
+          <LinearGradient
+            colors={[Colors.primary, Colors.secondary]}
+            style={styles.placeholderImage}
+          >
+            <Text style={styles.placeholderText}>📷</Text>
+          </LinearGradient>
+        )}
         
-        <View style={styles.content}>
-          <Text style={styles.title} numberOfLines={2}>
-            {listing.title}
-          </Text>
-          
-          <Text style={styles.description} numberOfLines={2}>
-            {listing.description}
-          </Text>
-          
-          <View style={styles.creatorInfo}>
-            <View style={styles.creatorAvatar}>
-              {listing.creatorImage ? (
-                <Image source={{ uri: listing.creatorImage }} style={styles.avatarImage} />
-              ) : (
-                <LinearGradient
-                  colors={[Colors.primary, Colors.secondary]}
-                  style={styles.avatarGradient}
-                >
-                  <Text style={styles.avatarText}>
-                    {listing.creatorName?.charAt(0) || '?'}
-                  </Text>
-                </LinearGradient>
-              )}
-            </View>
-            <View style={styles.creatorDetails}>
-              <Text style={styles.creatorName}>{listing.creatorName}</Text>
-              {listing.creatorRating !== undefined && listing.creatorRating > 0 && (
-                <RatingStars 
-                  rating={listing.creatorRating} 
-                  size="small" 
-                  showNumber={false}
-                />
-              )}
-            </View>
+        <BlurView intensity={80} style={styles.categoryBadge}>
+          <Text style={styles.categoryText}>{listing.category}</Text>
+        </BlurView>
+        
+        <LinearGradient
+          colors={['transparent', 'rgba(15, 23, 42, 0.8)']}
+          style={styles.imageOverlay}
+        />
+      </View>
+      
+      <View style={styles.content}>
+        <Text style={styles.title} numberOfLines={2}>
+          {listing.title}
+        </Text>
+        
+        <Text style={styles.description} numberOfLines={2}>
+          {listing.description}
+        </Text>
+        
+        <View style={styles.creatorInfo}>
+          <View style={styles.creatorAvatar}>
+            {listing.creatorImage ? (
+              <Image source={{ uri: listing.creatorImage }} style={styles.avatarImage} />
+            ) : (
+              <LinearGradient
+                colors={[Colors.primary, Colors.secondary]}
+                style={styles.avatarGradient}
+              >
+                <Text style={styles.avatarText}>
+                  {listing.creatorName?.charAt(0) || '?'}
+                </Text>
+              </LinearGradient>
+            )}
           </View>
-          
-          <View style={styles.footer}>
-            <View style={styles.locationContainer}>
-              <MapPin size={14} color={Colors.textLight} />
-              <Text style={styles.locationText}>{listing.location.city}</Text>
-            </View>
-            
-            <View style={styles.priceContainer}>
-              <Euro size={14} color={Colors.primary} />
-              {formatPrice(listing.price)}
-            </View>
-          </View>
-          
-          <View style={styles.metaInfo}>
-            <View style={styles.dateContainer}>
-              <Clock size={12} color={Colors.textLight} />
-              <Text style={styles.dateText}>
-                Publié le {formatDate(listing.createdAt)}
-              </Text>
-            </View>
-            
-            {listing.tags && listing.tags.length > 0 && (
-              <View style={styles.tagsContainer}>
-                {listing.tags.slice(0, 2).map((tag, index) => (
-                  <BlurView 
-                    key={`tag-${listing.id}-${tag}-${index}`} 
-                    intensity={20} 
-                    style={styles.tag}
-                  >
-                    <Text style={styles.tagText}>{tag}</Text>
-                  </BlurView>
-                ))}
-                {listing.tags.length > 2 && (
-                  <Text style={styles.moreTagsText}>+{listing.tags.length - 2}</Text>
-                )}
-              </View>
+          <View style={styles.creatorDetails}>
+            <Text style={styles.creatorName}>{listing.creatorName}</Text>
+            {listing.creatorRating !== undefined && listing.creatorRating > 0 && (
+              <RatingStars 
+                rating={listing.creatorRating} 
+                size="small" 
+                showNumber={false}
+              />
             )}
           </View>
         </View>
-      </AnimatedTouchableOpacity>
-    </GestureDetector>
+        
+        <View style={styles.footer}>
+          <View style={styles.locationContainer}>
+            <MapPin size={14} color={Colors.textLight} />
+            <Text style={styles.locationText}>{listing.location.city}</Text>
+          </View>
+          
+          <View style={styles.priceContainer}>
+            <Euro size={14} color={Colors.primary} />
+            {formatPrice(listing.price)}
+          </View>
+        </View>
+        
+        <View style={styles.metaInfo}>
+          <View style={styles.dateContainer}>
+            <Clock size={12} color={Colors.textLight} />
+            <Text style={styles.dateText}>
+              Publié le {formatDate(listing.createdAt)}
+            </Text>
+          </View>
+          
+          {listing.tags && listing.tags.length > 0 && (
+            <View style={styles.tagsContainer}>
+              {listing.tags.slice(0, 2).map((tag, index) => (
+                <BlurView 
+                  key={`tag-${listing.id}-${tag}-${index}`} 
+                  intensity={20} 
+                  style={styles.tag}
+                >
+                  <Text style={styles.tagText}>{tag}</Text>
+                </BlurView>
+              ))}
+              {listing.tags.length > 2 && (
+                <Text style={styles.moreTagsText}>+{listing.tags.length - 2}</Text>
+              )}
+            </View>
+          )}
+        </View>
+      </View>
+    </TouchableOpacity>
   );
 }
 

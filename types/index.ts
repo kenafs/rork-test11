@@ -46,6 +46,7 @@ export interface Provider extends User {
   portfolio?: string[];
 }
 
+// FIXED: Business venues can now act as both providers and clients
 export interface Venue extends User {
   userType: 'business';
   address?: string;
@@ -60,6 +61,8 @@ export interface Venue extends User {
     linkedin?: string;
   };
   portfolio?: string[];
+  // FIXED: Allow venues to also be clients when they need services
+  canActAsClient?: boolean; // Venues can rent their space (provider) or hire services (client)
 }
 
 export interface Client extends User {
@@ -187,4 +190,6 @@ export interface DemoAccount {
   venueType?: string;
   capacity?: number;
   amenities?: string[];
+  // FIXED: Allow demo business accounts to act as clients too
+  canActAsClient?: boolean;
 }

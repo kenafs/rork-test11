@@ -70,20 +70,20 @@ export default {
   
 } as const;
 
-// Premium gradient combinations
+// Premium gradient combinations - FIXED: Proper tuple types
 export const gradients = {
-  primary: ['#1E3A8A', '#3B82F6'] as const,
-  secondary: ['#3B82F6', '#06B6D4'] as const,
-  dark: ['#0F172A', '#1E293B'] as const,
+  primary: [Colors.primary, Colors.secondary] as const,
+  secondary: [Colors.secondary, '#06B6D4'] as const,
+  dark: [Colors.navyDark, Colors.navyMedium] as const,
   elegant: ['#8B5CF6', '#EC4899'] as const,
-  success: ['#10B981', '#06B6D4'] as const,
-  warning: ['#F59E0B', '#EF4444'] as const,
+  success: [Colors.success, '#06B6D4'] as const,
+  warning: [Colors.warning, Colors.error] as const,
   
   // Category specific gradients
   music: ['#8B5CF6', '#EC4899'] as const,
-  catering: ['#F59E0B', '#EF4444'] as const,
-  venue: ['#06B6D4', '#3B82F6'] as const,
-  staff: ['#10B981', '#06B6D4'] as const,
+  catering: [Colors.warning, Colors.error] as const,
+  venue: ['#06B6D4', Colors.secondary] as const,
+  staff: [Colors.success, '#06B6D4'] as const,
   
   // Premium effects
   glass: ['rgba(248, 250, 252, 0.1)', 'rgba(248, 250, 252, 0.05)'] as const,

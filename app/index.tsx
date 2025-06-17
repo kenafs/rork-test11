@@ -3,7 +3,7 @@ import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Dimensions } from
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { useAuth } from '@/hooks/useAuth';
-import Colors from '@/constants/colors';
+import Colors, { gradients } from '@/constants/colors';
 import Button from '@/components/Button';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
@@ -91,28 +91,28 @@ export default function LandingScreen() {
       title: 'Trouvez des prestataires',
       description: 'Découvrez des professionnels qualifiés pour vos événements',
       color: '#6366F1',
-      gradient: ['#6366F1', '#8B5CF6']
+      gradient: gradients.primary
     },
     {
       icon: Calendar,
       title: 'Organisez facilement',
       description: 'Planifiez et gérez tous vos événements en un seul endroit',
       color: '#EC4899',
-      gradient: ['#EC4899', '#F97316']
+      gradient: gradients.elegant
     },
     {
       icon: Star,
       title: 'Avis vérifiés',
       description: 'Consultez les avis authentiques de la communauté',
       color: '#F59E0B',
-      gradient: ['#F59E0B', '#EF4444']
+      gradient: gradients.warning
     },
     {
       icon: Heart,
       title: 'Favoris personnalisés',
       description: 'Sauvegardez vos prestataires et lieux préférés',
       color: '#EF4444',
-      gradient: ['#EF4444', '#EC4899']
+      gradient: gradients.elegant
     }
   ];
   
@@ -151,7 +151,7 @@ export default function LandingScreen() {
         {/* Hero Section with Parallax */}
         <Animated.View style={[styles.hero, headerStyle]}>
           <LinearGradient
-            colors={[Colors.primary, Colors.secondary]}
+            colors={gradients.primary}
             style={styles.heroGradient}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
@@ -166,7 +166,7 @@ export default function LandingScreen() {
                 </View>
                 
                 <Animated.Text entering={SlideInDown.delay(400)} style={styles.heroTitle}>
-                  Organisez des événements{'\n'}
+                  <Text>Organisez des événements{'\n'}</Text>
                   <Text style={styles.heroTitleAccent}>inoubliables</Text>
                 </Animated.Text>
                 
@@ -297,7 +297,7 @@ export default function LandingScreen() {
         <Animated.View entering={SlideInDown.delay(3000)} style={styles.ctaSection}>
           <BlurView intensity={40} style={styles.ctaBlur}>
             <LinearGradient
-              colors={[Colors.primary, Colors.secondary]}
+              colors={gradients.primary}
               style={styles.ctaContainer}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}

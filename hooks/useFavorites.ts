@@ -18,6 +18,7 @@ interface FavoritesState {
   isFavorite: (listingId: string) => boolean;
   getFavoriteListings: () => Listing[];
   getFavorites: () => string[];
+  favorites: string[]; // FIXED: Added favorites property
   clearUserFavorites: (userId: string) => void;
   clearAllFavorites: () => void;
 }
@@ -27,6 +28,15 @@ export const useFavorites = create<FavoritesState>()(
     (set, get) => ({
       userFavorites: {},
       currentUserId: null,
+      
+      // FIXED: Added computed favorites property
+      get favorites() {
+        const { currentUserId, userFavorites } = get();
+        if (!currentUserId) {
+          return [];
+        }
+        return userFavorites[currentUserId] || [];
+      },
       
       setCurrentUser: (userId: string | null) => {
         console.log('Setting current user in favorites:', userId);
