@@ -6,8 +6,6 @@ import { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { trpc, trpcClient } from "@/lib/trpc";
-import { useAuth } from "@/hooks/useAuth";
-import { useRouter } from "expo-router";
 import Colors from "@/constants/colors";
 
 export const unstable_settings = {
@@ -44,17 +42,6 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const [queryClient] = useState(() => new QueryClient());
-  const { isAuthenticated } = useAuth();
-  const router = useRouter();
-
-  // CRITICAL FIX: Redirect to landing page if not authenticated
-  useEffect(() => {
-    console.log('Auth state changed:', isAuthenticated);
-    if (!isAuthenticated) {
-      console.log('User not authenticated, redirecting to landing page');
-      router.replace('/');
-    }
-  }, [isAuthenticated]);
 
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>

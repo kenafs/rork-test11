@@ -47,7 +47,7 @@ export default function CreateQuoteScreen() {
   const allUsers = [...mockProviders, ...mockVenues];
   const conversationParticipant = conversationId ? allUsers.find(u => u.id === conversationId) : null;
   
-  // CRITICAL FIX: Both providers and business establishments can create quotes
+  // FIXED: Both providers and business establishments can create quotes
   if (!user || (user.userType !== 'provider' && user.userType !== 'business')) {
     return (
       <View style={styles.container}>
@@ -275,10 +275,8 @@ ${description}
 Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
 
         console.log('Sending quote message to recipient:', targetUserId);
-        
-        // CRITICAL FIX: Send message to the conversation, but the message should appear for the RECIPIENT
-        // We need to send the message as if it's coming from the current user (sender) to the recipient
-        await sendMessage(conversationId, quoteMessage);
+        // CRITICAL FIX: Send message to targetUserId (recipient), not user.id (sender)
+        await sendMessage(conversationId, quoteMessage, targetUserId);
         
         // Update contact with quote info for the RECIPIENT
         const targetUser = allUsers.find(u => u.id === targetUserId);

@@ -35,8 +35,8 @@ export const useAuth = create<AuthState>()(
             userType: 'client',
             profileImage: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
             description: 'Utilisateur de test pour EventApp',
-            rating: 0, // CRITICAL FIX: Set to 0 by default
-            reviewCount: 0, // CRITICAL FIX: Set to 0 by default
+            rating: 0,
+            reviewCount: 0,
             location: {
               latitude: 48.8566,
               longitude: 2.3522,
@@ -73,8 +73,8 @@ export const useAuth = create<AuthState>()(
           const newUser: User = {
             ...userData,
             id: `user-${Date.now()}`,
-            rating: 0, // CRITICAL FIX: Set to 0 by default
-            reviewCount: 0, // CRITICAL FIX: Set to 0 by default
+            rating: 0,
+            reviewCount: 0,
             createdAt: Date.now(),
           };
           
@@ -119,9 +119,8 @@ export const useAuth = create<AuthState>()(
           
           console.log('User logged out successfully');
           
-          // CRITICAL FIX: Force redirect to landing page after logout
+          // CRITICAL FIX: Redirect to landing page after logout
           const { router } = await import('expo-router');
-          console.log('Redirecting to landing page...');
           router.replace('/');
           
         } catch (error) {
@@ -186,8 +185,8 @@ export const useAuth = create<AuthState>()(
             description: demoAccount.description,
             website: demoAccount.website,
             instagram: demoAccount.instagram,
-            rating: 0, // CRITICAL FIX: Set rating to 0 by default
-            reviewCount: 0, // CRITICAL FIX: Set reviewCount to 0 by default
+            rating: 0, // FIXED: Set rating to 0 by default
+            reviewCount: 0, // FIXED: Set reviewCount to 0 by default
             location: {
               latitude: 48.8566,
               longitude: 2.3522,

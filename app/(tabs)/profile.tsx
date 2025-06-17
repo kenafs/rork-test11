@@ -56,9 +56,11 @@ export default function ProfileScreen() {
   const userReviews = getReviewsByUser(user.id);
   const userFavorites = getFavorites();
   
-  // CRITICAL FIX: Calculate average rating from reviews user has received - Always show 0 for unrated accounts
+  // Calculate average rating from reviews user has received - FIXED: Set to 0 for unrated accounts
   const receivedReviews = userReviews.filter(review => review.targetId === user.id);
-  const averageRating = 0; // CRITICAL FIX: Always show 0 as requested
+  const averageRating = receivedReviews.length > 0 
+    ? receivedReviews.reduce((sum, review) => sum + review.rating, 0) / receivedReviews.length 
+    : 0; // FIXED: Always show 0 for accounts without ratings
   
   const handleLogout = () => {
     Alert.alert(
@@ -254,7 +256,7 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </View>
       
-      {/* CRITICAL FIX: Logout Button with proper spacing to avoid bottom bar */}
+      {/* FIXED: Logout Button with proper spacing to avoid bottom bar */}
       <View style={styles.logoutContainer}>
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <LogOut size={20} color="#F44336" />
@@ -479,6 +481,6 @@ const styles = StyleSheet.create({
     color: '#F44336',
   },
   bottomSpacer: {
-    height: 200, // CRITICAL FIX: Increased height significantly to ensure logout button is visible above tab bar
+    height: 160, // CRITICAL FIX: Increased height to ensure logout button is visible above tab bar
   },
 });
