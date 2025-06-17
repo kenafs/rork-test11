@@ -32,7 +32,7 @@ export const useFavorites = create<FavoritesState>()(
         console.log('Setting current user in favorites:', userId);
         set({ currentUserId: userId });
         
-        // CRITICAL FIX: Initialize empty favorites array for new user if not exists
+        // Initialize empty favorites array for new user if not exists
         if (userId) {
           const { userFavorites } = get();
           if (!userFavorites[userId]) {
@@ -100,7 +100,6 @@ export const useFavorites = create<FavoritesState>()(
         
         const currentFavorites = userFavorites[currentUserId] || [];
         const isFav = currentFavorites.includes(listingId);
-        console.log(`Checking if ${listingId} is favorite for user ${currentUserId}:`, isFav);
         return isFav;
       },
       

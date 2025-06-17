@@ -479,6 +479,6 @@ const styles = StyleSheet.create({
     color: '#F44336',
   },
   bottomSpacer: {
-    height: 200, // CRITICAL FIX: Increased height to ensure logout button is visible above tab bar
+    height: 120, // CRITICAL FIX: Increased height to ensure logout button is visible above tab bar
   },
 });

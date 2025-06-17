@@ -35,7 +35,6 @@ export default function QuotePreview({ quote }: QuotePreviewProps) {
     }
   };
 
-  // FIXED: Added PDF generation functionality
   const generatePDF = async () => {
     try {
       const htmlContent = `
@@ -233,7 +232,7 @@ export default function QuotePreview({ quote }: QuotePreviewProps) {
         </View>
       </ScrollView>
 
-      {/* FIXED: Added PDF download button */}
+      {/* PDF download button */}
       <View style={styles.actionContainer}>
         <TouchableOpacity style={styles.pdfButton} onPress={generatePDF}>
           <Download size={20} color="#fff" />
