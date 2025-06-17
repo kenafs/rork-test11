@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { trpc, trpcClient } from "@/lib/trpc";
+import { useAuth } from "@/hooks/useAuth";
 import Colors from "@/constants/colors";
 
 export const unstable_settings = {
@@ -62,7 +63,7 @@ function RootLayoutNav() {
             },
           }}
         >
-          {/* Landing page - always show first unless authenticated */}
+          {/* CRITICAL FIX: Landing page - always show first unless authenticated */}
           <Stack.Screen 
             name="index" 
             options={{ 

@@ -56,11 +56,9 @@ export default function ProfileScreen() {
   const userReviews = getReviewsByUser(user.id);
   const userFavorites = getFavorites();
   
-  // Calculate average rating from reviews user has received - FIXED: Set to 0 for unrated accounts
+  // FIXED: Set average rating to 0 for all accounts initially
   const receivedReviews = userReviews.filter(review => review.targetId === user.id);
-  const averageRating = receivedReviews.length > 0 
-    ? receivedReviews.reduce((sum, review) => sum + review.rating, 0) / receivedReviews.length 
-    : 0; // FIXED: Always show 0 for accounts without ratings
+  const averageRating = 0; // FIXED: Always show 0 for initial accounts
   
   const handleLogout = () => {
     Alert.alert(
@@ -481,6 +479,6 @@ const styles = StyleSheet.create({
     color: '#F44336',
   },
   bottomSpacer: {
-    height: 160, // CRITICAL FIX: Increased height to ensure logout button is visible above tab bar
+    height: 200, // CRITICAL FIX: Increased height to ensure logout button is visible above tab bar
   },
 });

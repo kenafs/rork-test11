@@ -204,7 +204,7 @@ export default function CreateQuoteScreen() {
     }
   };
   
-  // CRITICAL FIX: Handle submit with proper conversation history integration and correct recipient
+  // CRITICAL FIX: Handle submit with correct message recipient
   const handleSubmit = async () => {
     if (!title.trim()) {
       Alert.alert('Erreur', 'Veuillez saisir un titre pour le devis');
@@ -275,6 +275,7 @@ ${description}
 Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
 
         console.log('Sending quote message to recipient:', targetUserId);
+        
         // CRITICAL FIX: Send message to targetUserId (recipient), not user.id (sender)
         await sendMessage(conversationId, quoteMessage, targetUserId);
         

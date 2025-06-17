@@ -21,7 +21,7 @@ export default function QuotesScreen() {
     fetchQuotes();
   }, []);
   
-  // FIXED: Get quotes based on user type
+  // FIXED: Get quotes based on user type using correct function
   const userQuotes = user ? getQuotesForUser(user.id) : [];
   
   const getStatusColor = (status: string) => {
@@ -138,7 +138,6 @@ export default function QuotesScreen() {
     setShowPreview(true);
   };
 
-  // CRITICAL FIX: Improved PDF generation with better error handling
   const generatePDF = async (quote: any) => {
     try {
       const htmlContent = `
@@ -359,7 +358,8 @@ export default function QuotesScreen() {
                     <Text style={styles.pdfButtonText}>PDF</Text>
                   </TouchableOpacity>
                   
-                  {(user.userType === 'client' || user.userType === 'business') && quote.status === 'pending' && (
+                  {/* FIXED: Business venues can also accept/reject quotes as clients */}
+                  {(user.userType === 'client' || (user.userType === 'business' && quote.clientId === user.id)) && quote.status === 'pending' && (
                     <>
                       <TouchableOpacity 
                         style={styles.acceptButton}
@@ -379,7 +379,8 @@ export default function QuotesScreen() {
                     </>
                   )}
                   
-                  {(user.userType === 'client' || user.userType === 'business') && quote.status === 'accepted' && (
+                  {/* FIXED: Business venues can also pay quotes as clients */}
+                  {(user.userType === 'client' || (user.userType === 'business' && quote.clientId === user.id)) && quote.status === 'accepted' && (
                     <TouchableOpacity 
                       style={styles.payButton}
                       onPress={() => handlePayQuote(quote.id)}
@@ -389,7 +390,8 @@ export default function QuotesScreen() {
                     </TouchableOpacity>
                   )}
                   
-                  {user.userType === 'provider' && quote.status === 'paid' && (
+                  {/* FIXED: Both providers and business venues can complete quotes */}
+                  {(user.userType === 'provider' || (user.userType === 'business' && quote.providerId === user.id)) && quote.status === 'paid' && (
                     <TouchableOpacity 
                       style={styles.completeButton}
                       onPress={() => handleCompleteQuote(quote.id)}
@@ -435,7 +437,7 @@ export default function QuotesScreen() {
         )}
       </ScrollView>
 
-      {/* Quote Preview Modal - FIXED: Added PDF preview functionality */}
+      {/* Quote Preview Modal */}
       <Modal
         visible={showPreview}
         animationType="slide"

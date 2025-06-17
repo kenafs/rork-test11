@@ -119,9 +119,13 @@ export const useAuth = create<AuthState>()(
           
           console.log('User logged out successfully');
           
-          // CRITICAL FIX: Redirect to landing page after logout
+          // CRITICAL FIX: Force redirect to landing page after logout
           const { router } = await import('expo-router');
+          
+          // Use replace to ensure we can't go back to authenticated screens
           router.replace('/');
+          
+          console.log('Redirected to landing page');
           
         } catch (error) {
           console.error('Logout error:', error);
@@ -185,8 +189,8 @@ export const useAuth = create<AuthState>()(
             description: demoAccount.description,
             website: demoAccount.website,
             instagram: demoAccount.instagram,
-            rating: 0, // FIXED: Set rating to 0 by default
-            reviewCount: 0, // FIXED: Set reviewCount to 0 by default
+            rating: 0,
+            reviewCount: 0,
             location: {
               latitude: 48.8566,
               longitude: 2.3522,

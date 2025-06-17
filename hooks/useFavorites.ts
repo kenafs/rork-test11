@@ -32,9 +32,17 @@ export const useFavorites = create<FavoritesState>()(
         console.log('Setting current user in favorites:', userId);
         set({ currentUserId: userId });
         
-        // CRITICAL FIX: Clear favorites when no user is set (logout)
-        if (!userId) {
-          console.log('No user set, clearing current user favorites context');
+        // CRITICAL FIX: Initialize empty favorites array for new user if not exists
+        if (userId) {
+          const { userFavorites } = get();
+          if (!userFavorites[userId]) {
+            set({
+              userFavorites: {
+                ...userFavorites,
+                [userId]: []
+              }
+            });
+          }
         }
       },
       
