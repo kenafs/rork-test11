@@ -32,9 +32,18 @@ export const useFavorites = create<FavoritesState>()(
         console.log('Setting current user in favorites:', userId);
         set({ currentUserId: userId });
         
-        // CRITICAL FIX: Clear favorites when no user is set (logout)
-        if (!userId) {
-          console.log('No user set, clearing current user favorites context');
+        // Initialize user favorites if they don't exist
+        if (userId) {
+          const { userFavorites } = get();
+          if (!userFavorites[userId]) {
+            console.log('Initializing favorites for new user:', userId);
+            set({
+              userFavorites: {
+                ...userFavorites,
+                [userId]: []
+              }
+            });
+          }
         }
       },
       
@@ -45,6 +54,7 @@ export const useFavorites = create<FavoritesState>()(
           return;
         }
         
+        // Ensure user has their own favorites array
         const currentFavorites = userFavorites[currentUserId] || [];
         if (!currentFavorites.includes(listingId)) {
           const newUserFavorites = {
@@ -68,6 +78,7 @@ export const useFavorites = create<FavoritesState>()(
           return;
         }
         
+        // Ensure user has their own favorites array
         const currentFavorites = userFavorites[currentUserId] || [];
         const newFavorites = currentFavorites.filter(id => id !== listingId);
         
@@ -90,9 +101,9 @@ export const useFavorites = create<FavoritesState>()(
           return false;
         }
         
+        // Ensure user has their own favorites array
         const currentFavorites = userFavorites[currentUserId] || [];
         const isFav = currentFavorites.includes(listingId);
-        console.log(`Checking if ${listingId} is favorite for user ${currentUserId}:`, isFav);
         return isFav;
       },
       
@@ -103,6 +114,7 @@ export const useFavorites = create<FavoritesState>()(
           return [];
         }
         
+        // Ensure user has their own favorites array
         const favoriteIds = userFavorites[currentUserId] || [];
         console.log(`Getting favorite listings for user ${currentUserId}:`, favoriteIds);
         return mockListings.filter(listing => favoriteIds.includes(listing.id));
@@ -115,6 +127,7 @@ export const useFavorites = create<FavoritesState>()(
           return [];
         }
         
+        // Ensure user has their own favorites array
         const favorites = userFavorites[currentUserId] || [];
         console.log(`Getting favorites for user ${currentUserId}:`, favorites);
         return favorites;

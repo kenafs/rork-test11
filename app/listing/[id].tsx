@@ -107,7 +107,7 @@ export default function ListingDetailScreen() {
     }
   };
   
-  // Handle quote request
+  // Handle quote request - businesses can now create quotes too
   const handleQuoteRequest = async () => {
     if (!isAuthenticated) {
       Alert.alert(
@@ -126,9 +126,9 @@ export default function ListingDetailScreen() {
       return;
     }
 
-    // Only providers can send quotes, clients can request quotes
-    if (user.userType === 'provider') {
-      // Provider can create a quote
+    // Both providers and businesses can send quotes, clients can request quotes
+    if (user.userType === 'provider' || user.userType === 'business') {
+      // Provider or business can create a quote
       router.push(`/create-quote/${listing.id}`);
     } else if (user.userType === 'client') {
       // Client can request a quote via message
@@ -149,9 +149,6 @@ export default function ListingDetailScreen() {
         console.error('Error creating quote request conversation:', error);
         Alert.alert('Erreur', 'Impossible de créer la demande de devis');
       }
-    } else {
-      // Business accounts cannot request quotes
-      Alert.alert('Non disponible', 'Cette fonctionnalité n\'est pas disponible pour les établissements.');
     }
   };
   
@@ -299,10 +296,11 @@ export default function ListingDetailScreen() {
             style={styles.contactButton}
           />
           
-          {/* Only show quote button for providers or when requesting quotes from providers */}
-          {(user?.userType === 'provider' || (listing.creatorType === 'provider' && user?.userType === 'client')) && (
+          {/* Show quote button for providers, businesses, or when requesting quotes from providers/businesses */}
+          {(user?.userType === 'provider' || user?.userType === 'business' || 
+            ((listing.creatorType === 'provider' || listing.creatorType === 'business') && user?.userType === 'client')) && (
             <Button
-              title={user?.userType === 'provider' ? "📋 Créer devis" : "📋 Demander devis"}
+              title={user?.userType === 'provider' || user?.userType === 'business' ? "📋 Créer devis" : "📋 Demander devis"}
               variant="outline"
               onPress={handleQuoteRequest}
               style={styles.quoteButton}

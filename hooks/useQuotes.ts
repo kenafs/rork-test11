@@ -27,7 +27,7 @@ interface QuotesState {
 export const useQuotes = create<QuotesState>()(
   persist(
     (set, get) => ({
-      quotes: [], // CRITICAL FIX: Ensure quotes is always initialized as an array
+      quotes: [],
       isLoading: false,
       
       fetchQuotes: async () => {
@@ -162,7 +162,6 @@ export const useQuotes = create<QuotesState>()(
       
       getQuotesForUser: (userId: string) => {
         const quotes = get().quotes || [];
-        // CRITICAL FIX: Ensure quotes is an array before filtering
         if (!Array.isArray(quotes)) {
           console.warn('Quotes is not an array:', quotes);
           return [];
@@ -209,7 +208,7 @@ export const useQuotes = create<QuotesState>()(
       name: 'quotes-storage',
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
-        quotes: state.quotes || [], // CRITICAL FIX: Ensure quotes is always an array
+        quotes: Array.isArray(state.quotes) ? state.quotes : [],
       }),
     }
   )
