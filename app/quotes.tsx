@@ -21,7 +21,7 @@ export default function QuotesScreen() {
     fetchQuotes();
   }, []);
   
-  // Use getQuotesForUser for all user types
+  // CRITICAL FIX: Use getQuotesForUser for all user types
   const userQuotes = user ? getQuotesForUser(user.id) : [];
   
   const getStatusColor = (status: string) => {
@@ -133,13 +133,12 @@ export default function QuotesScreen() {
     );
   };
 
-  // CRITICAL FIX: Add PDF preview functionality
   const handleViewQuote = (quote: any) => {
     setSelectedQuote(quote);
     setShowPreview(true);
   };
 
-  // Improved PDF generation with better error handling
+  // CRITICAL FIX: Improved PDF generation with better error handling
   const generatePDF = async (quote: any) => {
     try {
       const htmlContent = `
@@ -360,7 +359,7 @@ export default function QuotesScreen() {
                     <Text style={styles.pdfButtonText}>PDF</Text>
                   </TouchableOpacity>
                   
-                  {/* Show accept/reject buttons for clients AND businesses receiving quotes */}
+                  {/* CRITICAL FIX: Show accept/reject buttons for clients AND businesses receiving quotes */}
                   {((user.userType === 'client' || user.userType === 'business') && quote.clientId === user.id && quote.status === 'pending') && (
                     <>
                       <TouchableOpacity 
@@ -381,7 +380,7 @@ export default function QuotesScreen() {
                     </>
                   )}
                   
-                  {/* Show pay button for clients AND businesses who received the quote */}
+                  {/* CRITICAL FIX: Show pay button for clients AND businesses who received the quote */}
                   {((user.userType === 'client' || user.userType === 'business') && quote.clientId === user.id && quote.status === 'accepted') && (
                     <TouchableOpacity 
                       style={styles.payButton}
@@ -392,7 +391,7 @@ export default function QuotesScreen() {
                     </TouchableOpacity>
                   )}
                   
-                  {/* Show complete button for providers AND businesses who sent the quote */}
+                  {/* CRITICAL FIX: Show complete button for providers AND businesses who sent the quote */}
                   {((user.userType === 'provider' || user.userType === 'business') && quote.providerId === user.id && quote.status === 'paid') && (
                     <TouchableOpacity 
                       style={styles.completeButton}

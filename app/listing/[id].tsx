@@ -107,7 +107,7 @@ export default function ListingDetailScreen() {
     }
   };
   
-  // Handle quote request - businesses can now create quotes too
+  // CRITICAL FIX: Handle quote request - businesses can now create quotes too
   const handleQuoteRequest = async () => {
     if (!isAuthenticated) {
       Alert.alert(
@@ -126,7 +126,7 @@ export default function ListingDetailScreen() {
       return;
     }
 
-    // Both providers and businesses can send quotes, clients can request quotes
+    // CRITICAL FIX: Both providers and businesses can send quotes, clients can request quotes
     if (user.userType === 'provider' || user.userType === 'business') {
       // Provider or business can create a quote
       router.push(`/create-quote/${listing.id}`);
@@ -296,7 +296,7 @@ export default function ListingDetailScreen() {
             style={styles.contactButton}
           />
           
-          {/* Show quote button for providers, businesses, or when requesting quotes from providers/businesses */}
+          {/* CRITICAL FIX: Show quote button for providers, businesses, or when requesting quotes from providers/businesses */}
           {(user?.userType === 'provider' || user?.userType === 'business' || 
             ((listing.creatorType === 'provider' || listing.creatorType === 'business') && user?.userType === 'client')) && (
             <Button

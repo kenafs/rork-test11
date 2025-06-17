@@ -27,7 +27,7 @@ interface QuotesState {
 export const useQuotes = create<QuotesState>()(
   persist(
     (set, get) => ({
-      quotes: [],
+      quotes: [], // CRITICAL FIX: Always initialize as empty array
       isLoading: false,
       
       fetchQuotes: async () => {
@@ -64,7 +64,7 @@ export const useQuotes = create<QuotesState>()(
             updatedAt: Date.now(),
           };
           
-          const currentQuotes = get().quotes || [];
+          const currentQuotes = get().quotes || []; // CRITICAL FIX: Fallback to empty array
           set({
             quotes: [...currentQuotes, newQuote],
             isLoading: false,
@@ -85,7 +85,7 @@ export const useQuotes = create<QuotesState>()(
         try {
           await new Promise(resolve => setTimeout(resolve, 1000));
           
-          const currentQuotes = get().quotes || [];
+          const currentQuotes = get().quotes || []; // CRITICAL FIX: Fallback to empty array
           const updatedQuotes = currentQuotes.map(quote =>
             quote.id === id
               ? { ...quote, ...updates, updatedAt: Date.now() }
@@ -112,7 +112,7 @@ export const useQuotes = create<QuotesState>()(
         try {
           await new Promise(resolve => setTimeout(resolve, 500));
           
-          const currentQuotes = get().quotes || [];
+          const currentQuotes = get().quotes || []; // CRITICAL FIX: Fallback to empty array
           const filteredQuotes = currentQuotes.filter(quote => quote.id !== id);
           
           set({
@@ -156,12 +156,13 @@ export const useQuotes = create<QuotesState>()(
       },
       
       getQuoteById: (id: string) => {
-        const quotes = get().quotes || [];
+        const quotes = get().quotes || []; // CRITICAL FIX: Fallback to empty array
         return quotes.find(quote => quote.id === id);
       },
       
       getQuotesForUser: (userId: string) => {
-        const quotes = get().quotes || [];
+        const quotes = get().quotes || []; // CRITICAL FIX: Fallback to empty array
+        // CRITICAL FIX: Ensure quotes is an array before filtering
         if (!Array.isArray(quotes)) {
           console.warn('Quotes is not an array:', quotes);
           return [];
@@ -172,7 +173,7 @@ export const useQuotes = create<QuotesState>()(
       },
       
       getQuotesByProvider: (providerId: string) => {
-        const quotes = get().quotes || [];
+        const quotes = get().quotes || []; // CRITICAL FIX: Fallback to empty array
         if (!Array.isArray(quotes)) {
           return [];
         }
@@ -180,7 +181,7 @@ export const useQuotes = create<QuotesState>()(
       },
       
       getQuotesByClient: (clientId: string) => {
-        const quotes = get().quotes || [];
+        const quotes = get().quotes || []; // CRITICAL FIX: Fallback to empty array
         if (!Array.isArray(quotes)) {
           return [];
         }
@@ -193,7 +194,7 @@ export const useQuotes = create<QuotesState>()(
       },
       
       getCompletedQuotesBetweenUsers: (userId1: string, userId2: string) => {
-        const quotes = get().quotes || [];
+        const quotes = get().quotes || []; // CRITICAL FIX: Fallback to empty array
         if (!Array.isArray(quotes)) {
           return [];
         }
@@ -208,7 +209,7 @@ export const useQuotes = create<QuotesState>()(
       name: 'quotes-storage',
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
-        quotes: Array.isArray(state.quotes) ? state.quotes : [],
+        quotes: Array.isArray(state.quotes) ? state.quotes : [], // CRITICAL FIX: Ensure quotes is always an array
       }),
     }
   )

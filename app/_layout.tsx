@@ -7,7 +7,7 @@ import { StatusBar } from "expo-status-bar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { trpc, trpcClient } from "@/lib/trpc";
 import { useAuth } from "@/hooks/useAuth";
-import { useRouter, useSegments } from "expo-router";
+import { useRouter } from "expo-router";
 import Colors from "@/constants/colors";
 
 export const unstable_settings = {
@@ -46,31 +46,15 @@ function RootLayoutNav() {
   const [queryClient] = useState(() => new QueryClient());
   const { isAuthenticated } = useAuth();
   const router = useRouter();
-  const segments = useSegments();
 
-  // CRITICAL FIX: Proper navigation logic for landing page
+  // CRITICAL FIX: Redirect to landing page if not authenticated
   useEffect(() => {
     console.log('Auth state changed:', isAuthenticated);
-    console.log('Current segments:', segments);
-    
-    const inAuthGroup = segments[0] === '(auth)';
-    const inTabsGroup = segments[0] === '(tabs)';
-    const onLandingPage = segments.length === 0;
-    
     if (!isAuthenticated) {
-      // User is not authenticated - redirect to landing page
-      if (inTabsGroup || (!inAuthGroup && !onLandingPage)) {
-        console.log('User not authenticated, redirecting to landing page');
-        router.replace('/');
-      }
-    } else {
-      // User is authenticated - redirect to tabs
-      if (onLandingPage || inAuthGroup) {
-        console.log('User authenticated, redirecting to tabs');
-        router.replace('/(tabs)');
-      }
+      console.log('User not authenticated, redirecting to landing page');
+      router.replace('/');
     }
-  }, [isAuthenticated, segments]);
+  }, [isAuthenticated]);
 
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>

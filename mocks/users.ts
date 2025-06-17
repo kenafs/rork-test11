@@ -14,7 +14,7 @@ export const mockProviders: Provider[] = [
       city: 'Paris',
     },
     rating: 0, // CRITICAL FIX: Set to 0 as requested
-    reviewCount: 0,
+    reviewCount: 0, // CRITICAL FIX: Set to 0 as requested
     services: ['DJ', 'Sound Equipment', 'Lighting'],
     description: "Professional DJ with 10 years of experience in weddings, corporate events, and private parties. I bring high-quality sound equipment and can adapt to any musical style.",
     availability: ['Weekends', 'Evenings'],
@@ -48,7 +48,7 @@ export const mockProviders: Provider[] = [
       city: 'Paris',
     },
     rating: 0, // CRITICAL FIX: Set to 0 as requested
-    reviewCount: 0,
+    reviewCount: 0, // CRITICAL FIX: Set to 0 as requested
     services: ['Catering', 'Chef Service', 'Food Styling'],
     description: "Gourmet catering service specializing in French cuisine with a modern twist. We use locally-sourced ingredients and can accommodate dietary restrictions.",
     availability: ['All Week'],
@@ -80,7 +80,7 @@ export const mockProviders: Provider[] = [
       city: 'Lyon',
     },
     rating: 0, // CRITICAL FIX: Set to 0 as requested
-    reviewCount: 0,
+    reviewCount: 0, // CRITICAL FIX: Set to 0 as requested
     services: ['Waitstaff', 'Bartenders', 'Event Coordination'],
     description: "Professional waitstaff and bartenders for any event. Our team is experienced, punctual, and provides exceptional service.",
     availability: ['Weekends', 'Evenings', 'Holidays'],
@@ -114,7 +114,7 @@ export const mockVenues: Venue[] = [
       city: 'Paris',
     },
     rating: 0, // CRITICAL FIX: Set to 0 as requested
-    reviewCount: 0,
+    reviewCount: 0, // CRITICAL FIX: Set to 0 as requested
     venueType: 'Restaurant with Garden',
     description: "A hidden gem in the heart of Paris with a beautiful garden terrace. Perfect for intimate gatherings and cocktail parties.",
     capacity: 80,
@@ -148,7 +148,7 @@ export const mockVenues: Venue[] = [
       city: 'Paris',
     },
     rating: 0, // CRITICAL FIX: Set to 0 as requested
-    reviewCount: 0,
+    reviewCount: 0, // CRITICAL FIX: Set to 0 as requested
     venueType: 'Industrial Loft',
     description: "Spacious industrial loft with exposed brick walls and high ceilings. Ideal for corporate events, photo shoots, and private parties.",
     capacity: 150,
@@ -180,7 +180,7 @@ export const mockVenues: Venue[] = [
       city: 'Marseille',
     },
     rating: 0, // CRITICAL FIX: Set to 0 as requested
-    reviewCount: 0,
+    reviewCount: 0, // CRITICAL FIX: Set to 0 as requested
     venueType: 'Historic Château',
     description: "Magnificent 18th-century château surrounded by vineyards. Perfect for weddings, galas, and corporate retreats.",
     capacity: 250,
