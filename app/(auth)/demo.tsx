@@ -90,7 +90,7 @@ const demoAccounts: DemoAccount[] = [
     availability: ['Journée', 'Soir', 'Week-end'],
   },
   
-  // Business Demo Accounts
+  // Business Demo Accounts - FIXED: Can act as both providers and clients
   {
     userType: 'business',
     name: 'Château de Malmaison',
@@ -106,6 +106,7 @@ const demoAccounts: DemoAccount[] = [
     venueType: 'Château',
     capacity: 200,
     amenities: ['Jardins', 'Parking', 'Cuisine équipée', 'Terrasse', 'Salon de réception', 'Hébergement'],
+    canActAsClient: true, // FIXED: Can also hire services
   },
   {
     userType: 'business',
@@ -122,6 +123,7 @@ const demoAccounts: DemoAccount[] = [
     venueType: 'Villa',
     capacity: 120,
     amenities: ['Piscine', 'Vue mer', 'Terrasse', 'Jardin', 'Parking', 'Cuisine équipée'],
+    canActAsClient: true, // FIXED: Can also hire services
   },
   {
     userType: 'business',
@@ -138,6 +140,7 @@ const demoAccounts: DemoAccount[] = [
     venueType: 'Domaine viticole',
     capacity: 150,
     amenities: ['Vignobles', 'Salle de réception', 'Terrasse', 'Parking', 'Dégustation'],
+    canActAsClient: true, // FIXED: Can also hire services
   },
 ];
 
@@ -336,7 +339,7 @@ export default function DemoScreen() {
         <View style={styles.typeSection}>
           <Text style={styles.typeTitle}>🏢 Comptes Établissement</Text>
           <Text style={styles.typeDescription}>
-            Proposez votre lieu pour des événements et réceptions
+            Proposez votre lieu pour des événements et réceptions. Peuvent aussi agir comme clients pour embaucher des services.
           </Text>
           {groupedAccounts.business.map((account, index) => (
             <TouchableOpacity

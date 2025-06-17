@@ -54,7 +54,10 @@ export default function HomeScreen() {
     hasPermission
   } = useLocation();
   const { t } = useLanguage();
-  const { favorites } = useFavorites(); // FIXED: Use favorites property instead of destructuring
+  
+  // FIXED: Get favorites using the getFavorites method
+  const { getFavorites } = useFavorites();
+  const favorites = getFavorites();
   
   const [refreshing, setRefreshing] = useState(false);
   const scrollY = useSharedValue(0);

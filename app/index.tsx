@@ -91,28 +91,28 @@ export default function LandingScreen() {
       title: 'Trouvez des prestataires',
       description: 'Découvrez des professionnels qualifiés pour vos événements',
       color: '#6366F1',
-      gradient: gradients.primary
+      gradient: ['#6366F1', '#3B82F6'] as const
     },
     {
       icon: Calendar,
       title: 'Organisez facilement',
       description: 'Planifiez et gérez tous vos événements en un seul endroit',
       color: '#EC4899',
-      gradient: gradients.elegant
+      gradient: ['#8B5CF6', '#EC4899'] as const
     },
     {
       icon: Star,
       title: 'Avis vérifiés',
       description: 'Consultez les avis authentiques de la communauté',
       color: '#F59E0B',
-      gradient: gradients.warning
+      gradient: ['#F59E0B', '#EF4444'] as const
     },
     {
       icon: Heart,
       title: 'Favoris personnalisés',
       description: 'Sauvegardez vos prestataires et lieux préférés',
       color: '#EF4444',
-      gradient: gradients.elegant
+      gradient: ['#8B5CF6', '#EC4899'] as const
     }
   ];
   
@@ -166,7 +166,8 @@ export default function LandingScreen() {
                 </View>
                 
                 <Animated.Text entering={SlideInDown.delay(400)} style={styles.heroTitle}>
-                  <Text>Organisez des événements{'\n'}</Text>
+                  <Text>Organisez des événements</Text>
+                  <Text>{'\n'}</Text>
                   <Text style={styles.heroTitleAccent}>inoubliables</Text>
                 </Animated.Text>
                 

@@ -124,7 +124,8 @@ export const useAuth = create<AuthState>()(
             try {
               const { router } = await import('expo-router');
               
-              // Use replace to ensure we can't go back to authenticated screens
+              // FIXED: Use replace to ensure we can't go back to authenticated screens
+              // and redirect to the landing page (index.tsx)
               router.replace('/');
               
               console.log('Redirected to landing page');
@@ -225,6 +226,8 @@ export const useAuth = create<AuthState>()(
             (demoUser as any).venueType = demoAccount.venueType;
             (demoUser as any).capacity = demoAccount.capacity;
             (demoUser as any).amenities = demoAccount.amenities;
+            // FIXED: Allow business venues to act as clients too
+            (demoUser as any).canActAsClient = demoAccount.canActAsClient || true;
           }
           
           set({ 

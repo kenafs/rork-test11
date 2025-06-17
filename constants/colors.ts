@@ -1,4 +1,5 @@
-export default {
+// Modern Navy Blue Theme - Elegant and Professional
+const Colors = {
   // Modern Navy Blue Theme - Elegant and Professional
   primary: '#1E3A8A', // Deep navy blue
   secondary: '#3B82F6', // Bright blue
@@ -69,6 +70,8 @@ export default {
   glassBlur: 'rgba(255, 255, 255, 0.05)',
   
 } as const;
+
+export default Colors;
 
 // Premium gradient combinations - FIXED: Proper tuple types
 export const gradients = {
