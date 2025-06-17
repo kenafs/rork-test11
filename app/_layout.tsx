@@ -47,15 +47,16 @@ function RootLayoutNav() {
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
-        <StatusBar style="dark" />
+        <StatusBar style="light" backgroundColor={Colors.primary} />
         <Stack
           screenOptions={{
             headerStyle: {
-              backgroundColor: '#fff',
+              backgroundColor: Colors.primary,
             },
-            headerTintColor: Colors.primary,
+            headerTintColor: '#fff',
             headerTitleStyle: {
-              fontWeight: '600',
+              fontWeight: '700',
+              fontSize: 18,
             },
             headerShadowVisible: false,
             contentStyle: {
@@ -103,6 +104,7 @@ function RootLayoutNav() {
             options={{ 
               title: "Détail de l'annonce",
               headerBackTitle: "Retour",
+              headerShown: false,
             }} 
           />
           <Stack.Screen 

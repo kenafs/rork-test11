@@ -92,179 +92,216 @@ export default function ProfileScreen() {
     onPress?: () => void;
   }) => (
     <TouchableOpacity style={styles.statCard} onPress={onPress} activeOpacity={0.7}>
-      <View style={[styles.statIcon, { backgroundColor: `${color}20` }]}>
+      <LinearGradient
+        colors={[`${color}20`, `${color}10`]}
+        style={styles.statIcon}
+      >
         <Icon size={24} color={color} />
-      </View>
+      </LinearGradient>
       <Text style={styles.statValue}>{value}</Text>
       <Text style={styles.statLabel}>{label}</Text>
     </TouchableOpacity>
   );
   
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* Header with gradient */}
-      <LinearGradient
-        colors={[Colors.primary, Colors.secondary] as const}
-        style={styles.header}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
-        <View style={styles.headerContent}>
-          <View style={styles.profileImageContainer}>
-            {user.profileImage ? (
-              <Image source={{ uri: user.profileImage }} style={styles.profileImage} />
-            ) : (
-              <View style={[styles.profileImage, styles.profileImagePlaceholder]}>
-                <Text style={styles.profileImageText}>{user.name.charAt(0)}</Text>
-              </View>
-            )}
+    <View style={styles.container}>
+      <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        {/* Header with gradient */}
+        <LinearGradient
+          colors={[Colors.primary, Colors.secondary]}
+          style={styles.header}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        >
+          <View style={styles.headerContent}>
+            <View style={styles.profileImageContainer}>
+              {user.profileImage ? (
+                <Image source={{ uri: user.profileImage }} style={styles.profileImage} />
+              ) : (
+                <LinearGradient
+                  colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)']}
+                  style={[styles.profileImage, styles.profileImagePlaceholder]}
+                >
+                  <Text style={styles.profileImageText}>{user.name.charAt(0)}</Text>
+                </LinearGradient>
+              )}
+            </View>
+            
+            <Text style={styles.userName}>{user.name}</Text>
+            <Text style={styles.userEmail}>{user.email}</Text>
+            
+            <LinearGradient
+              colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)']}
+              style={styles.userTypeContainer}
+            >
+              <Text style={styles.userTypeText}>
+                {user.userType === 'provider' ? '🎯 Prestataire' : 
+                 user.userType === 'business' ? '🏢 Établissement' : 
+                 '👤 Client'}
+              </Text>
+            </LinearGradient>
+            
+            <TouchableOpacity 
+              style={styles.editButton}
+              onPress={() => router.push('/edit-profile')}
+            >
+              <Edit size={16} color="#fff" />
+              <Text style={styles.editButtonText}>Modifier le profil</Text>
+            </TouchableOpacity>
           </View>
-          
-          <Text style={styles.userName}>{user.name}</Text>
-          <Text style={styles.userEmail}>{user.email}</Text>
-          
-          <View style={styles.userTypeContainer}>
-            <Text style={styles.userTypeText}>
-              {user.userType === 'provider' ? '🎯 Prestataire' : 
-               user.userType === 'business' ? '🏢 Établissement' : 
-               '👤 Client'}
-            </Text>
+        </LinearGradient>
+        
+        {/* Statistics Grid */}
+        <View style={styles.statsContainer}>
+          <View style={styles.statsGrid}>
+            <StatCard
+              icon={Heart}
+              value={userFavorites.length}
+              label="Favoris"
+              color="#E91E63"
+              onPress={() => router.push('/favorites')}
+            />
+            <StatCard
+              icon={Star}
+              value={averageRating.toFixed(1)}
+              label="Note"
+              color="#FFD700"
+              onPress={() => router.push(`/reviews?id=${user.id}&type=${user.userType}`)}
+            />
+            <StatCard
+              icon={FileText}
+              value={userListings.length}
+              label="Offres"
+              color="#4CAF50"
+              onPress={() => router.push('/my-listings')}
+            />
+            <StatCard
+              icon={TrendingUp}
+              value={userQuotes.length}
+              label="Devis"
+              color="#2196F3"
+              onPress={() => router.push('/quotes')}
+            />
           </View>
+        </View>
+        
+        {/* Menu Items */}
+        <View style={styles.menuContainer}>
+          <TouchableOpacity 
+            style={styles.menuItem}
+            onPress={() => router.push('/my-listings')}
+          >
+            <View style={styles.menuItemLeft}>
+              <LinearGradient
+                colors={['#4CAF5020', '#4CAF5010']}
+                style={styles.menuIcon}
+              >
+                <FileText size={20} color="#4CAF50" />
+              </LinearGradient>
+              <Text style={styles.menuItemText}>Mes annonces</Text>
+            </View>
+            <View style={styles.menuItemBadge}>
+              <Text style={styles.menuItemBadgeText}>{userListings.length}</Text>
+            </View>
+          </TouchableOpacity>
           
           <TouchableOpacity 
-            style={styles.editButton}
-            onPress={() => router.push('/edit-profile')}
+            style={styles.menuItem}
+            onPress={() => router.push('/quotes')}
           >
-            <Edit size={16} color="#fff" />
-            <Text style={styles.editButtonText}>Modifier le profil</Text>
+            <View style={styles.menuItemLeft}>
+              <LinearGradient
+                colors={['#2196F320', '#2196F310']}
+                style={styles.menuIcon}
+              >
+                <TrendingUp size={20} color="#2196F3" />
+              </LinearGradient>
+              <Text style={styles.menuItemText}>Mes devis</Text>
+            </View>
+            <View style={styles.menuItemBadge}>
+              <Text style={styles.menuItemBadgeText}>{userQuotes.length}</Text>
+            </View>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.menuItem}
+            onPress={() => router.push('/favorites')}
+          >
+            <View style={styles.menuItemLeft}>
+              <LinearGradient
+                colors={['#E91E6320', '#E91E6310']}
+                style={styles.menuIcon}
+              >
+                <Heart size={20} color="#E91E63" />
+              </LinearGradient>
+              <Text style={styles.menuItemText}>Mes favoris</Text>
+            </View>
+            <View style={styles.menuItemBadge}>
+              <Text style={styles.menuItemBadgeText}>{userFavorites.length}</Text>
+            </View>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.menuItem}
+            onPress={() => router.push(`/reviews?id=${user.id}&type=${user.userType}`)}
+          >
+            <View style={styles.menuItemLeft}>
+              <LinearGradient
+                colors={['#FFD70020', '#FFD70010']}
+                style={styles.menuIcon}
+              >
+                <Star size={20} color="#FFD700" />
+              </LinearGradient>
+              <Text style={styles.menuItemText}>Mes avis</Text>
+            </View>
+            <View style={styles.menuItemBadge}>
+              <Text style={styles.menuItemBadgeText}>{receivedReviews.length}</Text>
+            </View>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.menuItem}
+            onPress={() => router.push('/(tabs)/messages')}
+          >
+            <View style={styles.menuItemLeft}>
+              <LinearGradient
+                colors={['#9C27B020', '#9C27B010']}
+                style={styles.menuIcon}
+              >
+                <MessageCircle size={20} color="#9C27B0" />
+              </LinearGradient>
+              <Text style={styles.menuItemText}>Messages</Text>
+            </View>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.menuItem}
+            onPress={() => router.push('/settings')}
+          >
+            <View style={styles.menuItemLeft}>
+              <LinearGradient
+                colors={['#60708020', '#60708010']}
+                style={styles.menuIcon}
+              >
+                <Settings size={20} color="#607080" />
+              </LinearGradient>
+              <Text style={styles.menuItemText}>Paramètres</Text>
+            </View>
           </TouchableOpacity>
         </View>
-      </LinearGradient>
+        
+        {/* CRITICAL FIX: Added extra bottom spacing to ensure logout button is visible */}
+        <View style={styles.bottomSpacer} />
+      </ScrollView>
       
-      {/* Statistics Grid */}
-      <View style={styles.statsContainer}>
-        <View style={styles.statsGrid}>
-          <StatCard
-            icon={Heart}
-            value={userFavorites.length}
-            label="Favoris"
-            color="#E91E63"
-            onPress={() => router.push('/favorites')}
-          />
-          <StatCard
-            icon={Star}
-            value={averageRating.toFixed(1)}
-            label="Note"
-            color="#FFD700"
-            onPress={() => router.push(`/reviews?id=${user.id}&type=${user.userType}`)}
-          />
-          <StatCard
-            icon={FileText}
-            value={userListings.length}
-            label="Offres"
-            color="#4CAF50"
-            onPress={() => router.push('/my-listings')}
-          />
-          <StatCard
-            icon={TrendingUp}
-            value={userQuotes.length}
-            label="Devis"
-            color="#2196F3"
-            onPress={() => router.push('/quotes')}
-          />
-        </View>
-      </View>
-      
-      {/* Menu Items */}
-      <View style={styles.menuContainer}>
-        <TouchableOpacity 
-          style={styles.menuItem}
-          onPress={() => router.push('/my-listings')}
-        >
-          <View style={styles.menuItemLeft}>
-            <View style={[styles.menuIcon, { backgroundColor: '#4CAF5020' }]}>
-              <FileText size={20} color="#4CAF50" />
-            </View>
-            <Text style={styles.menuItemText}>Mes annonces</Text>
-          </View>
-          <Text style={styles.menuItemBadge}>{userListings.length}</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.menuItem}
-          onPress={() => router.push('/quotes')}
-        >
-          <View style={styles.menuItemLeft}>
-            <View style={[styles.menuIcon, { backgroundColor: '#2196F320' }]}>
-              <TrendingUp size={20} color="#2196F3" />
-            </View>
-            <Text style={styles.menuItemText}>Mes devis</Text>
-          </View>
-          <Text style={styles.menuItemBadge}>{userQuotes.length}</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.menuItem}
-          onPress={() => router.push('/favorites')}
-        >
-          <View style={styles.menuItemLeft}>
-            <View style={[styles.menuIcon, { backgroundColor: '#E91E6320' }]}>
-              <Heart size={20} color="#E91E63" />
-            </View>
-            <Text style={styles.menuItemText}>Mes favoris</Text>
-          </View>
-          <Text style={styles.menuItemBadge}>{userFavorites.length}</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.menuItem}
-          onPress={() => router.push(`/reviews?id=${user.id}&type=${user.userType}`)}
-        >
-          <View style={styles.menuItemLeft}>
-            <View style={[styles.menuIcon, { backgroundColor: '#FFD70020' }]}>
-              <Star size={20} color="#FFD700" />
-            </View>
-            <Text style={styles.menuItemText}>Mes avis</Text>
-          </View>
-          <Text style={styles.menuItemBadge}>{receivedReviews.length}</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.menuItem}
-          onPress={() => router.push('/(tabs)/messages')}
-        >
-          <View style={styles.menuItemLeft}>
-            <View style={[styles.menuIcon, { backgroundColor: '#9C27B020' }]}>
-              <MessageCircle size={20} color="#9C27B0" />
-            </View>
-            <Text style={styles.menuItemText}>Messages</Text>
-          </View>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.menuItem}
-          onPress={() => router.push('/settings')}
-        >
-          <View style={styles.menuItemLeft}>
-            <View style={[styles.menuIcon, { backgroundColor: '#60708020' }]}>
-              <Settings size={20} color="#607080" />
-            </View>
-            <Text style={styles.menuItemText}>Paramètres</Text>
-          </View>
-        </TouchableOpacity>
-      </View>
-      
-      {/* FIXED: Logout Button with proper spacing to avoid bottom bar */}
+      {/* FIXED: Logout Button positioned absolutely to avoid bottom bar overlap */}
       <View style={styles.logoutContainer}>
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <LogOut size={20} color="#F44336" />
           <Text style={styles.logoutText}>Se déconnecter</Text>
         </TouchableOpacity>
       </View>
-      
-      {/* CRITICAL FIX: Added extra bottom spacing to ensure logout button is visible */}
-      <View style={styles.bottomSpacer} />
-    </ScrollView>
+    </View>
   );
 }
 
@@ -272,6 +309,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.backgroundAlt,
+  },
+  scrollContainer: {
+    flex: 1,
   },
   loginPrompt: {
     flex: 1,
@@ -318,7 +358,6 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   profileImagePlaceholder: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -339,7 +378,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   userTypeContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
@@ -380,7 +418,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: Colors.shadow,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
@@ -410,7 +448,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginHorizontal: 20,
     marginBottom: 20,
-    shadowColor: '#000',
+    shadowColor: Colors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
@@ -444,18 +482,26 @@ const styles = StyleSheet.create({
   },
   menuItemBadge: {
     backgroundColor: Colors.primary,
+    borderRadius: 12,
+    minWidth: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+  },
+  menuItemBadgeText: {
     color: '#fff',
     fontSize: 12,
     fontWeight: '700',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    minWidth: 24,
-    textAlign: 'center',
+  },
+  bottomSpacer: {
+    height: 140, // Space for logout button + tab bar
   },
   logoutContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 20,
+    position: 'absolute',
+    bottom: 100, // Above tab bar
+    left: 20,
+    right: 20,
   },
   logoutButton: {
     flexDirection: 'row',
@@ -467,18 +513,15 @@ const styles = StyleSheet.create({
     gap: 12,
     borderWidth: 1,
     borderColor: '#F4433620',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowColor: Colors.shadowDark,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
   },
   logoutText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#F44336',
-  },
-  bottomSpacer: {
-    height: 120, // CRITICAL FIX: Increased height to ensure logout button is visible above tab bar
   },
 });

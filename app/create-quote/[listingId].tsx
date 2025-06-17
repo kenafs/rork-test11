@@ -10,8 +10,10 @@ import { QuoteItem } from '@/types';
 import Colors from '@/constants/colors';
 import Button from '@/components/Button';
 import { Plus, Trash2, Calculator, FileText } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
+import * as Haptics from 'expo-haptics';
 
 export default function CreateQuoteScreen() {
   const { listingId } = useLocalSearchParams<{ listingId: string }>();
@@ -70,6 +72,9 @@ export default function CreateQuoteScreen() {
   
   // Add new item
   const addItem = () => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
     const newItem: QuoteItem = {
       id: `item-${Date.now()}-${Math.random()}`,
       name: '',
@@ -83,6 +88,9 @@ export default function CreateQuoteScreen() {
   
   // Remove item
   const removeItem = (id: string) => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
     if (items.length > 1) {
       setItems(items.filter(item => item.id !== id));
     }
@@ -120,7 +128,7 @@ export default function CreateQuoteScreen() {
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
             .header { text-align: center; margin-bottom: 30px; }
-            .company { color: #6366f1; font-size: 24px; font-weight: bold; }
+            .company { color: #1E3A8A; font-size: 24px; font-weight: bold; }
             .quote-title { font-size: 20px; margin: 20px 0; }
             .info-section { margin: 20px 0; }
             .info-row { margin: 5px 0; }
@@ -129,7 +137,7 @@ export default function CreateQuoteScreen() {
             .items-table th { background-color: #f2f2f2; }
             .total-section { margin-top: 20px; text-align: right; }
             .total-row { margin: 5px 0; }
-            .total-final { font-size: 18px; font-weight: bold; color: #6366f1; }
+            .total-final { font-size: 18px; font-weight: bold; color: #1E3A8A; }
             .footer { margin-top: 40px; text-align: center; color: #666; }
           </style>
         </head>
@@ -336,18 +344,23 @@ Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
         <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
-          <View style={styles.header}>
-            <View style={styles.headerIcon}>
-              <FileText size={32} color={Colors.primary} />
+          <LinearGradient
+            colors={[Colors.primary, Colors.secondary]}
+            style={styles.header}
+          >
+            <View style={styles.headerContent}>
+              <View style={styles.headerIcon}>
+                <FileText size={32} color="#fff" />
+              </View>
+              <Text style={styles.title}>💰 Créer un devis</Text>
+              {listing && (
+                <Text style={styles.subtitle}>Pour: {listing.title}</Text>
+              )}
+              {conversationParticipant && (
+                <Text style={styles.subtitle}>Pour: {conversationParticipant.name}</Text>
+              )}
             </View>
-            <Text style={styles.title}>💰 Créer un devis</Text>
-            {listing && (
-              <Text style={styles.subtitle}>Pour: {listing.title}</Text>
-            )}
-            {conversationParticipant && (
-              <Text style={styles.subtitle}>Pour: {conversationParticipant.name}</Text>
-            )}
-          </View>
+          </LinearGradient>
           
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>📝 Informations générales</Text>
@@ -399,7 +412,11 @@ Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
             </View>
             
             {items.map((item, index) => (
-              <View key={`quote-item-${item.id}`} style={styles.itemCard}>
+              <LinearGradient
+                key={`quote-item-${item.id}`}
+                colors={['#FFFFFF', '#F8FAFC']}
+                style={styles.itemCard}
+              >
                 <View style={styles.itemHeader}>
                   <Text style={styles.itemNumber}>Élément {index + 1}</Text>
                   {items.length > 1 && (
@@ -462,11 +479,14 @@ Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
                   <Text style={styles.totalLabel}>Total:</Text>
                   <Text style={styles.totalValue}>{(item.total || 0).toFixed(2)}€</Text>
                 </View>
-              </View>
+              </LinearGradient>
             ))}
           </View>
           
-          <View style={styles.summaryCard}>
+          <LinearGradient
+            colors={['rgba(30, 58, 138, 0.05)', 'rgba(59, 130, 246, 0.05)']}
+            style={styles.summaryCard}
+          >
             <View style={styles.summaryRow}>
               <Calculator size={24} color={Colors.primary} />
               <Text style={styles.summaryTitle}>Total du devis</Text>
@@ -475,10 +495,13 @@ Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
             <Text style={styles.summaryNote}>
               Valide pendant {validDays} jours
             </Text>
-          </View>
+          </LinearGradient>
         </ScrollView>
         
-        <View style={styles.footer}>
+        <LinearGradient
+          colors={['rgba(248, 250, 252, 0.95)', '#FFFFFF']}
+          style={styles.footer}
+        >
           <Button
             title="📤 Envoyer le devis"
             onPress={handleSubmit}
@@ -486,7 +509,7 @@ Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
             fullWidth
             style={styles.submitButton}
           />
-        </View>
+        </LinearGradient>
       </KeyboardAvoidingView>
     </View>
   );
@@ -501,13 +524,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    backgroundColor: '#fff',
     paddingTop: 20,
     paddingBottom: 20,
     paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
     marginBottom: 20,
+    alignItems: 'center',
+  },
+  headerContent: {
     alignItems: 'center',
   },
   headerIcon: {
@@ -516,20 +539,20 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '800',
-    color: Colors.text,
+    color: '#fff',
     marginBottom: 4,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
-    color: Colors.textLight,
+    color: 'rgba(255, 255, 255, 0.8)',
     textAlign: 'center',
   },
   content: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 120, // Extra space for submit button
+    paddingBottom: 120,
   },
   section: {
     marginBottom: 32,
@@ -548,9 +571,9 @@ const styles = StyleSheet.create({
   },
   addButton: {
     backgroundColor: Colors.primary,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: Colors.primary,
@@ -576,21 +599,25 @@ const styles = StyleSheet.create({
     padding: 16,
     fontSize: 16,
     color: Colors.text,
+    shadowColor: Colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   textArea: {
     minHeight: 100,
     textAlignVertical: 'top',
   },
   itemCard: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowColor: Colors.shadow,
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
-    elevation: 3,
+    elevation: 4,
   },
   itemHeader: {
     flexDirection: 'row',
@@ -633,11 +660,10 @@ const styles = StyleSheet.create({
     color: Colors.primary,
   },
   summaryCard: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 24,
     marginHorizontal: 20,
-    shadowColor: '#000',
+    shadowColor: Colors.shadow,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 12,
@@ -667,12 +693,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   footer: {
-    backgroundColor: '#fff',
     padding: 20,
     paddingBottom: Platform.OS === 'ios' ? 34 : 20,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
-    shadowColor: '#000',
+    shadowColor: Colors.shadowDark,
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,

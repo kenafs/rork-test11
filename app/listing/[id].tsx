@@ -11,6 +11,7 @@ import Colors from '@/constants/colors';
 import RatingStars from '@/components/RatingStars';
 import Button from '@/components/Button';
 import { MapPin, Star, Clock, ChevronLeft, Share, Heart, MessageCircle, Calculator } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 
 export default function ListingDetailScreen() {
@@ -168,9 +169,12 @@ export default function ListingDetailScreen() {
               contentFit="cover"
             />
           ) : (
-            <View style={[styles.image, styles.placeholderImage]}>
+            <LinearGradient
+              colors={[Colors.primary, Colors.secondary]}
+              style={[styles.image, styles.placeholderImage]}
+            >
               <Text style={styles.placeholderText}>{listing.category}</Text>
-            </View>
+            </LinearGradient>
           )}
           
           <TouchableOpacity 
@@ -200,9 +204,17 @@ export default function ListingDetailScreen() {
             </TouchableOpacity>
           </View>
           
-          <View style={styles.categoryBadge}>
+          <LinearGradient
+            colors={[Colors.primary, Colors.secondary]}
+            style={styles.categoryBadge}
+          >
             <Text style={styles.categoryText}>{listing.category}</Text>
-          </View>
+          </LinearGradient>
+          
+          <LinearGradient
+            colors={['transparent', 'rgba(15, 23, 42, 0.8)']}
+            style={styles.imageOverlay}
+          />
         </View>
         
         {/* Listing Details */}
@@ -220,11 +232,14 @@ export default function ListingDetailScreen() {
                   style={styles.creatorImage}
                 />
               ) : (
-                <View style={[styles.creatorImage, styles.creatorImagePlaceholder]}>
+                <LinearGradient
+                  colors={[Colors.primary, Colors.secondary]}
+                  style={[styles.creatorImage, styles.creatorImagePlaceholder]}
+                >
                   <Text style={styles.creatorImageText}>
                     {listing.creatorName.charAt(0)}
                   </Text>
-                </View>
+                </LinearGradient>
               )}
               
               <View>
@@ -239,12 +254,15 @@ export default function ListingDetailScreen() {
               </View>
             </View>
             
-            <View style={styles.typeBadge}>
+            <LinearGradient
+              colors={['rgba(30, 58, 138, 0.1)', 'rgba(59, 130, 246, 0.1)']}
+              style={styles.typeBadge}
+            >
               <Text style={styles.typeText}>
                 {listing.creatorType === 'provider' ? 'Prestataire' : 
                  listing.creatorType === 'business' ? 'Établissement' : 'Client'}
               </Text>
-            </View>
+            </LinearGradient>
           </TouchableOpacity>
           
           <View style={styles.infoContainer}>
@@ -265,9 +283,13 @@ export default function ListingDetailScreen() {
             {listing.tags && listing.tags.length > 0 && (
               <View style={styles.tagsContainer}>
                 {listing.tags.map((tag, index) => (
-                  <View key={`tag-${listing.id}-${index}`} style={styles.tag}>
+                  <LinearGradient
+                    key={`tag-${listing.id}-${index}`}
+                    colors={['rgba(30, 58, 138, 0.1)', 'rgba(59, 130, 246, 0.1)']}
+                    style={styles.tag}
+                  >
                     <Text style={styles.tagText}>{tag}</Text>
-                  </View>
+                  </LinearGradient>
                 ))}
               </View>
             )}
@@ -280,16 +302,22 @@ export default function ListingDetailScreen() {
           
           <View style={styles.divider} />
           
-          <View style={styles.priceContainer}>
+          <LinearGradient
+            colors={['rgba(30, 58, 138, 0.05)', 'rgba(59, 130, 246, 0.05)']}
+            style={styles.priceContainer}
+          >
             <Text style={styles.priceLabel}>Prix</Text>
             <Text style={styles.price}>{formattedPrice}</Text>
-          </View>
+          </LinearGradient>
         </View>
       </ScrollView>
       
       {/* Action Buttons */}
       {!isOwnListing && (
-        <View style={styles.actionContainer}>
+        <LinearGradient
+          colors={['rgba(248, 250, 252, 0.95)', '#FFFFFF']}
+          style={styles.actionContainer}
+        >
           <Button
             title="💬 Contacter"
             onPress={handleContact}
@@ -307,18 +335,21 @@ export default function ListingDetailScreen() {
               style={styles.quoteButton}
             />
           )}
-        </View>
+        </LinearGradient>
       )}
       
       {/* Edit Button for Own Listings */}
       {isOwnListing && (
-        <View style={styles.actionContainer}>
+        <LinearGradient
+          colors={['rgba(248, 250, 252, 0.95)', '#FFFFFF']}
+          style={styles.actionContainer}
+        >
           <Button
             title="Modifier l'annonce"
             onPress={() => router.push(`/edit-listing/${listing.id}`)}
             fullWidth
           />
-        </View>
+        </LinearGradient>
       )}
     </View>
   );
@@ -334,113 +365,134 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     position: 'relative',
-    height: 280,
+    height: 320,
   },
   image: {
     width: '100%',
     height: '100%',
   },
   placeholderImage: {
-    backgroundColor: Colors.secondary,
     justifyContent: 'center',
     alignItems: 'center',
   },
   placeholderText: {
     color: '#fff',
-    fontWeight: '600',
-    fontSize: 18,
+    fontWeight: '700',
+    fontSize: 20,
   },
   backButton: {
     position: 'absolute',
     top: 50,
-    left: 16,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    left: 20,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(15, 23, 42, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: Colors.shadowDark,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   imageActions: {
     position: 'absolute',
     top: 50,
-    right: 16,
+    right: 20,
     flexDirection: 'row',
+    gap: 12,
   },
   imageActionButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(15, 23, 42, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 8,
+    shadowColor: Colors.shadowDark,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   categoryBadge: {
     position: 'absolute',
-    bottom: 20,
-    left: 16,
-    backgroundColor: 'rgba(99, 102, 241, 0.9)',
+    bottom: 24,
+    left: 20,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
+    shadowColor: Colors.shadowDark,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   categoryText: {
     color: '#fff',
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
+  },
+  imageOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 100,
   },
   detailsContainer: {
     padding: 24,
   },
   title: {
-    fontSize: 26,
-    fontWeight: '700',
+    fontSize: 28,
+    fontWeight: '800',
     color: Colors.text,
     marginBottom: 20,
-    lineHeight: 32,
+    lineHeight: 36,
   },
   creatorContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 24,
+    padding: 16,
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: 16,
   },
   creatorInfo: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   creatorImage: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    marginRight: 12,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    marginRight: 16,
   },
   creatorImagePlaceholder: {
-    backgroundColor: Colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
   creatorImageText: {
-    fontSize: 20,
-    fontWeight: '600',
+    fontSize: 22,
+    fontWeight: '700',
     color: '#fff',
   },
   creatorName: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 17,
+    fontWeight: '700',
     color: Colors.text,
     marginBottom: 4,
   },
   typeBadge: {
-    backgroundColor: 'rgba(99, 102, 241, 0.1)',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
   },
   typeText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '700',
     color: Colors.primary,
   },
   infoContainer: {
@@ -457,6 +509,7 @@ const styles = StyleSheet.create({
   infoText: {
     fontSize: 16,
     color: Colors.text,
+    fontWeight: '500',
   },
   tagsContainer: {
     flexDirection: 'row',
@@ -465,7 +518,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   tag: {
-    backgroundColor: 'rgba(99, 102, 241, 0.1)',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
@@ -473,7 +525,7 @@ const styles = StyleSheet.create({
   tagText: {
     fontSize: 12,
     color: Colors.primary,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   divider: {
     height: 1,
@@ -481,8 +533,8 @@ const styles = StyleSheet.create({
     marginVertical: 24,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
+    fontSize: 22,
+    fontWeight: '700',
     color: Colors.text,
     marginBottom: 16,
   },
@@ -495,7 +547,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: 'rgba(99, 102, 241, 0.05)',
     padding: 20,
     borderRadius: 16,
   },
@@ -506,7 +557,7 @@ const styles = StyleSheet.create({
   },
   price: {
     fontSize: 28,
-    fontWeight: '700',
+    fontWeight: '800',
     color: Colors.primary,
   },
   actionContainer: {
@@ -517,13 +568,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 20,
     paddingBottom: Platform.OS === 'ios' ? 34 : 20,
-    backgroundColor: '#fff',
     borderTopWidth: 1,
     borderTopColor: Colors.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
+    shadowColor: Colors.shadowDark,
+    shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.1,
-    shadowRadius: 8,
+    shadowRadius: 12,
     elevation: 10,
   },
   contactButton: {

@@ -1,11 +1,13 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { Listing } from '@/types';
 import Colors from '@/constants/colors';
 import RatingStars from './RatingStars';
 import { MapPin, Clock, Euro } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 
 interface ListingCardProps {
   listing: Listing;
@@ -15,6 +17,9 @@ export default function ListingCard({ listing }: ListingCardProps) {
   const router = useRouter();
   
   const handlePress = () => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
     router.push(`/listing/${listing.id}`);
   };
   
@@ -27,23 +32,39 @@ export default function ListingCard({ listing }: ListingCardProps) {
   };
   
   const formatPrice = (price?: number) => {
-    if (!price) return 'Prix sur demande';
-    return `${price}€`;
+    if (!price) return <Text style={styles.priceText}>Prix sur demande</Text>;
+    return <Text style={styles.priceText}>{price}€</Text>;
   };
   
   return (
-    <TouchableOpacity style={styles.container} onPress={handlePress} activeOpacity={0.7}>
+    <TouchableOpacity 
+      style={styles.container} 
+      onPress={handlePress} 
+      activeOpacity={0.95}
+    >
       <View style={styles.imageContainer}>
         {listing.images && listing.images.length > 0 ? (
           <Image source={{ uri: listing.images[0] }} style={styles.image} />
         ) : (
-          <View style={styles.placeholderImage}>
+          <LinearGradient
+            colors={[Colors.primary, Colors.secondary]}
+            style={styles.placeholderImage}
+          >
             <Text style={styles.placeholderText}>📷</Text>
-          </View>
+          </LinearGradient>
         )}
-        <View style={styles.categoryBadge}>
+        
+        <LinearGradient
+          colors={['rgba(30, 58, 138, 0.9)', 'rgba(59, 130, 246, 0.9)']}
+          style={styles.categoryBadge}
+        >
           <Text style={styles.categoryText}>{listing.category}</Text>
-        </View>
+        </LinearGradient>
+        
+        <LinearGradient
+          colors={['transparent', 'rgba(15, 23, 42, 0.8)']}
+          style={styles.imageOverlay}
+        />
       </View>
       
       <View style={styles.content}>
@@ -60,9 +81,14 @@ export default function ListingCard({ listing }: ListingCardProps) {
             {listing.creatorImage ? (
               <Image source={{ uri: listing.creatorImage }} style={styles.avatarImage} />
             ) : (
-              <Text style={styles.avatarText}>
-                {listing.creatorName?.charAt(0) || '?'}
-              </Text>
+              <LinearGradient
+                colors={[Colors.primary, Colors.secondary]}
+                style={styles.avatarGradient}
+              >
+                <Text style={styles.avatarText}>
+                  {listing.creatorName?.charAt(0) || '?'}
+                </Text>
+              </LinearGradient>
             )}
           </View>
           <View style={styles.creatorDetails}>
@@ -85,7 +111,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
           
           <View style={styles.priceContainer}>
             <Euro size={14} color={Colors.primary} />
-            <Text style={styles.priceText}>{formatPrice(listing.price)}</Text>
+            {formatPrice(listing.price)}
           </View>
         </View>
         
@@ -118,18 +144,18 @@ export default function ListingCard({ listing }: ListingCardProps) {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
-    borderRadius: 16,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    borderRadius: 20,
+    marginBottom: 20,
+    shadowColor: Colors.shadow,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
     overflow: 'hidden',
   },
   imageContainer: {
     position: 'relative',
-    height: 200,
+    height: 220,
   },
   image: {
     width: '100%',
@@ -139,74 +165,89 @@ const styles = StyleSheet.create({
   placeholderImage: {
     width: '100%',
     height: '100%',
-    backgroundColor: Colors.backgroundAlt,
     justifyContent: 'center',
     alignItems: 'center',
   },
   placeholderText: {
     fontSize: 48,
-    opacity: 0.5,
+    opacity: 0.7,
   },
   categoryBadge: {
     position: 'absolute',
-    top: 12,
-    left: 12,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
+    top: 16,
+    left: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    shadowColor: Colors.shadowDark,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
   },
   categoryText: {
     color: '#fff',
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '700',
+  },
+  imageOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 60,
   },
   content: {
-    padding: 16,
+    padding: 20,
   },
   title: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 20,
+    fontWeight: '800',
     color: Colors.text,
     marginBottom: 8,
-    lineHeight: 24,
+    lineHeight: 26,
   },
   description: {
-    fontSize: 14,
+    fontSize: 15,
     color: Colors.textLight,
-    lineHeight: 20,
-    marginBottom: 12,
+    lineHeight: 22,
+    marginBottom: 16,
   },
   creatorInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   creatorAvatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: Colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    marginRight: 12,
+    overflow: 'hidden',
   },
   avatarImage: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+  },
+  avatarGradient: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   avatarText: {
     color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
   },
   creatorDetails: {
     flex: 1,
   },
   creatorName: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: '700',
     color: Colors.text,
     marginBottom: 2,
   },
@@ -214,26 +255,27 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   locationContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   locationText: {
-    fontSize: 12,
+    fontSize: 13,
     color: Colors.textLight,
-    marginLeft: 4,
+    marginLeft: 6,
+    fontWeight: '500',
   },
   priceContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   priceText: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 18,
+    fontWeight: '800',
     color: Colors.primary,
-    marginLeft: 4,
+    marginLeft: 6,
   },
   metaInfo: {
     flexDirection: 'row',
@@ -245,29 +287,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   dateText: {
-    fontSize: 11,
-    color: Colors.textLight,
-    marginLeft: 4,
+    fontSize: 12,
+    color: Colors.textMuted,
+    marginLeft: 6,
+    fontWeight: '500',
   },
   tagsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
   },
   tag: {
-    backgroundColor: Colors.backgroundAlt,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 8,
+    backgroundColor: Colors.surfaceElevated,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   tagText: {
-    fontSize: 10,
-    color: Colors.text,
-    fontWeight: '500',
+    fontSize: 11,
+    color: Colors.primary,
+    fontWeight: '600',
   },
   moreTagsText: {
-    fontSize: 10,
-    color: Colors.textLight,
-    fontWeight: '500',
+    fontSize: 11,
+    color: Colors.textMuted,
+    fontWeight: '600',
   },
 });
