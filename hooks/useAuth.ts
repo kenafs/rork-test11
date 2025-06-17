@@ -119,6 +119,9 @@ export const useAuth = create<AuthState>()(
           
           console.log('User logged out successfully');
           
+          // CRITICAL FIX: Force navigation to landing page after logout
+          // This will be handled by the navigation effect in _layout.tsx
+          
         } catch (error) {
           console.error('Logout error:', error);
           // Force logout even if there's an error

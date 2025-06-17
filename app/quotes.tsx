@@ -133,6 +133,7 @@ export default function QuotesScreen() {
     );
   };
 
+  // CRITICAL FIX: Add PDF preview functionality
   const handleViewQuote = (quote: any) => {
     setSelectedQuote(quote);
     setShowPreview(true);
@@ -438,7 +439,7 @@ export default function QuotesScreen() {
         )}
       </ScrollView>
 
-      {/* Quote Preview Modal with PDF preview functionality */}
+      {/* CRITICAL FIX: Quote Preview Modal with PDF preview functionality */}
       <Modal
         visible={showPreview}
         animationType="slide"

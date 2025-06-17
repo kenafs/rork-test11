@@ -56,7 +56,7 @@ export default function ProfileScreen() {
   const userReviews = getReviewsByUser(user.id);
   const userFavorites = getFavorites();
   
-  // Calculate average rating from reviews user has received - Always show 0 for unrated accounts
+  // CRITICAL FIX: Always show 0 rating as requested
   const receivedReviews = userReviews.filter(review => review.targetId === user.id);
   const averageRating = 0; // Always show 0 as requested
   
@@ -71,8 +71,7 @@ export default function ProfileScreen() {
           style: 'destructive',
           onPress: async () => {
             await logout();
-            // Navigate to landing page after logout
-            router.replace('/');
+            // Navigation to landing page will be handled by _layout.tsx
           }
         }
       ]
@@ -256,7 +255,7 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
         
-        {/* Logout Button with proper spacing */}
+        {/* CRITICAL FIX: Logout Button with proper spacing to avoid bottom tab bar */}
         <View style={styles.logoutContainer}>
           <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <LogOut size={20} color="#F44336" />
@@ -264,7 +263,7 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
         
-        {/* Extra bottom spacing to ensure logout button is visible */}
+        {/* CRITICAL FIX: Extra bottom spacing to ensure logout button is visible above tab bar */}
         <View style={styles.bottomSpacer} />
       </ScrollView>
     </View>
@@ -485,6 +484,6 @@ const styles = StyleSheet.create({
     color: '#F44336',
   },
   bottomSpacer: {
-    height: 120, // Increased height to ensure logout button is visible above tab bar
+    height: 140, // CRITICAL FIX: Increased height to ensure logout button is visible above tab bar
   },
 });

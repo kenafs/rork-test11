@@ -55,16 +55,16 @@ function RootLayoutNav() {
     
     const inAuthGroup = segments[0] === '(auth)';
     const inTabsGroup = segments[0] === '(tabs)';
-    const onLandingPage = segments.length === 0 || segments[0] === 'index';
+    const onLandingPage = segments.length === 0;
     
     if (!isAuthenticated) {
-      // User is not authenticated
+      // User is not authenticated - redirect to landing page
       if (inTabsGroup || (!inAuthGroup && !onLandingPage)) {
         console.log('User not authenticated, redirecting to landing page');
         router.replace('/');
       }
     } else {
-      // User is authenticated
+      // User is authenticated - redirect to tabs
       if (onLandingPage || inAuthGroup) {
         console.log('User authenticated, redirecting to tabs');
         router.replace('/(tabs)');

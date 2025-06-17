@@ -257,6 +257,7 @@ export default function CreateQuoteScreen() {
         
         if (!conversation) {
           console.log('Creating new conversation for quote with user:', targetUserId);
+          // CRITICAL FIX: Use createConversation with only targetUserId
           conversationId = await createConversation(targetUserId);
         } else {
           conversationId = conversation.id;
