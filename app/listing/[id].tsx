@@ -361,7 +361,7 @@ export default function ListingDetailScreen() {
               <View style={styles.infoItem}>
                 <Clock size={18} color={Colors.primary} style={styles.infoIcon} />
                 <Text style={styles.infoText}>
-                  <Text>Publié le {new Date(listing.createdAt).toLocaleDateString('fr-FR')}</Text>
+                  Publié le {new Date(listing.createdAt).toLocaleDateString('fr-FR')}
                 </Text>
               </View>
               

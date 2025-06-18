@@ -40,13 +40,13 @@ export default function LandingScreen() {
     );
   }, []);
   
-  // CRITICAL FIX: Move redirect logic after all hooks
+  // CRITICAL FIX: Move redirect logic after all hooks and only redirect if authenticated
   useEffect(() => {
     if (isAuthenticated && user) {
       console.log('User is authenticated, redirecting to main app');
       router.replace('/(tabs)');
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, router]);
   
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {

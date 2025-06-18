@@ -55,9 +55,8 @@ export default function HomeScreen() {
   } = useLocation();
   const { t } = useLanguage();
   
-  // FIXED: Get favorites using the getFavorites method
-  const { getFavorites } = useFavorites();
-  const favorites = getFavorites();
+  // FIXED: Get favorites using the favorites property
+  const { favorites } = useFavorites();
   
   const [refreshing, setRefreshing] = useState(false);
   const scrollY = useSharedValue(0);
@@ -183,7 +182,7 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
       
-      {/* Enhanced Header with Blur Effect - FIXED: Better centering and alignment */}
+      {/* Enhanced Header with Blur Effect - FIXED: Perfect centering and alignment */}
       <Animated.View style={[styles.header, headerStyle]}>
         <BlurView intensity={80} style={styles.headerBlur}>
           <LinearGradient
@@ -198,7 +197,7 @@ export default function HomeScreen() {
                 <Text style={styles.subtitleText}>{getSubtitle()}</Text>
               </View>
               
-              {/* Enhanced Stats Row with Glassmorphism - FIXED: Better spacing and alignment */}
+              {/* Enhanced Stats Row with Glassmorphism - FIXED: Perfect spacing and alignment */}
               <Animated.View entering={SlideInDown.delay(400)} style={styles.statsRow}>
                 {[
                   { icon: Heart, value: safeFavorites.length || 0, label: 'Favoris', color: '#FF6B6B' },
@@ -351,46 +350,51 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
   headerContent: {
-    alignItems: 'center', // FIXED: Center all content
+    alignItems: 'center',
   },
   welcomeSection: {
-    alignItems: 'center', // FIXED: Center welcome section
+    alignItems: 'center',
     marginBottom: 24,
+    width: '100%',
   },
   welcomeText: {
     fontSize: 32,
     fontWeight: '800',
     color: '#fff',
     marginBottom: 8,
-    textAlign: 'center', // FIXED: Center text
+    textAlign: 'center',
   },
   subtitleText: {
     fontSize: 16,
     color: 'rgba(255, 255, 255, 0.9)',
     lineHeight: 22,
-    textAlign: 'center', // FIXED: Center text
+    textAlign: 'center',
     paddingHorizontal: 20,
   },
   statsRow: {
     flexDirection: 'row',
-    justifyContent: 'center', // FIXED: Center stats row
-    gap: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 12,
     marginBottom: 24,
     width: '100%',
     paddingHorizontal: 10,
   },
   statCardWrapper: {
     flex: 1,
-    maxWidth: 80, // FIXED: Limit max width for better alignment
+    maxWidth: 75,
+    minWidth: 70,
   },
   statCard: {
     borderRadius: 16,
     padding: 12,
     alignItems: 'center',
+    justifyContent: 'center',
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
-    minHeight: 80, // FIXED: Consistent height
+    minHeight: 80,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   statCardNumber: {
     fontSize: 16,
@@ -398,6 +402,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginTop: 4,
     marginBottom: 2,
+    textAlign: 'center',
   },
   statCardLabel: {
     fontSize: 10,
@@ -406,18 +411,18 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   createButtonContainer: {
-    alignItems: 'center', // FIXED: Center create button
+    alignItems: 'center',
     width: '100%',
   },
   createButton: {
     borderRadius: 25,
     overflow: 'hidden',
-    minWidth: 200, // FIXED: Consistent button width
+    minWidth: 200,
   },
   createButtonBlur: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center', // FIXED: Center button content
+    justifyContent: 'center',
     paddingVertical: 12,
     paddingHorizontal: 20,
     gap: 8,

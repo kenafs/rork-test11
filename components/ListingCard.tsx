@@ -49,7 +49,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
     return <Text style={styles.priceText}>{price}€</Text>;
   };
   
-  // FIXED: Improved touch handling with much better sensitivity and longer delays
+  // CRITICAL FIX: Much better touch handling with proper sensitivity
   const handlePressIn = () => {
     scale.value = withSpring(0.98, { damping: 15, stiffness: 300 });
     if (Platform.OS !== 'web') {
@@ -100,9 +100,10 @@ export default function ListingCard({ listing }: ListingCardProps) {
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       activeOpacity={0.95}
-      delayPressIn={200} // FIXED: Much longer delay to prevent accidental taps while scrolling
-      delayPressOut={100}
-      delayLongPress={500} // FIXED: Add long press delay
+      delayPressIn={50} // CRITICAL FIX: Much shorter delay for better responsiveness
+      delayPressOut={50}
+      delayLongPress={300} // CRITICAL FIX: Shorter long press delay
+      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} // CRITICAL FIX: Better hit area
     >
       <View style={styles.imageContainer}>
         {listing.images && listing.images.length > 0 ? (

@@ -8,7 +8,6 @@ import Animated, {
   withSpring,
   runOnJS
 } from 'react-native-reanimated';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Colors from '@/constants/colors';
 
 interface ButtonProps {
@@ -43,19 +42,21 @@ export default function Button({
   const scale = useSharedValue(1);
   const opacity = useSharedValue(1);
   
-  // Gesture handling for premium interactions
-  const tapGesture = Gesture.Tap()
-    .onBegin(() => {
-      scale.value = withSpring(0.96, { damping: 15, stiffness: 300 });
-      opacity.value = withSpring(0.8, { damping: 15, stiffness: 300 });
-    })
-    .onFinalize(() => {
-      scale.value = withSpring(1, { damping: 15, stiffness: 300 });
-      opacity.value = withSpring(1, { damping: 15, stiffness: 300 });
-      if (!disabled && !loading) {
-        runOnJS(onPress)();
-      }
-    });
+  const handlePressIn = () => {
+    scale.value = withSpring(0.96, { damping: 15, stiffness: 300 });
+    opacity.value = withSpring(0.8, { damping: 15, stiffness: 300 });
+  };
+  
+  const handlePressOut = () => {
+    scale.value = withSpring(1, { damping: 15, stiffness: 300 });
+    opacity.value = withSpring(1, { damping: 15, stiffness: 300 });
+  };
+  
+  const handlePress = () => {
+    if (!disabled && !loading) {
+      onPress();
+    }
+  };
   
   const animatedStyle = useAnimatedStyle(() => {
     return {
@@ -143,73 +144,76 @@ export default function Button({
   
   if (variant === 'primary' && gradient) {
     return (
-      <GestureDetector gesture={tapGesture}>
-        <AnimatedTouchableOpacity
-          style={[
-            styles.button,
-            getSizeStyle(),
-            fullWidth && styles.fullWidth,
-            disabled && styles.disabledButton,
-            style,
-            animatedStyle,
-          ]}
-          disabled={disabled || loading}
-          activeOpacity={1}
-        >
-          <LinearGradient
-            colors={disabled ? [Colors.border, Colors.border] : [Colors.primary, Colors.secondary]}
-            style={[styles.gradientButton, getSizeStyle()]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
-            {renderButtonContent()}
-          </LinearGradient>
-        </AnimatedTouchableOpacity>
-      </GestureDetector>
-    );
-  }
-  
-  if (variant === 'glass') {
-    return (
-      <GestureDetector gesture={tapGesture}>
-        <AnimatedTouchableOpacity
-          style={[
-            styles.button,
-            getSizeStyle(),
-            fullWidth && styles.fullWidth,
-            disabled && styles.disabledButton,
-            style,
-            animatedStyle,
-          ]}
-          disabled={disabled || loading}
-          activeOpacity={1}
-        >
-          <BlurView intensity={80} style={[styles.blurButton, getSizeStyle()]}>
-            {renderButtonContent()}
-          </BlurView>
-        </AnimatedTouchableOpacity>
-      </GestureDetector>
-    );
-  }
-  
-  return (
-    <GestureDetector gesture={tapGesture}>
       <AnimatedTouchableOpacity
         style={[
           styles.button,
-          getButtonStyle(),
           getSizeStyle(),
           fullWidth && styles.fullWidth,
           disabled && styles.disabledButton,
           style,
           animatedStyle,
         ]}
+        onPress={handlePress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
         disabled={disabled || loading}
         activeOpacity={1}
       >
-        {renderButtonContent()}
+        <LinearGradient
+          colors={disabled ? [Colors.border, Colors.border] : [Colors.primary, Colors.secondary]}
+          style={[styles.gradientButton, getSizeStyle()]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        >
+          {renderButtonContent()}
+        </LinearGradient>
       </AnimatedTouchableOpacity>
-    </GestureDetector>
+    );
+  }
+  
+  if (variant === 'glass') {
+    return (
+      <AnimatedTouchableOpacity
+        style={[
+          styles.button,
+          getSizeStyle(),
+          fullWidth && styles.fullWidth,
+          disabled && styles.disabledButton,
+          style,
+          animatedStyle,
+        ]}
+        onPress={handlePress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        disabled={disabled || loading}
+        activeOpacity={1}
+      >
+        <BlurView intensity={80} style={[styles.blurButton, getSizeStyle()]}>
+          {renderButtonContent()}
+        </BlurView>
+      </AnimatedTouchableOpacity>
+    );
+  }
+  
+  return (
+    <AnimatedTouchableOpacity
+      style={[
+        styles.button,
+        getButtonStyle(),
+        getSizeStyle(),
+        fullWidth && styles.fullWidth,
+        disabled && styles.disabledButton,
+        style,
+        animatedStyle,
+      ]}
+      onPress={handlePress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      disabled={disabled || loading}
+      activeOpacity={1}
+    >
+      {renderButtonContent()}
+    </AnimatedTouchableOpacity>
   );
 }
 
