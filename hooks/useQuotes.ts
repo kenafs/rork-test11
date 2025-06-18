@@ -23,6 +23,10 @@ interface QuotesState {
   getUserQuotes: () => Quote[];
   canReview: (quoteId: string) => boolean;
   getCompletedQuotesBetweenUsers: (userId1: string, userId2: string) => Quote[];
+  // FIXED: Add payment processing methods
+  processPayment: (quoteId: string, paymentMethod: string) => Promise<boolean>;
+  validatePayment: (quoteId: string) => Promise<boolean>;
+  refundPayment: (quoteId: string) => Promise<boolean>;
 }
 
 export const useQuotes = create<QuotesState>()(
@@ -143,10 +147,35 @@ export const useQuotes = create<QuotesState>()(
       },
       
       payQuote: async (id: string) => {
-        return get().updateQuote(id, { 
-          status: 'paid',
-          paidAt: Date.now()
-        });
+        // FIXED: Enhanced payment processing with validation
+        try {
+          const quote = get().getQuoteById(id);
+          if (!quote) {
+            throw new Error('Quote not found');
+          }
+          
+          if (quote.status !== 'accepted') {
+            throw new Error('Quote must be accepted before payment');
+          }
+          
+          // Simulate payment processing
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          
+          // Process payment
+          const paymentSuccess = await get().processPayment(id, 'card');
+          
+          if (paymentSuccess) {
+            return get().updateQuote(id, { 
+              status: 'paid',
+              paidAt: Date.now()
+            });
+          } else {
+            throw new Error('Payment processing failed');
+          }
+        } catch (error) {
+          console.error('Error processing payment:', error);
+          return false;
+        }
       },
       
       completeQuote: async (id: string) => {
@@ -211,6 +240,62 @@ export const useQuotes = create<QuotesState>()(
           ((quote.providerId === userId1 && quote.clientId === userId2) ||
            (quote.providerId === userId2 && quote.clientId === userId1))
         );
+      },
+      
+      // FIXED: Enhanced payment processing methods
+      processPayment: async (quoteId: string, paymentMethod: string) => {
+        try {
+          console.log(`Processing payment for quote ${quoteId} with method ${paymentMethod}`);
+          
+          // Simulate payment gateway integration
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          
+          // Simulate payment success (90% success rate)
+          const success = Math.random() > 0.1;
+          
+          if (success) {
+            console.log(`Payment successful for quote ${quoteId}`);
+            return true;
+          } else {
+            console.log(`Payment failed for quote ${quoteId}`);
+            return false;
+          }
+        } catch (error) {
+          console.error('Payment processing error:', error);
+          return false;
+        }
+      },
+      
+      validatePayment: async (quoteId: string) => {
+        try {
+          console.log(`Validating payment for quote ${quoteId}`);
+          
+          // Simulate payment validation
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          const quote = get().getQuoteById(quoteId);
+          return quote?.status === 'paid' && !!quote.paidAt;
+        } catch (error) {
+          console.error('Payment validation error:', error);
+          return false;
+        }
+      },
+      
+      refundPayment: async (quoteId: string) => {
+        try {
+          console.log(`Processing refund for quote ${quoteId}`);
+          
+          // Simulate refund processing
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          
+          return get().updateQuote(quoteId, { 
+            status: 'refunded',
+            refundedAt: Date.now()
+          });
+        } catch (error) {
+          console.error('Refund processing error:', error);
+          return false;
+        }
       },
     }),
     {

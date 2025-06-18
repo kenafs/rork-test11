@@ -3,6 +3,8 @@ import { Tabs } from "expo-router";
 import { Home, Search, PlusCircle, MessageCircle, User } from "lucide-react-native";
 import Colors from "@/constants/colors";
 import { Platform } from "react-native";
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function TabLayout() {
   return (
@@ -15,7 +17,7 @@ export default function TabLayout() {
           height: Platform.OS === 'ios' ? 90 : 75,
           paddingBottom: Platform.OS === 'ios' ? 34 : 20,
           paddingTop: 16,
-          backgroundColor: '#fff',
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
           shadowColor: '#000',
           shadowOffset: { width: 0, height: -8 },
           shadowOpacity: 0.15,
@@ -26,7 +28,24 @@ export default function TabLayout() {
           position: 'absolute',
           marginHorizontal: 16,
           marginBottom: Platform.OS === 'ios' ? 0 : 16,
+          // Enhanced glass morphism effect
+          backdropFilter: 'blur(20px)',
         },
+        tabBarBackground: () => (
+          <BlurView 
+            intensity={80} 
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              borderTopLeftRadius: 24,
+              borderTopRightRadius: 24,
+              overflow: 'hidden',
+            }}
+          />
+        ),
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '700',
@@ -45,6 +64,11 @@ export default function TabLayout() {
           fontWeight: '800',
           fontSize: 20,
           color: Colors.text,
+        },
+        // Enhanced tab bar item styling
+        tabBarItemStyle: {
+          borderRadius: 16,
+          marginHorizontal: 4,
         },
       }}
     >

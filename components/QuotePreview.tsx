@@ -2,8 +2,20 @@ import React from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
 import { Quote } from '@/types';
 import Colors from '@/constants/colors';
-import { FileText, Calendar, Euro, Download, Eye } from 'lucide-react-native';
+import { FileText, Calendar, Euro, Download, Eye, Sparkles } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
+import Animated, { 
+  FadeIn, 
+  SlideInDown, 
+  ZoomIn,
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withTiming,
+  interpolate,
+  Extrapolate
+} from 'react-native-reanimated';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import * as Haptics from 'expo-haptics';
@@ -14,6 +26,29 @@ interface QuotePreviewProps {
 }
 
 export default function QuotePreview({ quote, showActions = true }: QuotePreviewProps) {
+  const shimmerValue = useSharedValue(0);
+  
+  React.useEffect(() => {
+    shimmerValue.value = withRepeat(
+      withTiming(1, { duration: 2000 }),
+      -1,
+      true
+    );
+  }, []);
+  
+  const shimmerStyle = useAnimatedStyle(() => {
+    const translateX = interpolate(
+      shimmerValue.value,
+      [0, 1],
+      [-100, 100],
+      Extrapolate.CLAMP
+    );
+    
+    return {
+      transform: [{ translateX }],
+    };
+  });
+  
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'accepted': return '#10B981';
@@ -323,50 +358,72 @@ export default function QuotePreview({ quote, showActions = true }: QuotePreview
   return (
     <View style={styles.container}>
       <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <LinearGradient
-          colors={[Colors.primary, Colors.secondary]}
-          style={styles.header}
-        >
-          <View style={styles.headerTop}>
-            <Text style={styles.companyName}>EventApp</Text>
+        {/* Enhanced Header with Animations */}
+        <Animated.View entering={FadeIn.delay(200)}>
+          <LinearGradient
+            colors={[Colors.primary, Colors.secondary]}
+            style={styles.header}
+          >
+            <BlurView intensity={20} style={styles.headerBlur}>
+              <View style={styles.headerTop}>
+                <Animated.View entering={ZoomIn.delay(400)}>
+                  <View style={styles.companyLogo}>
+                    <Sparkles size={24} color="#fff" />
+                    <Text style={styles.companyName}>EventApp</Text>
+                  </View>
+                </Animated.View>
+                <Animated.View entering={SlideInDown.delay(600)}>
+                  <LinearGradient
+                    colors={[getStatusColor(quote.status), `${getStatusColor(quote.status)}CC`]}
+                    style={styles.statusBadge}
+                  >
+                    <Text style={styles.statusText}>{getStatusText(quote.status)}</Text>
+                  </LinearGradient>
+                </Animated.View>
+              </View>
+              <Animated.Text entering={SlideInDown.delay(800)} style={styles.quoteTitle}>
+                Devis #{quote.id.slice(-6)}
+              </Animated.Text>
+            </BlurView>
+          </LinearGradient>
+        </Animated.View>
+
+        {/* Quote Info with Enhanced Design */}
+        <Animated.View entering={SlideInDown.delay(1000)} style={styles.section}>
+          <BlurView intensity={10} style={styles.infoCard}>
             <LinearGradient
-              colors={[getStatusColor(quote.status), `${getStatusColor(quote.status)}CC`]}
-              style={styles.statusBadge}
+              colors={['rgba(255, 255, 255, 0.9)', 'rgba(248, 250, 252, 0.9)']}
+              style={styles.infoCardGradient}
             >
-              <Text style={styles.statusText}>{getStatusText(quote.status)}</Text>
+              <View style={styles.infoRow}>
+                <Calendar size={16} color={Colors.primary} />
+                <Text style={styles.infoLabel}>Date:</Text>
+                <Text style={styles.infoValue}>{new Date().toLocaleDateString('fr-FR')}</Text>
+              </View>
+              <View style={styles.infoRow}>
+                <Calendar size={16} color={Colors.primary} />
+                <Text style={styles.infoLabel}>Valide jusqu'au:</Text>
+                <Text style={styles.infoValue}>{new Date(quote.validUntil).toLocaleDateString('fr-FR')}</Text>
+              </View>
             </LinearGradient>
-          </View>
-          <Text style={styles.quoteTitle}>Devis #{quote.id.slice(-6)}</Text>
-        </LinearGradient>
+          </BlurView>
+        </Animated.View>
 
-        {/* Quote Info */}
-        <View style={styles.section}>
-          <View style={styles.infoRow}>
-            <Calendar size={16} color={Colors.primary} />
-            <Text style={styles.infoLabel}>Date:</Text>
-            <Text style={styles.infoValue}>{new Date().toLocaleDateString('fr-FR')}</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Calendar size={16} color={Colors.primary} />
-            <Text style={styles.infoLabel}>Valide jusqu'au:</Text>
-            <Text style={styles.infoValue}>{new Date(quote.validUntil).toLocaleDateString('fr-FR')}</Text>
-          </View>
-        </View>
+        {/* Description with Enhanced Styling */}
+        <Animated.View entering={SlideInDown.delay(1200)}>
+          <LinearGradient
+            colors={['rgba(30, 58, 138, 0.05)', 'rgba(59, 130, 246, 0.05)']}
+            style={styles.descriptionSection}
+          >
+            <Text style={styles.sectionTitle}>{quote.title}</Text>
+            <Text style={styles.description}>{quote.description}</Text>
+          </LinearGradient>
+        </Animated.View>
 
-        {/* Description */}
-        <LinearGradient
-          colors={['rgba(30, 58, 138, 0.05)', 'rgba(59, 130, 246, 0.05)']}
-          style={styles.descriptionSection}
-        >
-          <Text style={styles.sectionTitle}>{quote.title}</Text>
-          <Text style={styles.description}>{quote.description}</Text>
-        </LinearGradient>
-
-        {/* Items Table */}
-        <View style={styles.section}>
+        {/* Enhanced Items Table */}
+        <Animated.View entering={SlideInDown.delay(1400)} style={styles.section}>
           <Text style={styles.sectionTitle}>Détail des prestations</Text>
-          <View style={styles.table}>
+          <BlurView intensity={10} style={styles.table}>
             <LinearGradient
               colors={[Colors.primary, Colors.secondary]}
               style={styles.tableHeader}
@@ -378,10 +435,14 @@ export default function QuotePreview({ quote, showActions = true }: QuotePreview
             </LinearGradient>
             
             {quote.items.map((item, index) => (
-              <View key={`quote-item-${index}`} style={[
-                styles.tableRow,
-                index % 2 === 0 ? styles.tableRowEven : styles.tableRowOdd
-              ]}>
+              <Animated.View 
+                key={`quote-item-${index}`} 
+                entering={FadeIn.delay(1600 + index * 100)}
+                style={[
+                  styles.tableRow,
+                  index % 2 === 0 ? styles.tableRowEven : styles.tableRowOdd
+                ]}
+              >
                 <View style={styles.descriptionColumn}>
                   <Text style={styles.tableCellTextBold}>
                     {item.name || item.description || ''}
@@ -399,54 +460,77 @@ export default function QuotePreview({ quote, showActions = true }: QuotePreview
                 <Text style={[styles.tableCellTextBold, styles.totalColumn]}>
                   {item.total.toFixed(2)}€
                 </Text>
-              </View>
+              </Animated.View>
             ))}
-          </View>
-        </View>
+          </BlurView>
+        </Animated.View>
 
-        {/* Totals */}
-        <LinearGradient
-          colors={['rgba(30, 58, 138, 0.05)', 'rgba(59, 130, 246, 0.05)']}
-          style={styles.totalsSection}
-        >
-          <View style={styles.totalsContainer}>
-            <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Sous-total:</Text>
-              <Text style={styles.totalValue}>{quote.subtotal.toFixed(2)}€</Text>
-            </View>
-            <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>TVA (20%):</Text>
-              <Text style={styles.totalValue}>{quote.tax.toFixed(2)}€</Text>
-            </View>
-            <View style={[styles.totalRow, styles.finalTotalRow]}>
-              <Text style={styles.finalTotalLabel}>Total TTC:</Text>
-              <Text style={styles.finalTotalValue}>{quote.total.toFixed(2)}€</Text>
-            </View>
-          </View>
-        </LinearGradient>
+        {/* Enhanced Totals Section */}
+        <Animated.View entering={SlideInDown.delay(1800)}>
+          <BlurView intensity={10} style={styles.totalsSection}>
+            <LinearGradient
+              colors={['rgba(30, 58, 138, 0.05)', 'rgba(59, 130, 246, 0.05)']}
+              style={styles.totalsContainer}
+            >
+              {/* Shimmer effect */}
+              <Animated.View style={[styles.shimmerOverlay, shimmerStyle]}>
+                <LinearGradient
+                  colors={['transparent', 'rgba(255, 255, 255, 0.6)', 'transparent']}
+                  style={styles.shimmerGradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                />
+              </Animated.View>
+              
+              <View style={styles.totalRow}>
+                <Text style={styles.totalLabel}>Sous-total:</Text>
+                <Text style={styles.totalValue}>{quote.subtotal.toFixed(2)}€</Text>
+              </View>
+              <View style={styles.totalRow}>
+                <Text style={styles.totalLabel}>TVA (20%):</Text>
+                <Text style={styles.totalValue}>{quote.tax.toFixed(2)}€</Text>
+              </View>
+              <View style={[styles.totalRow, styles.finalTotalRow]}>
+                <Text style={styles.finalTotalLabel}>Total TTC:</Text>
+                <Text style={styles.finalTotalValue}>{quote.total.toFixed(2)}€</Text>
+              </View>
+            </LinearGradient>
+          </BlurView>
+        </Animated.View>
 
-        {/* Footer */}
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>
-            Devis généré par EventApp - {new Date().toLocaleDateString('fr-FR')}
-          </Text>
-          <Text style={styles.footerSubText}>
-            Merci de votre confiance
-          </Text>
-        </View>
+        {/* Enhanced Footer */}
+        <Animated.View entering={FadeIn.delay(2000)} style={styles.footer}>
+          <View style={styles.footerContent}>
+            <Text style={styles.footerText}>
+              Devis généré par EventApp - {new Date().toLocaleDateString('fr-FR')}
+            </Text>
+            <Text style={styles.footerSubText}>
+              Merci de votre confiance
+            </Text>
+          </View>
+        </Animated.View>
       </ScrollView>
 
-      {/* PDF download button */}
+      {/* Enhanced PDF download button */}
       {showActions && (
-        <LinearGradient
-          colors={['rgba(248, 250, 252, 0.95)', '#FFFFFF']}
-          style={styles.actionContainer}
-        >
-          <TouchableOpacity style={styles.pdfButton} onPress={generatePDF}>
-            <Download size={20} color="#fff" />
-            <Text style={styles.pdfButtonText}>Télécharger PDF</Text>
-          </TouchableOpacity>
-        </LinearGradient>
+        <Animated.View entering={SlideInDown.delay(2200)}>
+          <BlurView intensity={80} style={styles.actionContainer}>
+            <LinearGradient
+              colors={['rgba(248, 250, 252, 0.95)', '#FFFFFF']}
+              style={styles.actionGradient}
+            >
+              <TouchableOpacity style={styles.pdfButton} onPress={generatePDF}>
+                <LinearGradient
+                  colors={[Colors.primary, Colors.secondary]}
+                  style={styles.pdfButtonGradient}
+                >
+                  <Download size={20} color="#fff" />
+                  <Text style={styles.pdfButtonText}>Télécharger PDF</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </LinearGradient>
+          </BlurView>
+        </Animated.View>
       )}
     </View>
   );
@@ -461,9 +545,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 12,
+  },
+  headerBlur: {
     padding: 24,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
   },
   headerTop: {
     flexDirection: 'row',
@@ -471,57 +562,107 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
+  companyLogo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   companyName: {
     fontSize: 28,
     fontWeight: '800',
     color: '#fff',
   },
   statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   statusText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '700',
     color: '#fff',
   },
   quoteTitle: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '800',
     color: '#fff',
+    textAlign: 'center',
   },
   section: {
     padding: 20,
     marginBottom: 16,
   },
-  descriptionSection: {
+  infoCard: {
+    borderRadius: 20,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  infoCardGradient: {
     padding: 20,
+  },
+  descriptionSection: {
+    padding: 24,
     marginHorizontal: 20,
     marginBottom: 16,
-    borderRadius: 16,
+    borderRadius: 20,
     borderLeftWidth: 4,
     borderLeftColor: Colors.primary,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 6,
   },
   totalsSection: {
-    padding: 20,
     marginHorizontal: 20,
     marginBottom: 16,
-    borderRadius: 16,
+    borderRadius: 20,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  totalsContainer: {
+    padding: 24,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  shimmerOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 1,
+  },
+  shimmerGradient: {
+    flex: 1,
+    width: '100%',
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 22,
+    fontWeight: '800',
     color: Colors.text,
-    marginBottom: 12,
+    marginBottom: 16,
   },
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   infoLabel: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '600',
     color: Colors.text,
     marginLeft: 8,
@@ -529,33 +670,33 @@ const styles = StyleSheet.create({
     minWidth: 120,
   },
   infoValue: {
-    fontSize: 15,
+    fontSize: 16,
     color: Colors.text,
     flex: 1,
     fontWeight: '500',
   },
   description: {
-    fontSize: 16,
+    fontSize: 17,
     color: Colors.textLight,
-    lineHeight: 24,
+    lineHeight: 26,
   },
   table: {
-    borderRadius: 12,
+    borderRadius: 16,
     overflow: 'hidden',
     shadowColor: Colors.shadow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
   },
   tableHeader: {
     flexDirection: 'row',
-    paddingVertical: 16,
-    paddingHorizontal: 12,
+    paddingVertical: 18,
+    paddingHorizontal: 16,
   },
   tableHeaderText: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '800',
     color: '#fff',
     textAlign: 'center',
     textTransform: 'uppercase',
@@ -563,8 +704,8 @@ const styles = StyleSheet.create({
   },
   tableRow: {
     flexDirection: 'row',
-    paddingVertical: 16,
-    paddingHorizontal: 12,
+    paddingVertical: 18,
+    paddingHorizontal: 16,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
   },
@@ -575,20 +716,21 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surfaceElevated,
   },
   tableCellText: {
-    fontSize: 14,
+    fontSize: 15,
     color: Colors.text,
     textAlign: 'center',
+    fontWeight: '500',
   },
   tableCellTextBold: {
-    fontSize: 14,
+    fontSize: 15,
     color: Colors.text,
-    fontWeight: '600',
+    fontWeight: '700',
     textAlign: 'center',
   },
   tableCellTextSmall: {
-    fontSize: 12,
+    fontSize: 13,
     color: Colors.textLight,
-    marginTop: 2,
+    marginTop: 4,
   },
   descriptionColumn: {
     flex: 2,
@@ -603,81 +745,88 @@ const styles = StyleSheet.create({
   totalColumn: {
     flex: 1,
   },
-  totalsContainer: {
-    alignItems: 'flex-end',
-  },
   totalRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: 12,
     minWidth: 200,
+    alignSelf: 'flex-end',
   },
   totalLabel: {
-    fontSize: 16,
-    color: Colors.text,
-    fontWeight: '500',
-  },
-  totalValue: {
-    fontSize: 16,
+    fontSize: 17,
     color: Colors.text,
     fontWeight: '600',
   },
+  totalValue: {
+    fontSize: 17,
+    color: Colors.text,
+    fontWeight: '700',
+  },
   finalTotalRow: {
-    borderTopWidth: 2,
+    borderTopWidth: 3,
     borderTopColor: Colors.primary,
-    paddingTop: 12,
-    marginTop: 12,
+    paddingTop: 16,
+    marginTop: 16,
   },
   finalTotalLabel: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '800',
     color: Colors.text,
   },
   finalTotalValue: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '800',
     color: Colors.primary,
   },
   footer: {
-    padding: 20,
+    padding: 24,
     alignItems: 'center',
     borderTopWidth: 1,
     borderTopColor: Colors.border,
     marginTop: 20,
   },
+  footerContent: {
+    alignItems: 'center',
+  },
   footerText: {
-    fontSize: 13,
+    fontSize: 14,
     color: Colors.textLight,
     textAlign: 'center',
-    marginBottom: 4,
+    marginBottom: 8,
+    fontWeight: '500',
   },
   footerSubText: {
-    fontSize: 12,
+    fontSize: 13,
     color: Colors.textMuted,
     textAlign: 'center',
+    fontWeight: '500',
   },
   actionContainer: {
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  actionGradient: {
     padding: 20,
     paddingBottom: Platform.OS === 'ios' ? 34 : 20,
-    borderTopWidth: 1,
-    borderTopColor: Colors.border,
   },
   pdfButton: {
+    borderRadius: 20,
+    overflow: 'hidden',
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 12,
+  },
+  pdfButtonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: Colors.primary,
-    paddingVertical: 16,
-    borderRadius: 16,
-    gap: 8,
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 8,
+    paddingVertical: 18,
+    gap: 10,
   },
   pdfButtonText: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '700',
     color: '#fff',
   },
