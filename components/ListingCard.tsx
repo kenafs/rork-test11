@@ -49,16 +49,16 @@ export default function ListingCard({ listing }: ListingCardProps) {
     return <Text style={styles.priceText}>{price}€</Text>;
   };
   
-  // CRITICAL FIX: Much better touch handling with proper sensitivity
+  // CRITICAL FIX: Much better touch handling with proper sensitivity and gesture detection
   const handlePressIn = () => {
-    scale.value = withSpring(0.98, { damping: 15, stiffness: 300 });
+    scale.value = withSpring(0.97, { damping: 20, stiffness: 400 });
     if (Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
   };
   
   const handlePressOut = () => {
-    scale.value = withSpring(1, { damping: 15, stiffness: 300 });
+    scale.value = withSpring(1, { damping: 20, stiffness: 400 });
   };
   
   const animatedStyle = useAnimatedStyle(() => {
@@ -74,15 +74,15 @@ export default function ListingCard({ listing }: ListingCardProps) {
   const cardShadowStyle = useAnimatedStyle(() => {
     const shadowOpacity = interpolate(
       scale.value,
-      [0.98, 1],
-      [0.1, 0.25],
+      [0.97, 1],
+      [0.15, 0.25],
       Extrapolate.CLAMP
     );
     
     const shadowRadius = interpolate(
       scale.value,
-      [0.98, 1],
-      [8, 20],
+      [0.97, 1],
+      [12, 20],
       Extrapolate.CLAMP
     );
     
@@ -94,119 +94,124 @@ export default function ListingCard({ listing }: ListingCardProps) {
   });
   
   return (
-    <TouchableOpacity 
-      style={[styles.container, animatedStyle, cardShadowStyle]}
-      onPress={handlePress}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
-      activeOpacity={0.95}
-      delayPressIn={50} // CRITICAL FIX: Much shorter delay for better responsiveness
-      delayPressOut={50}
-      delayLongPress={300} // CRITICAL FIX: Shorter long press delay
-      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} // CRITICAL FIX: Better hit area
-    >
-      <View style={styles.imageContainer}>
-        {listing.images && listing.images.length > 0 ? (
-          <Image 
-            source={{ uri: listing.images[0] }} 
-            style={styles.image}
-            contentFit="cover"
-            transition={300}
-          />
-        ) : (
+    <Animated.View style={[styles.container, animatedStyle, cardShadowStyle]}>
+      <TouchableOpacity 
+        style={styles.touchable}
+        onPress={handlePress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        activeOpacity={1}
+        delayPressIn={0} // CRITICAL FIX: No delay for immediate response
+        delayPressOut={100} // CRITICAL FIX: Short delay for smooth animation
+        delayLongPress={500} // CRITICAL FIX: Longer delay to prevent accidental long press
+        hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }} // CRITICAL FIX: Smaller hit area for better precision
+      >
+        <View style={styles.imageContainer}>
+          {listing.images && listing.images.length > 0 ? (
+            <Image 
+              source={{ uri: listing.images[0] }} 
+              style={styles.image}
+              contentFit="cover"
+              transition={300}
+            />
+          ) : (
+            <LinearGradient
+              colors={[Colors.primary, Colors.secondary]}
+              style={styles.placeholderImage}
+            >
+              <Text style={styles.placeholderText}>📷</Text>
+            </LinearGradient>
+          )}
+          
+          <BlurView intensity={80} style={styles.categoryBadge}>
+            <Text style={styles.categoryText}>{listing.category}</Text>
+          </BlurView>
+          
           <LinearGradient
-            colors={[Colors.primary, Colors.secondary]}
-            style={styles.placeholderImage}
-          >
-            <Text style={styles.placeholderText}>📷</Text>
-          </LinearGradient>
-        )}
-        
-        <BlurView intensity={80} style={styles.categoryBadge}>
-          <Text style={styles.categoryText}>{listing.category}</Text>
-        </BlurView>
-        
-        <LinearGradient
-          colors={['transparent', 'rgba(15, 23, 42, 0.8)']}
-          style={styles.imageOverlay}
-        />
-      </View>
-      
-      <View style={styles.content}>
-        <Text style={styles.title} numberOfLines={2}>
-          {listing.title}
-        </Text>
-        
-        <Text style={styles.description} numberOfLines={2}>
-          {listing.description}
-        </Text>
-        
-        <View style={styles.creatorInfo}>
-          <View style={styles.creatorAvatar}>
-            {listing.creatorImage ? (
-              <Image source={{ uri: listing.creatorImage }} style={styles.avatarImage} />
-            ) : (
-              <LinearGradient
-                colors={[Colors.primary, Colors.secondary]}
-                style={styles.avatarGradient}
-              >
-                <Text style={styles.avatarText}>
-                  {listing.creatorName?.charAt(0) || '?'}
-                </Text>
-              </LinearGradient>
-            )}
-          </View>
-          <View style={styles.creatorDetails}>
-            <Text style={styles.creatorName}>{listing.creatorName}</Text>
-            {listing.creatorRating !== undefined && listing.creatorRating > 0 && (
-              <RatingStars 
-                rating={listing.creatorRating} 
-                size="small" 
-                showNumber={false}
-              />
-            )}
-          </View>
+            colors={['transparent', 'rgba(15, 23, 42, 0.8)']}
+            style={styles.imageOverlay}
+          />
         </View>
         
-        <View style={styles.footer}>
-          <View style={styles.locationContainer}>
-            <MapPin size={14} color={Colors.textLight} />
-            <Text style={styles.locationText}>{listing.location.city}</Text>
-          </View>
+        <View style={styles.content}>
+          <Text style={styles.title} numberOfLines={2}>
+            {listing.title}
+          </Text>
           
-          <View style={styles.priceContainer}>
-            <Euro size={14} color={Colors.primary} />
-            {formatPrice(listing.price)}
-          </View>
-        </View>
-        
-        <View style={styles.metaInfo}>
-          <View style={styles.dateContainer}>
-            <Clock size={12} color={Colors.textLight} />
-            <Text style={styles.dateText}>
-              Publié le {formatDate(listing.createdAt)}
-            </Text>
-          </View>
+          <Text style={styles.description} numberOfLines={2}>
+            {listing.description}
+          </Text>
           
-          {listing.tags && listing.tags.length > 0 && (
-            <View style={styles.tagsContainer}>
-              {listing.tags.slice(0, 2).map((tag, index) => (
-                <BlurView 
-                  key={`tag-${listing.id}-${tag}-${index}`} 
-                  intensity={20} 
-                  style={styles.tag}
+          {/* FIXED: Better centered creator info */}
+          <View style={styles.creatorInfo}>
+            <View style={styles.creatorAvatar}>
+              {listing.creatorImage ? (
+                <Image source={{ uri: listing.creatorImage }} style={styles.avatarImage} />
+              ) : (
+                <LinearGradient
+                  colors={[Colors.primary, Colors.secondary]}
+                  style={styles.avatarGradient}
                 >
-                  <Text style={styles.tagText}>{tag}</Text>
-                </BlurView>
-              ))}
-              {listing.tags.length > 2 && (
-                <Text style={styles.moreTagsText}>+{listing.tags.length - 2}</Text>
+                  <Text style={styles.avatarText}>
+                    {listing.creatorName?.charAt(0) || '?'}
+                  </Text>
+                </LinearGradient>
               )}
             </View>
-          )}
+            <View style={styles.creatorDetails}>
+              <Text style={styles.creatorName}>{listing.creatorName}</Text>
+              {listing.creatorRating !== undefined && listing.creatorRating > 0 && (
+                <RatingStars 
+                  rating={listing.creatorRating} 
+                  size="small" 
+                  showNumber={false}
+                />
+              )}
+            </View>
+          </View>
+          
+          {/* FIXED: Better aligned footer */}
+          <View style={styles.footer}>
+            <View style={styles.locationContainer}>
+              <MapPin size={14} color={Colors.textLight} />
+              <Text style={styles.locationText}>{listing.location.city}</Text>
+            </View>
+            
+            <View style={styles.priceContainer}>
+              <Euro size={14} color={Colors.primary} />
+              {formatPrice(listing.price)}
+            </View>
+          </View>
+          
+          {/* FIXED: Better aligned meta info */}
+          <View style={styles.metaInfo}>
+            <View style={styles.dateContainer}>
+              <Clock size={12} color={Colors.textLight} />
+              <Text style={styles.dateText}>
+                Publié le {formatDate(listing.createdAt)}
+              </Text>
+            </View>
+            
+            {listing.tags && listing.tags.length > 0 && (
+              <View style={styles.tagsContainer}>
+                {listing.tags.slice(0, 2).map((tag, index) => (
+                  <BlurView 
+                    key={`tag-${listing.id}-${tag}-${index}`} 
+                    intensity={20} 
+                    style={styles.tag}
+                  >
+                    <Text style={styles.tagText}>{tag}</Text>
+                  </BlurView>
+                ))}
+                {listing.tags.length > 2 && (
+                  <Text style={styles.moreTagsText}>+{listing.tags.length - 2}</Text>
+                )}
+              </View>
+            )}
+          </View>
         </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </Animated.View>
   );
 }
 
@@ -221,6 +226,9 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     elevation: 12,
     overflow: 'hidden',
+  },
+  touchable: {
+    flex: 1,
   },
   imageContainer: {
     position: 'relative',
@@ -283,6 +291,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
+    paddingVertical: 4, // FIXED: Add padding for better alignment
   },
   creatorAvatar: {
     width: 40,
@@ -315,6 +324,7 @@ const styles = StyleSheet.create({
   },
   creatorDetails: {
     flex: 1,
+    justifyContent: 'center', // FIXED: Center content vertically
   },
   creatorName: {
     fontSize: 16,
@@ -327,6 +337,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
+    paddingVertical: 2, // FIXED: Add padding for better alignment
   },
   locationContainer: {
     flexDirection: 'row',
@@ -352,6 +363,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingVertical: 2, // FIXED: Add padding for better alignment
   },
   dateContainer: {
     flexDirection: 'row',

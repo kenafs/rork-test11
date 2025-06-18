@@ -3,7 +3,7 @@ import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Alert, Platform }
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { useAuth } from '@/hooks/useAuth';
-import { useFavorites } from '@/hooks/useFavorites';
+import { useFavoritesComputed } from '@/hooks/useFavorites';
 import { useMessages } from '@/hooks/useMessages';
 import { useListings } from '@/hooks/useListings';
 import { mockProviders, mockVenues } from '@/mocks/users';
@@ -34,7 +34,7 @@ export default function ListingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { isAuthenticated, user } = useAuth();
-  const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
+  const { isFavorite, addToFavorites, removeFromFavorites } = useFavoritesComputed();
   const { createConversation } = useMessages();
   const { getListingById } = useListings();
   

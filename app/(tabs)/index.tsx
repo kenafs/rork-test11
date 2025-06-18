@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useListings } from '@/hooks/useListings';
 import { useLocation } from '@/hooks/useLocation';
 import { useLanguage } from '@/hooks/useLanguage';
-import { useFavorites } from '@/hooks/useFavorites';
+import { useFavoritesComputed } from '@/hooks/useFavorites';
 import Colors from '@/constants/colors';
 import SearchBar from '@/components/SearchBar';
 import CategoryFilter from '@/components/CategoryFilter';
@@ -55,8 +55,8 @@ export default function HomeScreen() {
   } = useLocation();
   const { t } = useLanguage();
   
-  // FIXED: Get favorites using the favorites property
-  const { favorites } = useFavorites();
+  // FIXED: Use the computed favorites hook
+  const { favorites } = useFavoritesComputed();
   
   const [refreshing, setRefreshing] = useState(false);
   const scrollY = useSharedValue(0);
@@ -76,7 +76,7 @@ export default function HomeScreen() {
     const translateY = interpolate(
       scrollY.value,
       [0, 100],
-      [0, -20],
+      [0, -10],
       Extrapolate.CLAMP
     );
     
@@ -126,7 +126,7 @@ export default function HomeScreen() {
   const safeFilteredListings = Array.isArray(filteredListings) ? filteredListings : [];
   const safeFavorites = Array.isArray(favorites) ? favorites : [];
   
-  // Authenticated user experience - CRITICAL FIX: Remove landing page for authenticated users
+  // Authenticated user experience - CRITICAL FIX: Compact header design
   const getWelcomeMessage = () => {
     switch (user?.userType) {
       case 'provider':
@@ -182,7 +182,7 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
       
-      {/* FIXED: Compact and elegant header with better proportions */}
+      {/* FIXED: Much more compact and elegant header */}
       <Animated.View style={[styles.header, headerStyle]}>
         <BlurView intensity={80} style={styles.headerBlur}>
           <LinearGradient
@@ -197,7 +197,7 @@ export default function HomeScreen() {
                 <Text style={styles.subtitleText}>{getSubtitle()}</Text>
               </View>
               
-              {/* FIXED: Compact stats row with better spacing */}
+              {/* FIXED: Much more compact stats row */}
               <Animated.View entering={SlideInDown.delay(400)} style={styles.statsRow}>
                 {[
                   { icon: Heart, value: safeFavorites.length || 0, label: 'Favoris', color: '#FF6B6B' },
@@ -211,7 +211,7 @@ export default function HomeScreen() {
                     style={styles.statCardWrapper}
                   >
                     <BlurView intensity={30} style={styles.statCard}>
-                      <stat.icon size={14} color={stat.color} />
+                      <stat.icon size={12} color={stat.color} />
                       <Text style={styles.statCardNumber}>{stat.value}</Text>
                       <Text style={styles.statCardLabel}>{stat.label}</Text>
                     </BlurView>
@@ -227,7 +227,7 @@ export default function HomeScreen() {
                     activeOpacity={0.8}
                   >
                     <BlurView intensity={40} style={styles.createButtonBlur}>
-                      <Plus size={18} color="#fff" />
+                      <Plus size={16} color="#fff" />
                       <Text style={styles.createButtonText}>{getCreateButtonText()}</Text>
                     </BlurView>
                   </TouchableOpacity>
@@ -338,8 +338,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.backgroundAlt,
   },
   header: {
-    paddingTop: 50, // FIXED: Reduced from 60 to 50
-    paddingBottom: 16, // FIXED: Reduced from 24 to 16
+    paddingTop: 45, // FIXED: Reduced from 50 to 45
+    paddingBottom: 12, // FIXED: Reduced from 16 to 12
     zIndex: 10,
   },
   headerBlur: {
@@ -347,27 +347,27 @@ const styles = StyleSheet.create({
   },
   headerGradient: {
     paddingHorizontal: 20,
-    paddingVertical: 16, // FIXED: Reduced from 20 to 16
+    paddingVertical: 12, // FIXED: Reduced from 16 to 12
   },
   headerContent: {
     alignItems: 'center',
   },
   welcomeSection: {
     alignItems: 'center',
-    marginBottom: 16, // FIXED: Reduced from 24 to 16
+    marginBottom: 12, // FIXED: Reduced from 16 to 12
     width: '100%',
   },
   welcomeText: {
-    fontSize: 28, // FIXED: Reduced from 32 to 28
+    fontSize: 24, // FIXED: Reduced from 28 to 24
     fontWeight: '800',
     color: '#fff',
-    marginBottom: 6, // FIXED: Reduced from 8 to 6
+    marginBottom: 4, // FIXED: Reduced from 6 to 4
     textAlign: 'center',
   },
   subtitleText: {
-    fontSize: 15, // FIXED: Reduced from 16 to 15
+    fontSize: 14, // FIXED: Reduced from 15 to 14
     color: 'rgba(255, 255, 255, 0.9)',
-    lineHeight: 20, // FIXED: Reduced from 22 to 20
+    lineHeight: 18, // FIXED: Reduced from 20 to 18
     textAlign: 'center',
     paddingHorizontal: 20,
   },
@@ -375,37 +375,37 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 10, // FIXED: Reduced from 12 to 10
-    marginBottom: 16, // FIXED: Reduced from 24 to 16
+    gap: 8, // FIXED: Reduced from 10 to 8
+    marginBottom: 12, // FIXED: Reduced from 16 to 12
     width: '100%',
     paddingHorizontal: 10,
   },
   statCardWrapper: {
     flex: 1,
-    maxWidth: 70, // FIXED: Reduced from 75 to 70
-    minWidth: 65, // FIXED: Reduced from 70 to 65
+    maxWidth: 60, // FIXED: Reduced from 70 to 60
+    minWidth: 55, // FIXED: Reduced from 65 to 55
   },
   statCard: {
-    borderRadius: 14, // FIXED: Reduced from 16 to 14
-    padding: 10, // FIXED: Reduced from 12 to 10
+    borderRadius: 12, // FIXED: Reduced from 14 to 12
+    padding: 8, // FIXED: Reduced from 10 to 8
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
-    minHeight: 70, // FIXED: Reduced from 80 to 70
+    minHeight: 60, // FIXED: Reduced from 70 to 60
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   statCardNumber: {
-    fontSize: 14, // FIXED: Reduced from 16 to 14
+    fontSize: 12, // FIXED: Reduced from 14 to 12
     fontWeight: '700',
     color: '#fff',
-    marginTop: 3, // FIXED: Reduced from 4 to 3
-    marginBottom: 1, // FIXED: Reduced from 2 to 1
+    marginTop: 2, // FIXED: Reduced from 3 to 2
+    marginBottom: 1,
     textAlign: 'center',
   },
   statCardLabel: {
-    fontSize: 9, // FIXED: Reduced from 10 to 9
+    fontSize: 8, // FIXED: Reduced from 9 to 8
     color: 'rgba(255, 255, 255, 0.8)',
     fontWeight: '500',
     textAlign: 'center',
@@ -415,21 +415,21 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   createButton: {
-    borderRadius: 22, // FIXED: Reduced from 25 to 22
+    borderRadius: 20, // FIXED: Reduced from 22 to 20
     overflow: 'hidden',
-    minWidth: 180, // FIXED: Reduced from 200 to 180
+    minWidth: 160, // FIXED: Reduced from 180 to 160
   },
   createButtonBlur: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 10, // FIXED: Reduced from 12 to 10
-    paddingHorizontal: 18, // FIXED: Reduced from 20 to 18
-    gap: 6, // FIXED: Reduced from 8 to 6
+    paddingVertical: 8, // FIXED: Reduced from 10 to 8
+    paddingHorizontal: 16, // FIXED: Reduced from 18 to 16
+    gap: 6,
   },
   createButtonText: {
     color: '#fff',
-    fontSize: 15, // FIXED: Reduced from 16 to 15
+    fontSize: 14, // FIXED: Reduced from 15 to 14
     fontWeight: '600',
   },
   content: {

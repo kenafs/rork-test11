@@ -67,6 +67,7 @@ export default function QuotesScreen() {
       case 'draft': return '#6B7280';
       case 'paid': return '#8B5CF6';
       case 'completed': return '#059669';
+      case 'refunded': return '#EF4444';
       default: return Colors.textLight;
     }
   };
@@ -79,6 +80,7 @@ export default function QuotesScreen() {
       case 'draft': return 'Brouillon';
       case 'paid': return 'Payé';
       case 'completed': return 'Terminé';
+      case 'refunded': return 'Remboursé';
       default: return status;
     }
   };
@@ -91,6 +93,7 @@ export default function QuotesScreen() {
       case 'draft': return FileText;
       case 'paid': return CreditCard;
       case 'completed': return CheckSquare;
+      case 'refunded': return XCircle;
       default: return FileText;
     }
   };
@@ -134,7 +137,7 @@ export default function QuotesScreen() {
     );
   };
 
-  // FIXED: Enhanced payment processing with better UX
+  // FIXED: Enhanced payment processing with better UX and client support
   const handlePayQuote = async (quoteId: string) => {
     Alert.alert(
       'Payer le devis',
@@ -659,8 +662,10 @@ export default function QuotesScreen() {
                         <Text style={styles.pdfButtonText}>PDF</Text>
                       </TouchableOpacity>
                       
-                      {/* FIXED: Business venues can also accept/reject quotes as clients */}
-                      {(user.userType === 'client' || (user.userType === 'business' && quote.clientId === user.id)) && quote.status === 'pending' && (
+                      {/* FIXED: Business venues and clients can accept/reject quotes */}
+                      {((user.userType === 'client') || 
+                        (user.userType === 'business' && quote.clientId === user.id)) && 
+                        quote.status === 'pending' && (
                         <>
                           <TouchableOpacity 
                             style={styles.acceptButton}
@@ -680,8 +685,10 @@ export default function QuotesScreen() {
                         </>
                       )}
                       
-                      {/* FIXED: Enhanced payment button with loading state */}
-                      {(user.userType === 'client' || (user.userType === 'business' && quote.clientId === user.id)) && quote.status === 'accepted' && (
+                      {/* FIXED: Enhanced payment button with loading state for clients and business venues */}
+                      {((user.userType === 'client') || 
+                        (user.userType === 'business' && quote.clientId === user.id)) && 
+                        quote.status === 'accepted' && (
                         <TouchableOpacity 
                           style={[styles.payButton, paymentLoading === quote.id && styles.payButtonLoading]}
                           onPress={() => handlePayQuote(quote.id)}
@@ -695,7 +702,9 @@ export default function QuotesScreen() {
                       )}
                       
                       {/* FIXED: Both providers and business venues can complete quotes */}
-                      {(user.userType === 'provider' || (user.userType === 'business' && quote.providerId === user.id)) && quote.status === 'paid' && (
+                      {((user.userType === 'provider') || 
+                        (user.userType === 'business' && quote.providerId === user.id)) && 
+                        quote.status === 'paid' && (
                         <TouchableOpacity 
                           style={styles.completeButton}
                           onPress={() => handleCompleteQuote(quote.id)}

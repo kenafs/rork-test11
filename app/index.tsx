@@ -148,7 +148,7 @@ export default function LandingScreen() {
         onScroll={scrollHandler}
         scrollEventThrottle={16}
       >
-        {/* Hero Section with Parallax */}
+        {/* FIXED: Much more compact hero section */}
         <Animated.View style={[styles.hero, headerStyle]}>
           <LinearGradient
             colors={gradients.primary}
@@ -160,7 +160,7 @@ export default function LandingScreen() {
               <Animated.View entering={FadeIn.delay(200)} style={styles.heroContent}>
                 <View style={styles.logoContainer}>
                   <Animated.View style={sparkleStyle}>
-                    <Sparkles size={40} color="#fff" />
+                    <Sparkles size={32} color="#fff" />
                   </Animated.View>
                   <Text style={styles.logoText}>EventApp</Text>
                 </View>
@@ -355,7 +355,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   hero: {
-    height: height * 0.9,
+    height: height * 0.75, // FIXED: Reduced from 0.9 to 0.75
     position: 'relative',
   },
   heroGradient: {
@@ -363,50 +363,50 @@ const styles = StyleSheet.create({
   },
   heroBlur: {
     flex: 1,
-    paddingTop: 60,
-    paddingBottom: 40,
+    paddingTop: 50, // FIXED: Reduced from 60 to 50
+    paddingBottom: 30, // FIXED: Reduced from 40 to 30
     paddingHorizontal: 20,
   },
   heroContent: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 30,
+    marginBottom: 20, // FIXED: Reduced from 30 to 20
   },
   logoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 30,
+    marginBottom: 24, // FIXED: Reduced from 30 to 24
   },
   logoText: {
-    fontSize: 32,
+    fontSize: 28, // FIXED: Reduced from 32 to 28
     fontWeight: '800',
     color: '#fff',
     marginLeft: 12,
   },
   heroTitle: {
-    fontSize: 36,
+    fontSize: 32, // FIXED: Reduced from 36 to 32
     fontWeight: '800',
     color: '#fff',
     textAlign: 'center',
-    marginBottom: 20,
-    lineHeight: 44,
+    marginBottom: 16, // FIXED: Reduced from 20 to 16
+    lineHeight: 40, // FIXED: Reduced from 44 to 40
   },
   heroTitleAccent: {
     color: '#FDE68A',
   },
   heroSubtitle: {
-    fontSize: 18,
+    fontSize: 16, // FIXED: Reduced from 18 to 16
     color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
-    lineHeight: 26,
-    marginBottom: 40,
+    lineHeight: 24, // FIXED: Reduced from 26 to 24
+    marginBottom: 32, // FIXED: Reduced from 40 to 32
     paddingHorizontal: 20,
   },
   heroButtons: {
     flexDirection: 'row',
     gap: 16,
-    marginBottom: 30,
+    marginBottom: 24, // FIXED: Reduced from 30 to 24
   },
   primaryButton: {
     backgroundColor: '#fff',
@@ -435,7 +435,7 @@ const styles = StyleSheet.create({
   },
   heroImage: {
     width: width - 40,
-    height: 220,
+    height: 180, // FIXED: Reduced from 220 to 180
     borderRadius: 24,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 12 },
@@ -445,29 +445,29 @@ const styles = StyleSheet.create({
   },
   section: {
     padding: 20,
-    paddingTop: 60,
+    paddingTop: 50, // FIXED: Reduced from 60 to 50
   },
   sectionTitle: {
-    fontSize: 32,
+    fontSize: 28, // FIXED: Reduced from 32 to 28
     fontWeight: '800',
     color: Colors.text,
     textAlign: 'center',
     marginBottom: 12,
   },
   sectionSubtitle: {
-    fontSize: 17,
+    fontSize: 16, // FIXED: Reduced from 17 to 16
     color: Colors.textLight,
     textAlign: 'center',
-    marginBottom: 40,
-    lineHeight: 26,
+    marginBottom: 32, // FIXED: Reduced from 40 to 32
+    lineHeight: 24, // FIXED: Reduced from 26 to 24
   },
   featuresGrid: {
-    gap: 24,
+    gap: 20, // FIXED: Reduced from 24 to 20
   },
   featureCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 24,
-    padding: 28,
+    borderRadius: 20, // FIXED: Reduced from 24 to 20
+    padding: 24, // FIXED: Reduced from 28 to 24
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
@@ -479,12 +479,12 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   featureIconContainer: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 64, // FIXED: Reduced from 72 to 64
+    height: 64, // FIXED: Reduced from 72 to 64
+    borderRadius: 32, // FIXED: Reduced from 36 to 32
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 16, // FIXED: Reduced from 20 to 16
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
@@ -492,24 +492,24 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   featureTitle: {
-    fontSize: 22,
+    fontSize: 20, // FIXED: Reduced from 22 to 20
     fontWeight: '700',
     color: Colors.text,
-    marginBottom: 12,
+    marginBottom: 10, // FIXED: Reduced from 12 to 10
     textAlign: 'center',
   },
   featureDescription: {
-    fontSize: 16,
+    fontSize: 15, // FIXED: Reduced from 16 to 15
     color: Colors.textLight,
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: 22, // FIXED: Reduced from 24 to 22
   },
   statsSection: {
     padding: 20,
-    paddingTop: 60,
+    paddingTop: 50, // FIXED: Reduced from 60 to 50
   },
   statsContainer: {
-    borderRadius: 24,
+    borderRadius: 20, // FIXED: Reduced from 24 to 20
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
@@ -518,14 +518,14 @@ const styles = StyleSheet.create({
     elevation: 12,
   },
   statsGradient: {
-    padding: 36,
+    padding: 28, // FIXED: Reduced from 36 to 28
     alignItems: 'center',
   },
   statsTitle: {
-    fontSize: 28,
+    fontSize: 24, // FIXED: Reduced from 28 to 24
     fontWeight: '800',
     color: Colors.text,
-    marginBottom: 32,
+    marginBottom: 24, // FIXED: Reduced from 32 to 24
     textAlign: 'center',
   },
   statsGrid: {
@@ -537,13 +537,13 @@ const styles = StyleSheet.create({
   statItem: {
     alignItems: 'center',
     minWidth: '45%',
-    marginBottom: 24,
+    marginBottom: 20, // FIXED: Reduced from 24 to 20
   },
   statNumber: {
-    fontSize: 36,
+    fontSize: 32, // FIXED: Reduced from 36 to 32
     fontWeight: '800',
     color: Colors.primary,
-    marginTop: 8,
+    marginTop: 6, // FIXED: Reduced from 8 to 6
     marginBottom: 4,
   },
   statLabel: {
@@ -557,8 +557,8 @@ const styles = StyleSheet.create({
   },
   testimonialCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 20,
-    padding: 24,
+    borderRadius: 16, // FIXED: Reduced from 20 to 16
+    padding: 20, // FIXED: Reduced from 24 to 20
     marginRight: 20,
     width: width - 80,
     shadowColor: '#000',
@@ -573,45 +573,45 @@ const styles = StyleSheet.create({
   testimonialHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12, // FIXED: Reduced from 16 to 12
   },
   testimonialImage: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    marginRight: 16,
+    width: 48, // FIXED: Reduced from 52 to 48
+    height: 48, // FIXED: Reduced from 52 to 48
+    borderRadius: 24, // FIXED: Reduced from 26 to 24
+    marginRight: 12, // FIXED: Reduced from 16 to 12
   },
   testimonialInfo: {
     flex: 1,
   },
   testimonialName: {
-    fontSize: 17,
+    fontSize: 16, // FIXED: Reduced from 17 to 16
     fontWeight: '700',
     color: Colors.text,
     marginBottom: 2,
   },
   testimonialRole: {
-    fontSize: 14,
+    fontSize: 13, // FIXED: Reduced from 14 to 13
     color: Colors.textLight,
   },
   testimonialRating: {
     flexDirection: 'row',
   },
   star: {
-    fontSize: 16,
+    fontSize: 14, // FIXED: Reduced from 16 to 14
   },
   testimonialComment: {
-    fontSize: 15,
+    fontSize: 14, // FIXED: Reduced from 15 to 14
     color: Colors.text,
-    lineHeight: 22,
+    lineHeight: 20, // FIXED: Reduced from 22 to 20
     fontStyle: 'italic',
   },
   ctaSection: {
     padding: 20,
-    paddingTop: 60,
+    paddingTop: 50, // FIXED: Reduced from 60 to 50
   },
   ctaBlur: {
-    borderRadius: 24,
+    borderRadius: 20, // FIXED: Reduced from 24 to 20
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 12 },
@@ -620,22 +620,22 @@ const styles = StyleSheet.create({
     elevation: 16,
   },
   ctaContainer: {
-    padding: 36,
+    padding: 28, // FIXED: Reduced from 36 to 28
     alignItems: 'center',
   },
   ctaTitle: {
-    fontSize: 32,
+    fontSize: 28, // FIXED: Reduced from 32 to 28
     fontWeight: '800',
     color: '#fff',
     textAlign: 'center',
-    marginBottom: 12,
+    marginBottom: 10, // FIXED: Reduced from 12 to 10
   },
   ctaSubtitle: {
-    fontSize: 17,
+    fontSize: 16, // FIXED: Reduced from 17 to 16
     color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
-    marginBottom: 32,
-    lineHeight: 26,
+    marginBottom: 24, // FIXED: Reduced from 32 to 24
+    lineHeight: 24, // FIXED: Reduced from 26 to 24
   },
   ctaButtons: {
     gap: 16,
@@ -668,8 +668,8 @@ const styles = StyleSheet.create({
   },
   footer: {
     backgroundColor: Colors.backgroundAlt,
-    padding: 40,
-    paddingBottom: 80,
+    padding: 32, // FIXED: Reduced from 40 to 32
+    paddingBottom: 60, // FIXED: Reduced from 80 to 60
   },
   footerContent: {
     alignItems: 'center',
@@ -677,23 +677,23 @@ const styles = StyleSheet.create({
   footerLogo: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 16, // FIXED: Reduced from 20 to 16
   },
   footerLogoText: {
-    fontSize: 28,
+    fontSize: 24, // FIXED: Reduced from 28 to 24
     fontWeight: '800',
     color: Colors.primary,
     marginLeft: 8,
   },
   footerText: {
-    fontSize: 16,
+    fontSize: 15, // FIXED: Reduced from 16 to 15
     color: Colors.textLight,
     textAlign: 'center',
-    marginBottom: 20,
-    lineHeight: 24,
+    marginBottom: 16, // FIXED: Reduced from 20 to 16
+    lineHeight: 22, // FIXED: Reduced from 24 to 22
   },
   footerCopyright: {
-    fontSize: 14,
+    fontSize: 13, // FIXED: Reduced from 14 to 13
     color: Colors.textLight,
     textAlign: 'center',
   },

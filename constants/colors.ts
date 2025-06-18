@@ -73,7 +73,7 @@ const Colors = {
 
 export default Colors;
 
-// Premium gradient combinations - FIXED: Proper tuple types with Colors defined first
+// FIXED: Premium gradient combinations - Define after Colors
 export const gradients = {
   primary: [Colors.primary, Colors.secondary] as const,
   secondary: [Colors.secondary, '#06B6D4'] as const,
