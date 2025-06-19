@@ -126,7 +126,7 @@ export default function HomeScreen() {
   const safeFilteredListings = Array.isArray(filteredListings) ? filteredListings : [];
   const safeFavorites = Array.isArray(favorites) ? favorites : [];
   
-  // Authenticated user experience - CRITICAL FIX: Compact header design
+  // Authenticated user experience - CRITICAL FIX: Much more compact header design
   const getWelcomeMessage = () => {
     switch (user?.userType) {
       case 'provider':
@@ -211,7 +211,7 @@ export default function HomeScreen() {
                     style={styles.statCardWrapper}
                   >
                     <BlurView intensity={30} style={styles.statCard}>
-                      <stat.icon size={12} color={stat.color} />
+                      <stat.icon size={10} color={stat.color} />
                       <Text style={styles.statCardNumber}>{stat.value}</Text>
                       <Text style={styles.statCardLabel}>{stat.label}</Text>
                     </BlurView>
@@ -227,7 +227,7 @@ export default function HomeScreen() {
                     activeOpacity={0.8}
                   >
                     <BlurView intensity={40} style={styles.createButtonBlur}>
-                      <Plus size={16} color="#fff" />
+                      <Plus size={14} color="#fff" />
                       <Text style={styles.createButtonText}>{getCreateButtonText()}</Text>
                     </BlurView>
                   </TouchableOpacity>
@@ -338,8 +338,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.backgroundAlt,
   },
   header: {
-    paddingTop: 45, // FIXED: Reduced from 50 to 45
-    paddingBottom: 12, // FIXED: Reduced from 16 to 12
+    paddingTop: 35, // FIXED: Reduced from 45 to 35
+    paddingBottom: 8, // FIXED: Reduced from 12 to 8
     zIndex: 10,
   },
   headerBlur: {
@@ -347,27 +347,27 @@ const styles = StyleSheet.create({
   },
   headerGradient: {
     paddingHorizontal: 20,
-    paddingVertical: 12, // FIXED: Reduced from 16 to 12
+    paddingVertical: 8, // FIXED: Reduced from 12 to 8
   },
   headerContent: {
     alignItems: 'center',
   },
   welcomeSection: {
     alignItems: 'center',
-    marginBottom: 12, // FIXED: Reduced from 16 to 12
+    marginBottom: 8, // FIXED: Reduced from 12 to 8
     width: '100%',
   },
   welcomeText: {
-    fontSize: 24, // FIXED: Reduced from 28 to 24
+    fontSize: 20, // FIXED: Reduced from 24 to 20
     fontWeight: '800',
     color: '#fff',
-    marginBottom: 4, // FIXED: Reduced from 6 to 4
+    marginBottom: 2, // FIXED: Reduced from 4 to 2
     textAlign: 'center',
   },
   subtitleText: {
-    fontSize: 14, // FIXED: Reduced from 15 to 14
+    fontSize: 12, // FIXED: Reduced from 14 to 12
     color: 'rgba(255, 255, 255, 0.9)',
-    lineHeight: 18, // FIXED: Reduced from 20 to 18
+    lineHeight: 16, // FIXED: Reduced from 18 to 16
     textAlign: 'center',
     paddingHorizontal: 20,
   },
@@ -375,37 +375,37 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 8, // FIXED: Reduced from 10 to 8
-    marginBottom: 12, // FIXED: Reduced from 16 to 12
+    gap: 6, // FIXED: Reduced from 8 to 6
+    marginBottom: 8, // FIXED: Reduced from 12 to 8
     width: '100%',
     paddingHorizontal: 10,
   },
   statCardWrapper: {
     flex: 1,
-    maxWidth: 60, // FIXED: Reduced from 70 to 60
-    minWidth: 55, // FIXED: Reduced from 65 to 55
+    maxWidth: 50, // FIXED: Reduced from 60 to 50
+    minWidth: 45, // FIXED: Reduced from 55 to 45
   },
   statCard: {
-    borderRadius: 12, // FIXED: Reduced from 14 to 12
-    padding: 8, // FIXED: Reduced from 10 to 8
+    borderRadius: 10, // FIXED: Reduced from 12 to 10
+    padding: 6, // FIXED: Reduced from 8 to 6
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
-    minHeight: 60, // FIXED: Reduced from 70 to 60
+    minHeight: 50, // FIXED: Reduced from 60 to 50
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   statCardNumber: {
-    fontSize: 12, // FIXED: Reduced from 14 to 12
+    fontSize: 10, // FIXED: Reduced from 12 to 10
     fontWeight: '700',
     color: '#fff',
-    marginTop: 2, // FIXED: Reduced from 3 to 2
+    marginTop: 1, // FIXED: Reduced from 2 to 1
     marginBottom: 1,
     textAlign: 'center',
   },
   statCardLabel: {
-    fontSize: 8, // FIXED: Reduced from 9 to 8
+    fontSize: 7, // FIXED: Reduced from 8 to 7
     color: 'rgba(255, 255, 255, 0.8)',
     fontWeight: '500',
     textAlign: 'center',
@@ -415,21 +415,21 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   createButton: {
-    borderRadius: 20, // FIXED: Reduced from 22 to 20
+    borderRadius: 16, // FIXED: Reduced from 20 to 16
     overflow: 'hidden',
-    minWidth: 160, // FIXED: Reduced from 180 to 160
+    minWidth: 140, // FIXED: Reduced from 160 to 140
   },
   createButtonBlur: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8, // FIXED: Reduced from 10 to 8
-    paddingHorizontal: 16, // FIXED: Reduced from 18 to 16
-    gap: 6,
+    paddingVertical: 6, // FIXED: Reduced from 8 to 6
+    paddingHorizontal: 12, // FIXED: Reduced from 16 to 12
+    gap: 4, // FIXED: Reduced from 6 to 4
   },
   createButtonText: {
     color: '#fff',
-    fontSize: 14, // FIXED: Reduced from 15 to 14
+    fontSize: 12, // FIXED: Reduced from 14 to 12
     fontWeight: '600',
   },
   content: {

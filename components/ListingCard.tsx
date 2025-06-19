@@ -75,14 +75,14 @@ export default function ListingCard({ listing }: ListingCardProps) {
     const shadowOpacity = interpolate(
       scale.value,
       [0.97, 1],
-      [0.15, 0.25],
+      [0.12, 0.2],
       Extrapolate.CLAMP
     );
     
     const shadowRadius = interpolate(
       scale.value,
       [0.97, 1],
-      [12, 20],
+      [10, 16],
       Extrapolate.CLAMP
     );
     
@@ -173,12 +173,12 @@ export default function ListingCard({ listing }: ListingCardProps) {
           {/* FIXED: Better aligned footer */}
           <View style={styles.footer}>
             <View style={styles.locationContainer}>
-              <MapPin size={14} color={Colors.textLight} />
+              <MapPin size={12} color={Colors.textLight} />
               <Text style={styles.locationText}>{listing.location.city}</Text>
             </View>
             
             <View style={styles.priceContainer}>
-              <Euro size={14} color={Colors.primary} />
+              <Euro size={12} color={Colors.primary} />
               {formatPrice(listing.price)}
             </View>
           </View>
@@ -186,7 +186,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
           {/* FIXED: Better aligned meta info */}
           <View style={styles.metaInfo}>
             <View style={styles.dateContainer}>
-              <Clock size={12} color={Colors.textLight} />
+              <Clock size={10} color={Colors.textLight} />
               <Text style={styles.dateText}>
                 Publié le {formatDate(listing.createdAt)}
               </Text>
@@ -218,13 +218,13 @@ export default function ListingCard({ listing }: ListingCardProps) {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
-    borderRadius: 24,
-    marginBottom: 20,
+    borderRadius: 20, // FIXED: Reduced from 24 to 20
+    marginBottom: 16, // FIXED: Reduced from 20 to 16
     shadowColor: Colors.shadow,
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.25,
-    shadowRadius: 20,
-    elevation: 12,
+    shadowOffset: { width: 0, height: 8 }, // FIXED: Reduced shadow
+    shadowOpacity: 0.2, // FIXED: Reduced opacity
+    shadowRadius: 16, // FIXED: Reduced radius
+    elevation: 10, // FIXED: Reduced elevation
     overflow: 'hidden',
   },
   touchable: {
@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     position: 'relative',
-    height: 240,
+    height: 200, // FIXED: Reduced from 240 to 200
   },
   image: {
     width: '100%',
@@ -245,23 +245,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   placeholderText: {
-    fontSize: 48,
+    fontSize: 40, // FIXED: Reduced from 48 to 40
     opacity: 0.7,
   },
   categoryBadge: {
     position: 'absolute',
-    top: 20,
-    left: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    top: 16, // FIXED: Reduced from 20 to 16
+    left: 16, // FIXED: Reduced from 20 to 16
+    paddingHorizontal: 12, // FIXED: Reduced from 16 to 12
+    paddingVertical: 6, // FIXED: Reduced from 8 to 6
+    borderRadius: 16, // FIXED: Reduced from 20 to 16
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   categoryText: {
     color: '#fff',
-    fontSize: 13,
+    fontSize: 11, // FIXED: Reduced from 13 to 11
     fontWeight: '700',
   },
   imageOverlay: {
@@ -269,57 +269,57 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 80,
+    height: 60, // FIXED: Reduced from 80 to 60
   },
   content: {
-    padding: 24,
+    padding: 20, // FIXED: Reduced from 24 to 20
   },
   title: {
-    fontSize: 22,
+    fontSize: 20, // FIXED: Reduced from 22 to 20
     fontWeight: '800',
     color: Colors.text,
-    marginBottom: 8,
-    lineHeight: 28,
+    marginBottom: 6, // FIXED: Reduced from 8 to 6
+    lineHeight: 26, // FIXED: Reduced from 28 to 26
   },
   description: {
-    fontSize: 15,
+    fontSize: 14, // FIXED: Reduced from 15 to 14
     color: Colors.textLight,
-    lineHeight: 22,
-    marginBottom: 20,
+    lineHeight: 20, // FIXED: Reduced from 22 to 20
+    marginBottom: 16, // FIXED: Reduced from 20 to 16
   },
   creatorInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
-    paddingVertical: 4, // FIXED: Add padding for better alignment
+    marginBottom: 16, // FIXED: Reduced from 20 to 16
+    paddingVertical: 2, // FIXED: Reduced padding for better alignment
   },
   creatorAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 12,
+    width: 36, // FIXED: Reduced from 40 to 36
+    height: 36, // FIXED: Reduced from 40 to 36
+    borderRadius: 18, // FIXED: Reduced from 20 to 18
+    marginRight: 10, // FIXED: Reduced from 12 to 10
     overflow: 'hidden',
     shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 3 }, // FIXED: Reduced shadow
+    shadowOpacity: 0.15, // FIXED: Reduced opacity
+    shadowRadius: 6, // FIXED: Reduced radius
+    elevation: 3, // FIXED: Reduced elevation
   },
   avatarImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36, // FIXED: Reduced from 40 to 36
+    height: 36, // FIXED: Reduced from 40 to 36
+    borderRadius: 18, // FIXED: Reduced from 20 to 18
   },
   avatarGradient: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36, // FIXED: Reduced from 40 to 36
+    height: 36, // FIXED: Reduced from 40 to 36
+    borderRadius: 18, // FIXED: Reduced from 20 to 18
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 14, // FIXED: Reduced from 16 to 14
     fontWeight: '700',
   },
   creatorDetails: {
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center', // FIXED: Center content vertically
   },
   creatorName: {
-    fontSize: 16,
+    fontSize: 15, // FIXED: Reduced from 16 to 15
     fontWeight: '700',
     color: Colors.text,
     marginBottom: 2,
@@ -336,7 +336,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12, // FIXED: Reduced from 16 to 12
     paddingVertical: 2, // FIXED: Add padding for better alignment
   },
   locationContainer: {
@@ -344,9 +344,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   locationText: {
-    fontSize: 14,
+    fontSize: 13, // FIXED: Reduced from 14 to 13
     color: Colors.textLight,
-    marginLeft: 6,
+    marginLeft: 4, // FIXED: Reduced from 6 to 4
     fontWeight: '500',
   },
   priceContainer: {
@@ -354,10 +354,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   priceText: {
-    fontSize: 20,
+    fontSize: 18, // FIXED: Reduced from 20 to 18
     fontWeight: '800',
     color: Colors.primary,
-    marginLeft: 6,
+    marginLeft: 4, // FIXED: Reduced from 6 to 4
   },
   metaInfo: {
     flexDirection: 'row',
@@ -370,31 +370,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   dateText: {
-    fontSize: 12,
+    fontSize: 11, // FIXED: Reduced from 12 to 11
     color: Colors.textMuted,
-    marginLeft: 6,
+    marginLeft: 4, // FIXED: Reduced from 6 to 4
     fontWeight: '500',
   },
   tagsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6, // FIXED: Reduced from 8 to 6
   },
   tag: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: 8, // FIXED: Reduced from 10 to 8
+    paddingVertical: 3, // FIXED: Reduced from 4 to 3
+    borderRadius: 10, // FIXED: Reduced from 12 to 10
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(30, 58, 138, 0.2)',
   },
   tagText: {
-    fontSize: 11,
+    fontSize: 10, // FIXED: Reduced from 11 to 10
     color: Colors.primary,
     fontWeight: '600',
   },
   moreTagsText: {
-    fontSize: 11,
+    fontSize: 10, // FIXED: Reduced from 11 to 10
     color: Colors.textMuted,
     fontWeight: '600',
   },

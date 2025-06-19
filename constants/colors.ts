@@ -73,7 +73,7 @@ const Colors = {
 
 export default Colors;
 
-// FIXED: Premium gradient combinations - Define after Colors
+// FIXED: Premium gradient combinations - Define after Colors export
 export const gradients = {
   primary: [Colors.primary, Colors.secondary] as const,
   secondary: [Colors.secondary, '#06B6D4'] as const,

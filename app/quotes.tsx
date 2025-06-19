@@ -579,7 +579,7 @@ export default function QuotesScreen() {
           <BlurView intensity={20} style={styles.headerBlur}>
             <Animated.View entering={FadeIn.delay(200)} style={styles.headerContent}>
               <View style={styles.headerIcon}>
-                <Sparkles size={32} color="#fff" />
+                <Sparkles size={28} color="#fff" />
               </View>
               <Text style={styles.headerTitle}>{headerText.title}</Text>
               <Text style={styles.headerSubtitle}>{headerText.subtitle}</Text>
@@ -623,7 +623,7 @@ export default function QuotesScreen() {
                         colors={[getStatusColor(quote.status), `${getStatusColor(quote.status)}CC`]}
                         style={styles.statusBadge}
                       >
-                        <StatusIcon size={16} color="#fff" />
+                        <StatusIcon size={14} color="#fff" />
                         <Text style={styles.statusText}>{getStatusText(quote.status)}</Text>
                       </LinearGradient>
                     </View>
@@ -634,11 +634,11 @@ export default function QuotesScreen() {
                     
                     <View style={styles.quoteDetails}>
                       <View style={styles.quoteDetailItem}>
-                        <Euro size={16} color={Colors.primary} />
+                        <Euro size={14} color={Colors.primary} />
                         <Text style={styles.quoteAmount}>{quote.total.toFixed(2)}€</Text>
                       </View>
                       <View style={styles.quoteDetailItem}>
-                        <Calendar size={16} color={Colors.textLight} />
+                        <Calendar size={14} color={Colors.textLight} />
                         <Text style={styles.quoteDate}>
                           {new Date(quote.createdAt).toLocaleDateString('fr-FR')}
                         </Text>
@@ -650,7 +650,7 @@ export default function QuotesScreen() {
                         style={styles.viewButton}
                         onPress={() => handleViewQuote(quote)}
                       >
-                        <Eye size={16} color={Colors.primary} />
+                        <Eye size={14} color={Colors.primary} />
                         <Text style={styles.viewButtonText}>Voir</Text>
                       </TouchableOpacity>
                       
@@ -658,7 +658,7 @@ export default function QuotesScreen() {
                         style={styles.pdfButton}
                         onPress={() => generatePDF(quote)}
                       >
-                        <FileText size={16} color={Colors.primary} />
+                        <FileText size={14} color={Colors.primary} />
                         <Text style={styles.pdfButtonText}>PDF</Text>
                       </TouchableOpacity>
                       
@@ -671,7 +671,7 @@ export default function QuotesScreen() {
                             style={styles.acceptButton}
                             onPress={() => handleAcceptQuote(quote.id)}
                           >
-                            <CheckCircle size={16} color="#fff" />
+                            <CheckCircle size={14} color="#fff" />
                             <Text style={styles.acceptButtonText}>Accepter</Text>
                           </TouchableOpacity>
                           
@@ -679,7 +679,7 @@ export default function QuotesScreen() {
                             style={styles.rejectButton}
                             onPress={() => handleRejectQuote(quote.id)}
                           >
-                            <XCircle size={16} color="#fff" />
+                            <XCircle size={14} color="#fff" />
                             <Text style={styles.rejectButtonText}>Refuser</Text>
                           </TouchableOpacity>
                         </>
@@ -694,7 +694,7 @@ export default function QuotesScreen() {
                           onPress={() => handlePayQuote(quote.id)}
                           disabled={paymentLoading === quote.id}
                         >
-                          <CreditCard size={16} color="#fff" />
+                          <CreditCard size={14} color="#fff" />
                           <Text style={styles.payButtonText}>
                             {paymentLoading === quote.id ? 'Traitement...' : 'Payer'}
                           </Text>
@@ -709,7 +709,7 @@ export default function QuotesScreen() {
                           style={styles.completeButton}
                           onPress={() => handleCompleteQuote(quote.id)}
                         >
-                          <CheckSquare size={16} color="#fff" />
+                          <CheckSquare size={14} color="#fff" />
                           <Text style={styles.completeButtonText}>Terminer</Text>
                         </TouchableOpacity>
                       )}
@@ -719,7 +719,7 @@ export default function QuotesScreen() {
                           style={styles.reviewButton}
                           onPress={() => router.push(`/reviews?id=${user.userType === 'client' ? quote.providerId : quote.clientId}&type=provider&quoteId=${quote.id}`)}
                         >
-                          <CheckSquare size={16} color={Colors.primary} />
+                          <CheckSquare size={14} color={Colors.primary} />
                           <Text style={styles.reviewButtonText}>Laisser un avis</Text>
                         </TouchableOpacity>
                       )}
@@ -804,47 +804,47 @@ const styles = StyleSheet.create({
     paddingBottom: 120,
   },
   header: {
-    paddingTop: 20,
-    paddingBottom: 30,
-    marginBottom: 20,
+    paddingTop: 16, // FIXED: Reduced from 20 to 16
+    paddingBottom: 24, // FIXED: Reduced from 30 to 24
+    marginBottom: 16, // FIXED: Reduced from 20 to 16
   },
   headerBlur: {
     paddingHorizontal: 20,
-    paddingVertical: 20,
+    paddingVertical: 16, // FIXED: Reduced from 20 to 16
   },
   headerContent: {
     alignItems: 'center',
   },
   headerIcon: {
-    marginBottom: 16,
+    marginBottom: 12, // FIXED: Reduced from 16 to 12
   },
   headerTitle: {
-    fontSize: 28,
+    fontSize: 24, // FIXED: Reduced from 28 to 24
     fontWeight: '800',
     color: '#fff',
-    marginBottom: 8,
+    marginBottom: 6, // FIXED: Reduced from 8 to 6
     textAlign: 'center',
   },
   headerSubtitle: {
-    fontSize: 16,
+    fontSize: 14, // FIXED: Reduced from 16 to 14
     color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
   },
   quoteCardWrapper: {
     marginHorizontal: 16,
-    marginBottom: 16,
+    marginBottom: 12, // FIXED: Reduced from 16 to 12
   },
   quoteCard: {
-    borderRadius: 20,
+    borderRadius: 16, // FIXED: Reduced from 20 to 16
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 6 }, // FIXED: Reduced shadow
+    shadowOpacity: 0.12, // FIXED: Reduced opacity
+    shadowRadius: 12, // FIXED: Reduced radius
+    elevation: 6, // FIXED: Reduced elevation
   },
   quoteCardGradient: {
-    padding: 20,
+    padding: 16, // FIXED: Reduced from 20 to 16
     position: 'relative',
   },
   shimmerOverlay: {
@@ -863,85 +863,85 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 16,
+    marginBottom: 12, // FIXED: Reduced from 16 to 12
   },
   quoteInfo: {
     flex: 1,
-    marginRight: 12,
+    marginRight: 10, // FIXED: Reduced from 12 to 10
   },
   quoteTitle: {
-    fontSize: 20,
+    fontSize: 18, // FIXED: Reduced from 20 to 18
     fontWeight: '800',
     color: Colors.text,
-    marginBottom: 4,
+    marginBottom: 3, // FIXED: Reduced from 4 to 3
   },
   quoteSubtitle: {
-    fontSize: 16,
+    fontSize: 14, // FIXED: Reduced from 16 to 14
     color: Colors.textLight,
     fontWeight: '500',
   },
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-    gap: 6,
+    paddingHorizontal: 10, // FIXED: Reduced from 12 to 10
+    paddingVertical: 6, // FIXED: Reduced from 8 to 6
+    borderRadius: 16, // FIXED: Reduced from 20 to 16
+    gap: 4, // FIXED: Reduced from 6 to 4
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 3 }, // FIXED: Reduced shadow
+    shadowOpacity: 0.15, // FIXED: Reduced opacity
+    shadowRadius: 6, // FIXED: Reduced radius
+    elevation: 3, // FIXED: Reduced elevation
   },
   statusText: {
-    fontSize: 12,
+    fontSize: 11, // FIXED: Reduced from 12 to 11
     fontWeight: '700',
     color: '#fff',
   },
   quoteDescription: {
-    fontSize: 15,
+    fontSize: 13, // FIXED: Reduced from 15 to 13
     color: Colors.textLight,
-    marginBottom: 20,
-    lineHeight: 22,
+    marginBottom: 16, // FIXED: Reduced from 20 to 16
+    lineHeight: 18, // FIXED: Reduced from 22 to 18
   },
   quoteDetails: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    marginBottom: 16, // FIXED: Reduced from 20 to 16
   },
   quoteDetailItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6, // FIXED: Reduced from 8 to 6
   },
   quoteAmount: {
-    fontSize: 20,
+    fontSize: 18, // FIXED: Reduced from 20 to 18
     fontWeight: '800',
     color: Colors.primary,
   },
   quoteDate: {
-    fontSize: 14,
+    fontSize: 13, // FIXED: Reduced from 14 to 13
     color: Colors.textLight,
     fontWeight: '500',
   },
   quoteActions: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 8, // FIXED: Reduced from 10 to 8
     flexWrap: 'wrap',
   },
   viewButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(99, 102, 241, 0.1)',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 16,
-    gap: 6,
+    paddingHorizontal: 12, // FIXED: Reduced from 14 to 12
+    paddingVertical: 8, // FIXED: Reduced from 10 to 8
+    borderRadius: 14, // FIXED: Reduced from 16 to 14
+    gap: 4, // FIXED: Reduced from 6 to 4
     borderWidth: 1,
     borderColor: 'rgba(99, 102, 241, 0.2)',
   },
   viewButtonText: {
-    fontSize: 14,
+    fontSize: 12, // FIXED: Reduced from 14 to 12
     fontWeight: '600',
     color: Colors.primary,
   },
@@ -949,15 +949,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(99, 102, 241, 0.1)',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 16,
-    gap: 6,
+    paddingHorizontal: 12, // FIXED: Reduced from 14 to 12
+    paddingVertical: 8, // FIXED: Reduced from 10 to 8
+    borderRadius: 14, // FIXED: Reduced from 16 to 14
+    gap: 4, // FIXED: Reduced from 6 to 4
     borderWidth: 1,
     borderColor: 'rgba(99, 102, 241, 0.2)',
   },
   pdfButtonText: {
-    fontSize: 14,
+    fontSize: 12, // FIXED: Reduced from 14 to 12
     fontWeight: '600',
     color: Colors.primary,
   },
@@ -965,18 +965,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#10B981',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 16,
-    gap: 6,
+    paddingHorizontal: 12, // FIXED: Reduced from 14 to 12
+    paddingVertical: 8, // FIXED: Reduced from 10 to 8
+    borderRadius: 14, // FIXED: Reduced from 16 to 14
+    gap: 4, // FIXED: Reduced from 6 to 4
     shadowColor: '#10B981',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 3 }, // FIXED: Reduced shadow
+    shadowOpacity: 0.25, // FIXED: Reduced opacity
+    shadowRadius: 6, // FIXED: Reduced radius
+    elevation: 3, // FIXED: Reduced elevation
   },
   acceptButtonText: {
-    fontSize: 14,
+    fontSize: 12, // FIXED: Reduced from 14 to 12
     fontWeight: '600',
     color: '#fff',
   },
@@ -984,18 +984,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#EF4444',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 16,
-    gap: 6,
+    paddingHorizontal: 12, // FIXED: Reduced from 14 to 12
+    paddingVertical: 8, // FIXED: Reduced from 10 to 8
+    borderRadius: 14, // FIXED: Reduced from 16 to 14
+    gap: 4, // FIXED: Reduced from 6 to 4
     shadowColor: '#EF4444',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 3 }, // FIXED: Reduced shadow
+    shadowOpacity: 0.25, // FIXED: Reduced opacity
+    shadowRadius: 6, // FIXED: Reduced radius
+    elevation: 3, // FIXED: Reduced elevation
   },
   rejectButtonText: {
-    fontSize: 14,
+    fontSize: 12, // FIXED: Reduced from 14 to 12
     fontWeight: '600',
     color: '#fff',
   },
@@ -1003,21 +1003,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#8B5CF6',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 16,
-    gap: 6,
+    paddingHorizontal: 12, // FIXED: Reduced from 14 to 12
+    paddingVertical: 8, // FIXED: Reduced from 10 to 8
+    borderRadius: 14, // FIXED: Reduced from 16 to 14
+    gap: 4, // FIXED: Reduced from 6 to 4
     shadowColor: '#8B5CF6',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 3 }, // FIXED: Reduced shadow
+    shadowOpacity: 0.25, // FIXED: Reduced opacity
+    shadowRadius: 6, // FIXED: Reduced radius
+    elevation: 3, // FIXED: Reduced elevation
   },
   payButtonLoading: {
     opacity: 0.7,
   },
   payButtonText: {
-    fontSize: 14,
+    fontSize: 12, // FIXED: Reduced from 14 to 12
     fontWeight: '600',
     color: '#fff',
   },
@@ -1025,18 +1025,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#059669',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 16,
-    gap: 6,
+    paddingHorizontal: 12, // FIXED: Reduced from 14 to 12
+    paddingVertical: 8, // FIXED: Reduced from 10 to 8
+    borderRadius: 14, // FIXED: Reduced from 16 to 14
+    gap: 4, // FIXED: Reduced from 6 to 4
     shadowColor: '#059669',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 3 }, // FIXED: Reduced shadow
+    shadowOpacity: 0.25, // FIXED: Reduced opacity
+    shadowRadius: 6, // FIXED: Reduced radius
+    elevation: 3, // FIXED: Reduced elevation
   },
   completeButtonText: {
-    fontSize: 14,
+    fontSize: 12, // FIXED: Reduced from 14 to 12
     fontWeight: '600',
     color: '#fff',
   },
@@ -1044,57 +1044,57 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(99, 102, 241, 0.1)',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 16,
-    gap: 6,
+    paddingHorizontal: 12, // FIXED: Reduced from 14 to 12
+    paddingVertical: 8, // FIXED: Reduced from 10 to 8
+    borderRadius: 14, // FIXED: Reduced from 16 to 14
+    gap: 4, // FIXED: Reduced from 6 to 4
     borderWidth: 1,
     borderColor: 'rgba(99, 102, 241, 0.2)',
   },
   reviewButtonText: {
-    fontSize: 14,
+    fontSize: 12, // FIXED: Reduced from 14 to 12
     fontWeight: '600',
     color: Colors.primary,
   },
   emptyStateWrapper: {
     marginHorizontal: 20,
-    marginTop: 40,
+    marginTop: 32, // FIXED: Reduced from 40 to 32
   },
   emptyState: {
-    borderRadius: 20,
+    borderRadius: 16, // FIXED: Reduced from 20 to 16
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 6 }, // FIXED: Reduced shadow
+    shadowOpacity: 0.12, // FIXED: Reduced opacity
+    shadowRadius: 12, // FIXED: Reduced radius
+    elevation: 6, // FIXED: Reduced elevation
   },
   emptyStateGradient: {
     alignItems: 'center',
-    padding: 40,
+    padding: 32, // FIXED: Reduced from 40 to 32
   },
   emptyTitle: {
-    fontSize: 24,
+    fontSize: 20, // FIXED: Reduced from 24 to 20
     fontWeight: '800',
     color: Colors.text,
-    marginTop: 20,
-    marginBottom: 12,
+    marginTop: 16, // FIXED: Reduced from 20 to 16
+    marginBottom: 10, // FIXED: Reduced from 12 to 10
     textAlign: 'center',
   },
   emptyText: {
-    fontSize: 16,
+    fontSize: 14, // FIXED: Reduced from 16 to 14
     color: Colors.textLight,
     textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 32,
+    lineHeight: 20, // FIXED: Reduced from 24 to 20
+    marginBottom: 24, // FIXED: Reduced from 32 to 24
   },
   createButton: {
-    paddingHorizontal: 32,
+    paddingHorizontal: 28, // FIXED: Reduced from 32 to 28
     shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 6 }, // FIXED: Reduced shadow
+    shadowOpacity: 0.25, // FIXED: Reduced opacity
+    shadowRadius: 12, // FIXED: Reduced radius
+    elevation: 6, // FIXED: Reduced elevation
   },
   loginPromptGradient: {
     flex: 1,
@@ -1106,35 +1106,35 @@ const styles = StyleSheet.create({
     maxWidth: 400,
   },
   loginPromptCard: {
-    borderRadius: 24,
-    padding: 40,
+    borderRadius: 20, // FIXED: Reduced from 24 to 20
+    padding: 32, // FIXED: Reduced from 40 to 32
     alignItems: 'center',
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   loginTitle: {
-    fontSize: 24,
+    fontSize: 20, // FIXED: Reduced from 24 to 20
     fontWeight: '800',
     color: Colors.text,
-    marginTop: 20,
-    marginBottom: 12,
+    marginTop: 16, // FIXED: Reduced from 20 to 16
+    marginBottom: 10, // FIXED: Reduced from 12 to 10
     textAlign: 'center',
   },
   loginDescription: {
-    fontSize: 16,
+    fontSize: 14, // FIXED: Reduced from 16 to 14
     color: Colors.textLight,
     textAlign: 'center',
-    marginBottom: 32,
-    lineHeight: 24,
+    marginBottom: 24, // FIXED: Reduced from 32 to 24
+    lineHeight: 20, // FIXED: Reduced from 24 to 20
   },
   loginButton: {
-    paddingHorizontal: 32,
+    paddingHorizontal: 28, // FIXED: Reduced from 32 to 28
     shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 6 }, // FIXED: Reduced shadow
+    shadowOpacity: 0.25, // FIXED: Reduced opacity
+    shadowRadius: 12, // FIXED: Reduced radius
+    elevation: 6, // FIXED: Reduced elevation
   },
   modalContainer: {
     flex: 1,
@@ -1151,13 +1151,13 @@ const styles = StyleSheet.create({
     paddingTop: 50,
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: 18, // FIXED: Reduced from 20 to 18
     fontWeight: '800',
     color: '#fff',
   },
   closeButton: {
-    padding: 8,
-    borderRadius: 20,
+    padding: 6, // FIXED: Reduced from 8 to 6
+    borderRadius: 16, // FIXED: Reduced from 20 to 16
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
   },
 });

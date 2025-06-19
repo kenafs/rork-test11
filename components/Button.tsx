@@ -219,21 +219,21 @@ export default function Button({
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: 20,
+    borderRadius: 16, // FIXED: Reduced from 20 to 16
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
-    elevation: 12,
+    shadowOffset: { width: 0, height: 6 }, // FIXED: Reduced shadow
+    shadowOpacity: 0.2, // FIXED: Reduced opacity
+    shadowRadius: 12, // FIXED: Reduced radius
+    elevation: 8, // FIXED: Reduced elevation
     overflow: 'hidden',
   },
   buttonContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: 6, // FIXED: Reduced from 8 to 6
   },
   gradientButton: {
     justifyContent: 'center',
@@ -262,19 +262,19 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   smallButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 16,
+    paddingVertical: 10, // FIXED: Reduced from 12 to 10
+    paddingHorizontal: 16, // FIXED: Reduced from 20 to 16
+    borderRadius: 14, // FIXED: Reduced from 16 to 14
   },
   mediumButton: {
-    paddingVertical: 16,
-    paddingHorizontal: 28,
-    borderRadius: 20,
+    paddingVertical: 14, // FIXED: Reduced from 16 to 14
+    paddingHorizontal: 24, // FIXED: Reduced from 28 to 24
+    borderRadius: 16, // FIXED: Reduced from 20 to 16
   },
   largeButton: {
-    paddingVertical: 20,
-    paddingHorizontal: 36,
-    borderRadius: 24,
+    paddingVertical: 18, // FIXED: Reduced from 20 to 18
+    paddingHorizontal: 32, // FIXED: Reduced from 36 to 32
+    borderRadius: 20, // FIXED: Reduced from 24 to 20
   },
   fullWidth: {
     width: '100%',
@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
   disabledButton: {
     backgroundColor: Colors.border,
     borderColor: Colors.border,
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.05, // FIXED: Reduced from 0.1 to 0.05
   },
   primaryText: {
     color: '#fff',
@@ -301,13 +301,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   smallText: {
-    fontSize: 14,
+    fontSize: 13, // FIXED: Reduced from 14 to 13
   },
   mediumText: {
-    fontSize: 16,
+    fontSize: 15, // FIXED: Reduced from 16 to 15
   },
   largeText: {
-    fontSize: 18,
+    fontSize: 17, // FIXED: Reduced from 18 to 17
   },
   disabledText: {
     color: Colors.textLight,
