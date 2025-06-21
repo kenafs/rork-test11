@@ -51,7 +51,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
   
   // CRITICAL FIX: Much better touch handling with proper sensitivity and gesture detection
   const handlePressIn = () => {
-    scale.value = withSpring(0.97, { damping: 20, stiffness: 400 });
+    scale.value = withSpring(0.98, { damping: 20, stiffness: 400 });
     if (Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
@@ -74,15 +74,15 @@ export default function ListingCard({ listing }: ListingCardProps) {
   const cardShadowStyle = useAnimatedStyle(() => {
     const shadowOpacity = interpolate(
       scale.value,
-      [0.97, 1],
-      [0.12, 0.2],
+      [0.98, 1],
+      [0.08, 0.15],
       Extrapolate.CLAMP
     );
     
     const shadowRadius = interpolate(
       scale.value,
-      [0.97, 1],
-      [10, 16],
+      [0.98, 1],
+      [8, 12],
       Extrapolate.CLAMP
     );
     
@@ -218,13 +218,13 @@ export default function ListingCard({ listing }: ListingCardProps) {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
-    borderRadius: 20, // FIXED: Reduced from 24 to 20
-    marginBottom: 16, // FIXED: Reduced from 20 to 16
+    borderRadius: 18, // FIXED: Reduced from 20 to 18
+    marginBottom: 14, // FIXED: Reduced from 16 to 14
     shadowColor: Colors.shadow,
-    shadowOffset: { width: 0, height: 8 }, // FIXED: Reduced shadow
-    shadowOpacity: 0.2, // FIXED: Reduced opacity
-    shadowRadius: 16, // FIXED: Reduced radius
-    elevation: 10, // FIXED: Reduced elevation
+    shadowOffset: { width: 0, height: 6 }, // FIXED: Reduced shadow
+    shadowOpacity: 0.15, // FIXED: Reduced opacity
+    shadowRadius: 12, // FIXED: Reduced radius
+    elevation: 8, // FIXED: Reduced elevation
     overflow: 'hidden',
   },
   touchable: {
@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     position: 'relative',
-    height: 200, // FIXED: Reduced from 240 to 200
+    height: 180, // FIXED: Reduced from 200 to 180
   },
   image: {
     width: '100%',
@@ -245,23 +245,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   placeholderText: {
-    fontSize: 40, // FIXED: Reduced from 48 to 40
+    fontSize: 36, // FIXED: Reduced from 40 to 36
     opacity: 0.7,
   },
   categoryBadge: {
     position: 'absolute',
-    top: 16, // FIXED: Reduced from 20 to 16
-    left: 16, // FIXED: Reduced from 20 to 16
-    paddingHorizontal: 12, // FIXED: Reduced from 16 to 12
-    paddingVertical: 6, // FIXED: Reduced from 8 to 6
-    borderRadius: 16, // FIXED: Reduced from 20 to 16
+    top: 14, // FIXED: Reduced from 16 to 14
+    left: 14, // FIXED: Reduced from 16 to 14
+    paddingHorizontal: 10, // FIXED: Reduced from 12 to 10
+    paddingVertical: 5, // FIXED: Reduced from 6 to 5
+    borderRadius: 14, // FIXED: Reduced from 16 to 14
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   categoryText: {
     color: '#fff',
-    fontSize: 11, // FIXED: Reduced from 13 to 11
+    fontSize: 10, // FIXED: Reduced from 11 to 10
     fontWeight: '700',
   },
   imageOverlay: {
@@ -269,57 +269,57 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 60, // FIXED: Reduced from 80 to 60
+    height: 50, // FIXED: Reduced from 60 to 50
   },
   content: {
-    padding: 20, // FIXED: Reduced from 24 to 20
+    padding: 18, // FIXED: Reduced from 20 to 18
   },
   title: {
-    fontSize: 20, // FIXED: Reduced from 22 to 20
+    fontSize: 18, // FIXED: Reduced from 20 to 18
     fontWeight: '800',
     color: Colors.text,
-    marginBottom: 6, // FIXED: Reduced from 8 to 6
-    lineHeight: 26, // FIXED: Reduced from 28 to 26
+    marginBottom: 5, // FIXED: Reduced from 6 to 5
+    lineHeight: 24, // FIXED: Reduced from 26 to 24
   },
   description: {
-    fontSize: 14, // FIXED: Reduced from 15 to 14
+    fontSize: 13, // FIXED: Reduced from 14 to 13
     color: Colors.textLight,
-    lineHeight: 20, // FIXED: Reduced from 22 to 20
-    marginBottom: 16, // FIXED: Reduced from 20 to 16
+    lineHeight: 18, // FIXED: Reduced from 20 to 18
+    marginBottom: 14, // FIXED: Reduced from 16 to 14
   },
   creatorInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16, // FIXED: Reduced from 20 to 16
-    paddingVertical: 2, // FIXED: Reduced padding for better alignment
+    marginBottom: 14, // FIXED: Reduced from 16 to 14
+    paddingVertical: 1, // FIXED: Reduced padding for better alignment
   },
   creatorAvatar: {
-    width: 36, // FIXED: Reduced from 40 to 36
-    height: 36, // FIXED: Reduced from 40 to 36
-    borderRadius: 18, // FIXED: Reduced from 20 to 18
-    marginRight: 10, // FIXED: Reduced from 12 to 10
+    width: 32, // FIXED: Reduced from 36 to 32
+    height: 32, // FIXED: Reduced from 36 to 32
+    borderRadius: 16, // FIXED: Reduced from 18 to 16
+    marginRight: 8, // FIXED: Reduced from 10 to 8
     overflow: 'hidden',
     shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 3 }, // FIXED: Reduced shadow
-    shadowOpacity: 0.15, // FIXED: Reduced opacity
-    shadowRadius: 6, // FIXED: Reduced radius
-    elevation: 3, // FIXED: Reduced elevation
+    shadowOffset: { width: 0, height: 2 }, // FIXED: Reduced shadow
+    shadowOpacity: 0.12, // FIXED: Reduced opacity
+    shadowRadius: 4, // FIXED: Reduced radius
+    elevation: 2, // FIXED: Reduced elevation
   },
   avatarImage: {
-    width: 36, // FIXED: Reduced from 40 to 36
-    height: 36, // FIXED: Reduced from 40 to 36
-    borderRadius: 18, // FIXED: Reduced from 20 to 18
+    width: 32, // FIXED: Reduced from 36 to 32
+    height: 32, // FIXED: Reduced from 36 to 32
+    borderRadius: 16, // FIXED: Reduced from 18 to 16
   },
   avatarGradient: {
-    width: 36, // FIXED: Reduced from 40 to 36
-    height: 36, // FIXED: Reduced from 40 to 36
-    borderRadius: 18, // FIXED: Reduced from 20 to 18
+    width: 32, // FIXED: Reduced from 36 to 32
+    height: 32, // FIXED: Reduced from 36 to 32
+    borderRadius: 16, // FIXED: Reduced from 18 to 16
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarText: {
     color: '#fff',
-    fontSize: 14, // FIXED: Reduced from 16 to 14
+    fontSize: 13, // FIXED: Reduced from 14 to 13
     fontWeight: '700',
   },
   creatorDetails: {
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center', // FIXED: Center content vertically
   },
   creatorName: {
-    fontSize: 15, // FIXED: Reduced from 16 to 15
+    fontSize: 14, // FIXED: Reduced from 15 to 14
     fontWeight: '700',
     color: Colors.text,
     marginBottom: 2,
@@ -336,17 +336,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12, // FIXED: Reduced from 16 to 12
-    paddingVertical: 2, // FIXED: Add padding for better alignment
+    marginBottom: 10, // FIXED: Reduced from 12 to 10
+    paddingVertical: 1, // FIXED: Add padding for better alignment
   },
   locationContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   locationText: {
-    fontSize: 13, // FIXED: Reduced from 14 to 13
+    fontSize: 12, // FIXED: Reduced from 13 to 12
     color: Colors.textLight,
-    marginLeft: 4, // FIXED: Reduced from 6 to 4
+    marginLeft: 3, // FIXED: Reduced from 4 to 3
     fontWeight: '500',
   },
   priceContainer: {
@@ -354,47 +354,47 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   priceText: {
-    fontSize: 18, // FIXED: Reduced from 20 to 18
+    fontSize: 16, // FIXED: Reduced from 18 to 16
     fontWeight: '800',
     color: Colors.primary,
-    marginLeft: 4, // FIXED: Reduced from 6 to 4
+    marginLeft: 3, // FIXED: Reduced from 4 to 3
   },
   metaInfo: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 2, // FIXED: Add padding for better alignment
+    paddingVertical: 1, // FIXED: Add padding for better alignment
   },
   dateContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   dateText: {
-    fontSize: 11, // FIXED: Reduced from 12 to 11
+    fontSize: 10, // FIXED: Reduced from 11 to 10
     color: Colors.textMuted,
-    marginLeft: 4, // FIXED: Reduced from 6 to 4
+    marginLeft: 3, // FIXED: Reduced from 4 to 3
     fontWeight: '500',
   },
   tagsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6, // FIXED: Reduced from 8 to 6
+    gap: 5, // FIXED: Reduced from 6 to 5
   },
   tag: {
-    paddingHorizontal: 8, // FIXED: Reduced from 10 to 8
-    paddingVertical: 3, // FIXED: Reduced from 4 to 3
-    borderRadius: 10, // FIXED: Reduced from 12 to 10
+    paddingHorizontal: 7, // FIXED: Reduced from 8 to 7
+    paddingVertical: 2, // FIXED: Reduced from 3 to 2
+    borderRadius: 8, // FIXED: Reduced from 10 to 8
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(30, 58, 138, 0.2)',
   },
   tagText: {
-    fontSize: 10, // FIXED: Reduced from 11 to 10
+    fontSize: 9, // FIXED: Reduced from 10 to 9
     color: Colors.primary,
     fontWeight: '600',
   },
   moreTagsText: {
-    fontSize: 10, // FIXED: Reduced from 11 to 10
+    fontSize: 9, // FIXED: Reduced from 10 to 9
     color: Colors.textMuted,
     fontWeight: '600',
   },

@@ -43,7 +43,7 @@ export default function Button({
   const opacity = useSharedValue(1);
   
   const handlePressIn = () => {
-    scale.value = withSpring(0.96, { damping: 15, stiffness: 300 });
+    scale.value = withSpring(0.97, { damping: 15, stiffness: 300 });
     opacity.value = withSpring(0.8, { damping: 15, stiffness: 300 });
   };
   
@@ -219,21 +219,21 @@ export default function Button({
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: 16, // FIXED: Reduced from 20 to 16
+    borderRadius: 14, // FIXED: Reduced from 16 to 14
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 }, // FIXED: Reduced shadow
-    shadowOpacity: 0.2, // FIXED: Reduced opacity
-    shadowRadius: 12, // FIXED: Reduced radius
-    elevation: 8, // FIXED: Reduced elevation
+    shadowOffset: { width: 0, height: 4 }, // FIXED: Reduced shadow
+    shadowOpacity: 0.15, // FIXED: Reduced opacity
+    shadowRadius: 8, // FIXED: Reduced radius
+    elevation: 6, // FIXED: Reduced elevation
     overflow: 'hidden',
   },
   buttonContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6, // FIXED: Reduced from 8 to 6
+    gap: 5, // FIXED: Reduced from 6 to 5
   },
   gradientButton: {
     justifyContent: 'center',
@@ -262,19 +262,19 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   smallButton: {
-    paddingVertical: 10, // FIXED: Reduced from 12 to 10
-    paddingHorizontal: 16, // FIXED: Reduced from 20 to 16
-    borderRadius: 14, // FIXED: Reduced from 16 to 14
+    paddingVertical: 8, // FIXED: Reduced from 10 to 8
+    paddingHorizontal: 14, // FIXED: Reduced from 16 to 14
+    borderRadius: 12, // FIXED: Reduced from 14 to 12
   },
   mediumButton: {
-    paddingVertical: 14, // FIXED: Reduced from 16 to 14
-    paddingHorizontal: 24, // FIXED: Reduced from 28 to 24
-    borderRadius: 16, // FIXED: Reduced from 20 to 16
+    paddingVertical: 12, // FIXED: Reduced from 14 to 12
+    paddingHorizontal: 20, // FIXED: Reduced from 24 to 20
+    borderRadius: 14, // FIXED: Reduced from 16 to 14
   },
   largeButton: {
-    paddingVertical: 18, // FIXED: Reduced from 20 to 18
-    paddingHorizontal: 32, // FIXED: Reduced from 36 to 32
-    borderRadius: 20, // FIXED: Reduced from 24 to 20
+    paddingVertical: 16, // FIXED: Reduced from 18 to 16
+    paddingHorizontal: 28, // FIXED: Reduced from 32 to 28
+    borderRadius: 18, // FIXED: Reduced from 20 to 18
   },
   fullWidth: {
     width: '100%',
@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
   disabledButton: {
     backgroundColor: Colors.border,
     borderColor: Colors.border,
-    shadowOpacity: 0.05, // FIXED: Reduced from 0.1 to 0.05
+    shadowOpacity: 0.03, // FIXED: Reduced from 0.05 to 0.03
   },
   primaryText: {
     color: '#fff',
@@ -301,13 +301,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   smallText: {
-    fontSize: 13, // FIXED: Reduced from 14 to 13
+    fontSize: 12, // FIXED: Reduced from 13 to 12
   },
   mediumText: {
-    fontSize: 15, // FIXED: Reduced from 16 to 15
+    fontSize: 14, // FIXED: Reduced from 15 to 14
   },
   largeText: {
-    fontSize: 17, // FIXED: Reduced from 18 to 17
+    fontSize: 16, // FIXED: Reduced from 17 to 16
   },
   disabledText: {
     color: Colors.textLight,

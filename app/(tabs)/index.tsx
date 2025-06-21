@@ -211,7 +211,7 @@ export default function HomeScreen() {
                     style={styles.statCardWrapper}
                   >
                     <BlurView intensity={30} style={styles.statCard}>
-                      <stat.icon size={10} color={stat.color} />
+                      <stat.icon size={8} color={stat.color} />
                       <Text style={styles.statCardNumber}>{stat.value}</Text>
                       <Text style={styles.statCardLabel}>{stat.label}</Text>
                     </BlurView>
@@ -227,7 +227,7 @@ export default function HomeScreen() {
                     activeOpacity={0.8}
                   >
                     <BlurView intensity={40} style={styles.createButtonBlur}>
-                      <Plus size={14} color="#fff" />
+                      <Plus size={12} color="#fff" />
                       <Text style={styles.createButtonText}>{getCreateButtonText()}</Text>
                     </BlurView>
                   </TouchableOpacity>
@@ -338,8 +338,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.backgroundAlt,
   },
   header: {
-    paddingTop: 35, // FIXED: Reduced from 45 to 35
-    paddingBottom: 8, // FIXED: Reduced from 12 to 8
+    paddingTop: 25, // FIXED: Reduced from 35 to 25
+    paddingBottom: 6, // FIXED: Reduced from 8 to 6
     zIndex: 10,
   },
   headerBlur: {
@@ -347,27 +347,27 @@ const styles = StyleSheet.create({
   },
   headerGradient: {
     paddingHorizontal: 20,
-    paddingVertical: 8, // FIXED: Reduced from 12 to 8
+    paddingVertical: 6, // FIXED: Reduced from 8 to 6
   },
   headerContent: {
     alignItems: 'center',
   },
   welcomeSection: {
     alignItems: 'center',
-    marginBottom: 8, // FIXED: Reduced from 12 to 8
+    marginBottom: 6, // FIXED: Reduced from 8 to 6
     width: '100%',
   },
   welcomeText: {
-    fontSize: 20, // FIXED: Reduced from 24 to 20
+    fontSize: 18, // FIXED: Reduced from 20 to 18
     fontWeight: '800',
     color: '#fff',
-    marginBottom: 2, // FIXED: Reduced from 4 to 2
+    marginBottom: 1, // FIXED: Reduced from 2 to 1
     textAlign: 'center',
   },
   subtitleText: {
-    fontSize: 12, // FIXED: Reduced from 14 to 12
+    fontSize: 11, // FIXED: Reduced from 12 to 11
     color: 'rgba(255, 255, 255, 0.9)',
-    lineHeight: 16, // FIXED: Reduced from 18 to 16
+    lineHeight: 14, // FIXED: Reduced from 16 to 14
     textAlign: 'center',
     paddingHorizontal: 20,
   },
@@ -375,37 +375,37 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 6, // FIXED: Reduced from 8 to 6
-    marginBottom: 8, // FIXED: Reduced from 12 to 8
+    gap: 4, // FIXED: Reduced from 6 to 4
+    marginBottom: 6, // FIXED: Reduced from 8 to 6
     width: '100%',
     paddingHorizontal: 10,
   },
   statCardWrapper: {
     flex: 1,
-    maxWidth: 50, // FIXED: Reduced from 60 to 50
-    minWidth: 45, // FIXED: Reduced from 55 to 45
+    maxWidth: 42, // FIXED: Reduced from 50 to 42
+    minWidth: 38, // FIXED: Reduced from 45 to 38
   },
   statCard: {
-    borderRadius: 10, // FIXED: Reduced from 12 to 10
-    padding: 6, // FIXED: Reduced from 8 to 6
+    borderRadius: 8, // FIXED: Reduced from 10 to 8
+    padding: 4, // FIXED: Reduced from 6 to 4
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
-    minHeight: 50, // FIXED: Reduced from 60 to 50
+    minHeight: 42, // FIXED: Reduced from 50 to 42
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   statCardNumber: {
-    fontSize: 10, // FIXED: Reduced from 12 to 10
+    fontSize: 9, // FIXED: Reduced from 10 to 9
     fontWeight: '700',
     color: '#fff',
-    marginTop: 1, // FIXED: Reduced from 2 to 1
+    marginTop: 1,
     marginBottom: 1,
     textAlign: 'center',
   },
   statCardLabel: {
-    fontSize: 7, // FIXED: Reduced from 8 to 7
+    fontSize: 6, // FIXED: Reduced from 7 to 6
     color: 'rgba(255, 255, 255, 0.8)',
     fontWeight: '500',
     textAlign: 'center',
@@ -415,21 +415,21 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   createButton: {
-    borderRadius: 16, // FIXED: Reduced from 20 to 16
+    borderRadius: 14, // FIXED: Reduced from 16 to 14
     overflow: 'hidden',
-    minWidth: 140, // FIXED: Reduced from 160 to 140
+    minWidth: 120, // FIXED: Reduced from 140 to 120
   },
   createButtonBlur: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 6, // FIXED: Reduced from 8 to 6
-    paddingHorizontal: 12, // FIXED: Reduced from 16 to 12
-    gap: 4, // FIXED: Reduced from 6 to 4
+    paddingVertical: 5, // FIXED: Reduced from 6 to 5
+    paddingHorizontal: 10, // FIXED: Reduced from 12 to 10
+    gap: 3, // FIXED: Reduced from 4 to 3
   },
   createButtonText: {
     color: '#fff',
-    fontSize: 12, // FIXED: Reduced from 14 to 12
+    fontSize: 11, // FIXED: Reduced from 12 to 11
     fontWeight: '600',
   },
   content: {

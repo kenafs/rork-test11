@@ -14,17 +14,17 @@ export default function TabLayout() {
         tabBarInactiveTintColor: Colors.textMuted,
         tabBarStyle: {
           borderTopColor: 'transparent',
-          height: Platform.OS === 'ios' ? 90 : 75,
-          paddingBottom: Platform.OS === 'ios' ? 34 : 20,
-          paddingTop: 16,
+          height: Platform.OS === 'ios' ? 85 : 70, // FIXED: Reduced heights
+          paddingBottom: Platform.OS === 'ios' ? 30 : 16, // FIXED: Reduced padding
+          paddingTop: 12, // FIXED: Reduced from 16 to 12
           backgroundColor: 'rgba(255, 255, 255, 0.95)',
           shadowColor: '#000',
-          shadowOffset: { width: 0, height: -8 },
-          shadowOpacity: 0.15,
-          shadowRadius: 20,
-          elevation: 20,
-          borderTopLeftRadius: 24,
-          borderTopRightRadius: 24,
+          shadowOffset: { width: 0, height: -6 }, // FIXED: Reduced shadow
+          shadowOpacity: 0.12, // FIXED: Reduced opacity
+          shadowRadius: 16, // FIXED: Reduced radius
+          elevation: 16, // FIXED: Reduced elevation
+          borderTopLeftRadius: 20, // FIXED: Reduced from 24 to 20
+          borderTopRightRadius: 20, // FIXED: Reduced from 24 to 20
           position: 'absolute',
           marginHorizontal: 16,
           marginBottom: Platform.OS === 'ios' ? 0 : 16,
@@ -40,19 +40,19 @@ export default function TabLayout() {
               left: 0,
               right: 0,
               bottom: 0,
-              borderTopLeftRadius: 24,
-              borderTopRightRadius: 24,
+              borderTopLeftRadius: 20, // FIXED: Reduced from 24 to 20
+              borderTopRightRadius: 20, // FIXED: Reduced from 24 to 20
               overflow: 'hidden',
             }}
           />
         ),
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 10, // FIXED: Reduced from 11 to 10
           fontWeight: '700',
-          marginTop: 6,
+          marginTop: 4, // FIXED: Reduced from 6 to 4
         },
         tabBarIconStyle: {
-          marginTop: 4,
+          marginTop: 3, // FIXED: Reduced from 4 to 3
         },
         headerStyle: {
           backgroundColor: '#fff',
@@ -62,13 +62,13 @@ export default function TabLayout() {
         },
         headerTitleStyle: {
           fontWeight: '800',
-          fontSize: 20,
+          fontSize: 18, // FIXED: Reduced from 20 to 18
           color: Colors.text,
         },
         // Enhanced tab bar item styling
         tabBarItemStyle: {
-          borderRadius: 16,
-          marginHorizontal: 4,
+          borderRadius: 14, // FIXED: Reduced from 16 to 14
+          marginHorizontal: 3, // FIXED: Reduced from 4 to 3
         },
       }}
     >
@@ -79,7 +79,7 @@ export default function TabLayout() {
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <Home 
-              size={focused ? 28 : 24} 
+              size={focused ? 26 : 22} // FIXED: Reduced sizes
               color={color} 
               fill={focused ? color : 'transparent'}
               strokeWidth={focused ? 2.5 : 2}
@@ -93,7 +93,7 @@ export default function TabLayout() {
           title: "Recherche",
           tabBarIcon: ({ color, focused }) => (
             <Search 
-              size={focused ? 28 : 24} 
+              size={focused ? 26 : 22} // FIXED: Reduced sizes
               color={color}
               strokeWidth={focused ? 2.5 : 2}
             />
@@ -106,7 +106,7 @@ export default function TabLayout() {
           title: "Publier",
           tabBarIcon: ({ color, focused }) => (
             <PlusCircle 
-              size={focused ? 28 : 24} 
+              size={focused ? 26 : 22} // FIXED: Reduced sizes
               color={color}
               fill={focused ? color : 'transparent'}
               strokeWidth={focused ? 2.5 : 2}
@@ -120,7 +120,7 @@ export default function TabLayout() {
           title: "Messages",
           tabBarIcon: ({ color, focused }) => (
             <MessageCircle 
-              size={focused ? 28 : 24} 
+              size={focused ? 26 : 22} // FIXED: Reduced sizes
               color={color}
               fill={focused ? color : 'transparent'}
               strokeWidth={focused ? 2.5 : 2}
@@ -134,7 +134,7 @@ export default function TabLayout() {
           title: "Profil",
           tabBarIcon: ({ color, focused }) => (
             <User 
-              size={focused ? 28 : 24} 
+              size={focused ? 26 : 22} // FIXED: Reduced sizes
               color={color}
               fill={focused ? color : 'transparent'}
               strokeWidth={focused ? 2.5 : 2}

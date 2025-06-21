@@ -461,7 +461,7 @@ const styles = StyleSheet.create({
     paddingBottom: 140,
   },
   imageContainer: {
-    height: 350, // FIXED: Reduced from 400 to 350
+    height: 300, // FIXED: Reduced from 350 to 300
     position: 'relative',
   },
   image: {
@@ -486,23 +486,23 @@ const styles = StyleSheet.create({
   },
   categoryBadge: {
     position: 'absolute',
-    bottom: 20, // FIXED: Reduced from 30 to 20
+    bottom: 16, // FIXED: Reduced from 20 to 16
     left: 20,
-    paddingHorizontal: 16, // FIXED: Reduced from 20 to 16
-    paddingVertical: 8, // FIXED: Reduced from 10 to 8
-    borderRadius: 20, // FIXED: Reduced from 25 to 20
+    paddingHorizontal: 14, // FIXED: Reduced from 16 to 14
+    paddingVertical: 6, // FIXED: Reduced from 8 to 6
+    borderRadius: 16, // FIXED: Reduced from 20 to 16
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   categoryText: {
     color: '#fff',
-    fontSize: 14, // FIXED: Reduced from 16 to 14
+    fontSize: 13, // FIXED: Reduced from 14 to 13
     fontWeight: '700',
   },
   headerControls: {
     position: 'absolute',
-    top: 45, // FIXED: Reduced from 50 to 45
+    top: 40, // FIXED: Reduced from 45 to 40
     left: 0,
     right: 0,
     flexDirection: 'row',
@@ -511,14 +511,14 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   headerButton: {
-    width: 44, // FIXED: Reduced from 48 to 44
-    height: 44, // FIXED: Reduced from 48 to 44
-    borderRadius: 22, // FIXED: Reduced from 24 to 22
+    width: 40, // FIXED: Reduced from 44 to 40
+    height: 40, // FIXED: Reduced from 44 to 40
+    borderRadius: 20, // FIXED: Reduced from 22 to 20
     overflow: 'hidden',
   },
   headerButtonBlur: {
-    width: 44, // FIXED: Reduced from 48 to 44
-    height: 44, // FIXED: Reduced from 48 to 44
+    width: 40, // FIXED: Reduced from 44 to 40
+    height: 40, // FIXED: Reduced from 44 to 40
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
@@ -526,7 +526,7 @@ const styles = StyleSheet.create({
   },
   headerActions: {
     flexDirection: 'row',
-    gap: 10, // FIXED: Reduced from 12 to 10
+    gap: 8, // FIXED: Reduced from 10 to 8
   },
   headerBlurOverlay: {
     position: 'absolute',
@@ -538,34 +538,34 @@ const styles = StyleSheet.create({
   },
   contentCard: {
     backgroundColor: '#fff',
-    borderTopLeftRadius: 28, // FIXED: Reduced from 32 to 28
-    borderTopRightRadius: 28, // FIXED: Reduced from 32 to 28
-    marginTop: -28, // FIXED: Reduced from -32 to -28
+    borderTopLeftRadius: 24, // FIXED: Reduced from 28 to 24
+    borderTopRightRadius: 24, // FIXED: Reduced from 28 to 24
+    marginTop: -24, // FIXED: Reduced from -28 to -24
     shadowColor: Colors.shadowDark,
-    shadowOffset: { width: 0, height: -6 }, // FIXED: Reduced shadow
-    shadowOpacity: 0.12, // FIXED: Reduced opacity
-    shadowRadius: 20, // FIXED: Reduced radius
-    elevation: 12, // FIXED: Reduced elevation
+    shadowOffset: { width: 0, height: -4 }, // FIXED: Reduced shadow
+    shadowOpacity: 0.1, // FIXED: Reduced opacity
+    shadowRadius: 16, // FIXED: Reduced radius
+    elevation: 8, // FIXED: Reduced elevation
     zIndex: 1,
   },
   detailsContainer: {
-    padding: 24, // FIXED: Reduced from 28 to 24
+    padding: 20, // FIXED: Reduced from 24 to 20
   },
   title: {
-    fontSize: 28, // FIXED: Reduced from 32 to 28
+    fontSize: 24, // FIXED: Reduced from 28 to 24
     fontWeight: '800',
     color: Colors.text,
-    marginBottom: 20, // FIXED: Reduced from 24 to 20
-    lineHeight: 36, // FIXED: Reduced from 40 to 36
+    marginBottom: 16, // FIXED: Reduced from 20 to 16
+    lineHeight: 30, // FIXED: Reduced from 36 to 30
   },
   creatorContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 24, // FIXED: Reduced from 28 to 24
-    padding: 18, // FIXED: Reduced from 20 to 18
+    marginBottom: 20, // FIXED: Reduced from 24 to 20
+    padding: 16, // FIXED: Reduced from 18 to 16
     backgroundColor: Colors.surfaceElevated,
-    borderRadius: 18, // FIXED: Reduced from 20 to 18
+    borderRadius: 16, // FIXED: Reduced from 18 to 16
   },
   creatorInfo: {
     flexDirection: 'row',
@@ -573,22 +573,22 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   creatorImage: {
-    width: 52, // FIXED: Reduced from 56 to 52
-    height: 52, // FIXED: Reduced from 56 to 52
-    borderRadius: 26, // FIXED: Reduced from 28 to 26
-    marginRight: 14, // FIXED: Reduced from 16 to 14
+    width: 48, // FIXED: Reduced from 52 to 48
+    height: 48, // FIXED: Reduced from 52 to 48
+    borderRadius: 24, // FIXED: Reduced from 26 to 24
+    marginRight: 12, // FIXED: Reduced from 14 to 12
     shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 3 }, // FIXED: Reduced shadow
-    shadowOpacity: 0.25, // FIXED: Reduced opacity
-    shadowRadius: 6, // FIXED: Reduced radius
-    elevation: 5, // FIXED: Reduced elevation
+    shadowOffset: { width: 0, height: 2 }, // FIXED: Reduced shadow
+    shadowOpacity: 0.2, // FIXED: Reduced opacity
+    shadowRadius: 4, // FIXED: Reduced radius
+    elevation: 3, // FIXED: Reduced elevation
   },
   creatorImagePlaceholder: {
     justifyContent: 'center',
     alignItems: 'center',
   },
   creatorImageText: {
-    fontSize: 22, // FIXED: Reduced from 24 to 22
+    fontSize: 20, // FIXED: Reduced from 22 to 20
     fontWeight: '700',
     color: '#fff',
   },
@@ -596,92 +596,92 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   creatorName: {
-    fontSize: 17, // FIXED: Reduced from 18 to 17
+    fontSize: 16, // FIXED: Reduced from 17 to 16
     fontWeight: '700',
     color: Colors.text,
     marginBottom: 4,
   },
   typeBadge: {
-    paddingHorizontal: 14, // FIXED: Reduced from 16 to 14
-    paddingVertical: 7, // FIXED: Reduced from 8 to 7
-    borderRadius: 18, // FIXED: Reduced from 20 to 18
+    paddingHorizontal: 12, // FIXED: Reduced from 14 to 12
+    paddingVertical: 6, // FIXED: Reduced from 7 to 6
+    borderRadius: 16, // FIXED: Reduced from 18 to 16
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(30, 58, 138, 0.2)',
   },
   typeText: {
-    fontSize: 12, // FIXED: Reduced from 13 to 12
+    fontSize: 11, // FIXED: Reduced from 12 to 11
     fontWeight: '700',
     color: Colors.primary,
   },
   infoContainer: {
-    marginBottom: 24, // FIXED: Reduced from 28 to 24
+    marginBottom: 20, // FIXED: Reduced from 24 to 20
   },
   infoItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 14, // FIXED: Reduced from 16 to 14
+    marginBottom: 12, // FIXED: Reduced from 14 to 12
   },
   infoIcon: {
-    marginRight: 10, // FIXED: Reduced from 12 to 10
+    marginRight: 8, // FIXED: Reduced from 10 to 8
   },
   infoText: {
-    fontSize: 15, // FIXED: Reduced from 16 to 15
+    fontSize: 14, // FIXED: Reduced from 15 to 14
     color: Colors.text,
     fontWeight: '500',
   },
   tagsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8, // FIXED: Reduced from 10 to 8
-    marginTop: 10, // FIXED: Reduced from 12 to 10
+    gap: 6, // FIXED: Reduced from 8 to 6
+    marginTop: 8, // FIXED: Reduced from 10 to 8
   },
   tag: {
-    paddingHorizontal: 14, // FIXED: Reduced from 16 to 14
-    paddingVertical: 7, // FIXED: Reduced from 8 to 7
-    borderRadius: 18, // FIXED: Reduced from 20 to 18
+    paddingHorizontal: 12, // FIXED: Reduced from 14 to 12
+    paddingVertical: 6, // FIXED: Reduced from 7 to 6
+    borderRadius: 16, // FIXED: Reduced from 18 to 16
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(30, 58, 138, 0.2)',
   },
   tagText: {
-    fontSize: 12, // FIXED: Reduced from 13 to 12
+    fontSize: 11, // FIXED: Reduced from 12 to 11
     color: Colors.primary,
     fontWeight: '600',
   },
   divider: {
     height: 1,
     backgroundColor: Colors.border,
-    marginVertical: 24, // FIXED: Reduced from 28 to 24
+    marginVertical: 20, // FIXED: Reduced from 24 to 20
   },
   sectionTitle: {
-    fontSize: 22, // FIXED: Reduced from 24 to 22
+    fontSize: 20, // FIXED: Reduced from 22 to 20
     fontWeight: '700',
     color: Colors.text,
-    marginBottom: 14, // FIXED: Reduced from 16 to 14
+    marginBottom: 12, // FIXED: Reduced from 14 to 12
   },
   description: {
-    fontSize: 16, // FIXED: Reduced from 17 to 16
+    fontSize: 15, // FIXED: Reduced from 16 to 15
     color: Colors.text,
-    lineHeight: 26, // FIXED: Reduced from 28 to 26
+    lineHeight: 22, // FIXED: Reduced from 26 to 22
   },
   priceContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20, // FIXED: Reduced from 24 to 20
-    borderRadius: 18, // FIXED: Reduced from 20 to 18
+    padding: 18, // FIXED: Reduced from 20 to 18
+    borderRadius: 16, // FIXED: Reduced from 18 to 16
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(30, 58, 138, 0.1)',
   },
   priceLabel: {
-    fontSize: 18, // FIXED: Reduced from 20 to 18
+    fontSize: 16, // FIXED: Reduced from 18 to 16
     fontWeight: '600',
     color: Colors.text,
   },
   price: {
-    fontSize: 28, // FIXED: Reduced from 32 to 28
+    fontSize: 24, // FIXED: Reduced from 28 to 24
     fontWeight: '800',
     color: Colors.primary,
   },
@@ -702,19 +702,19 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 8,
     shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 6 }, // FIXED: Reduced shadow
-    shadowOpacity: 0.25, // FIXED: Reduced opacity
-    shadowRadius: 12, // FIXED: Reduced radius
-    elevation: 10, // FIXED: Reduced elevation
+    shadowOffset: { width: 0, height: 4 }, // FIXED: Reduced shadow
+    shadowOpacity: 0.2, // FIXED: Reduced opacity
+    shadowRadius: 8, // FIXED: Reduced radius
+    elevation: 6, // FIXED: Reduced elevation
   },
   quoteButton: {
     flex: 1,
     marginLeft: 8,
     shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 6 }, // FIXED: Reduced shadow
-    shadowOpacity: 0.18, // FIXED: Reduced opacity
-    shadowRadius: 12, // FIXED: Reduced radius
-    elevation: 8, // FIXED: Reduced elevation
+    shadowOffset: { width: 0, height: 4 }, // FIXED: Reduced shadow
+    shadowOpacity: 0.15, // FIXED: Reduced opacity
+    shadowRadius: 8, // FIXED: Reduced radius
+    elevation: 5, // FIXED: Reduced elevation
   },
   notFoundContainer: {
     flex: 1,

@@ -160,7 +160,7 @@ export default function LandingScreen() {
               <Animated.View entering={FadeIn.delay(200)} style={styles.heroContent}>
                 <View style={styles.logoContainer}>
                   <Animated.View style={sparkleStyle}>
-                    <Sparkles size={28} color="#fff" />
+                    <Sparkles size={24} color="#fff" />
                   </Animated.View>
                   <Text style={styles.logoText}>EventApp</Text>
                 </View>
@@ -252,7 +252,7 @@ export default function LandingScreen() {
                     entering={ZoomIn.delay(2200 + index * 100)}
                     style={styles.statItem}
                   >
-                    <stat.icon size={18} color={Colors.primary} />
+                    <stat.icon size={16} color={Colors.primary} />
                     <Text style={styles.statNumber}>{stat.number}</Text>
                     <Text style={styles.statLabel}>{stat.label}</Text>
                   </Animated.View>
@@ -354,7 +354,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   hero: {
-    height: height * 0.65, // FIXED: Reduced from 0.75 to 0.65
+    height: height * 0.55, // FIXED: Reduced from 0.65 to 0.55
     position: 'relative',
   },
   heroGradient: {
@@ -362,59 +362,59 @@ const styles = StyleSheet.create({
   },
   heroBlur: {
     flex: 1,
-    paddingTop: 40, // FIXED: Reduced from 50 to 40
-    paddingBottom: 20, // FIXED: Reduced from 30 to 20
+    paddingTop: 30, // FIXED: Reduced from 40 to 30
+    paddingBottom: 15, // FIXED: Reduced from 20 to 15
     paddingHorizontal: 20,
   },
   heroContent: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16, // FIXED: Reduced from 20 to 16
+    marginBottom: 12, // FIXED: Reduced from 16 to 12
   },
   logoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20, // FIXED: Reduced from 24 to 20
+    marginBottom: 16, // FIXED: Reduced from 20 to 16
   },
   logoText: {
-    fontSize: 24, // FIXED: Reduced from 28 to 24
+    fontSize: 22, // FIXED: Reduced from 24 to 22
     fontWeight: '800',
     color: '#fff',
     marginLeft: 12,
   },
   heroTitle: {
-    fontSize: 28, // FIXED: Reduced from 32 to 28
+    fontSize: 26, // FIXED: Reduced from 28 to 26
     fontWeight: '800',
     color: '#fff',
     textAlign: 'center',
-    marginBottom: 14, // FIXED: Reduced from 16 to 14
-    lineHeight: 36, // FIXED: Reduced from 40 to 36
+    marginBottom: 12, // FIXED: Reduced from 14 to 12
+    lineHeight: 32, // FIXED: Reduced from 36 to 32
   },
   heroTitleAccent: {
     color: '#FDE68A',
   },
   heroSubtitle: {
-    fontSize: 15, // FIXED: Reduced from 16 to 15
+    fontSize: 14, // FIXED: Reduced from 15 to 14
     color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
-    lineHeight: 22, // FIXED: Reduced from 24 to 22
-    marginBottom: 28, // FIXED: Reduced from 32 to 28
+    lineHeight: 20, // FIXED: Reduced from 22 to 20
+    marginBottom: 24, // FIXED: Reduced from 28 to 24
     paddingHorizontal: 20,
   },
   heroButtons: {
     flexDirection: 'row',
-    gap: 14, // FIXED: Reduced from 16 to 14
-    marginBottom: 20, // FIXED: Reduced from 24 to 20
+    gap: 12, // FIXED: Reduced from 14 to 12
+    marginBottom: 16, // FIXED: Reduced from 20 to 16
   },
   primaryButton: {
     backgroundColor: '#fff',
-    paddingHorizontal: 24, // FIXED: Reduced from 28 to 24
+    paddingHorizontal: 20, // FIXED: Reduced from 24 to 20
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 }, // FIXED: Reduced shadow
-    shadowOpacity: 0.25, // FIXED: Reduced opacity
-    shadowRadius: 12, // FIXED: Reduced radius
-    elevation: 10, // FIXED: Reduced elevation
+    shadowOffset: { width: 0, height: 4 }, // FIXED: Reduced shadow
+    shadowOpacity: 0.2, // FIXED: Reduced opacity
+    shadowRadius: 8, // FIXED: Reduced radius
+    elevation: 6, // FIXED: Reduced elevation
   },
   primaryButtonText: {
     color: Colors.primary,
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
   secondaryButton: {
     borderColor: 'rgba(255, 255, 255, 0.3)',
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    paddingHorizontal: 24, // FIXED: Reduced from 28 to 24
+    paddingHorizontal: 20, // FIXED: Reduced from 24 to 20
   },
   secondaryButtonText: {
     color: '#fff',
@@ -434,97 +434,97 @@ const styles = StyleSheet.create({
   },
   heroImage: {
     width: width - 40,
-    height: 160, // FIXED: Reduced from 180 to 160
-    borderRadius: 20, // FIXED: Reduced from 24 to 20
+    height: 140, // FIXED: Reduced from 160 to 140
+    borderRadius: 16, // FIXED: Reduced from 20 to 16
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 }, // FIXED: Reduced shadow
-    shadowOpacity: 0.3, // FIXED: Reduced opacity
-    shadowRadius: 16, // FIXED: Reduced radius
-    elevation: 12, // FIXED: Reduced elevation
+    shadowOffset: { width: 0, height: 6 }, // FIXED: Reduced shadow
+    shadowOpacity: 0.25, // FIXED: Reduced opacity
+    shadowRadius: 12, // FIXED: Reduced radius
+    elevation: 8, // FIXED: Reduced elevation
   },
   section: {
     padding: 20,
-    paddingTop: 40, // FIXED: Reduced from 50 to 40
+    paddingTop: 32, // FIXED: Reduced from 40 to 32
   },
   sectionTitle: {
-    fontSize: 24, // FIXED: Reduced from 28 to 24
+    fontSize: 22, // FIXED: Reduced from 24 to 22
     fontWeight: '800',
     color: Colors.text,
     textAlign: 'center',
-    marginBottom: 10, // FIXED: Reduced from 12 to 10
+    marginBottom: 8, // FIXED: Reduced from 10 to 8
   },
   sectionSubtitle: {
-    fontSize: 15, // FIXED: Reduced from 16 to 15
+    fontSize: 14, // FIXED: Reduced from 15 to 14
     color: Colors.textLight,
     textAlign: 'center',
-    marginBottom: 28, // FIXED: Reduced from 32 to 28
-    lineHeight: 22, // FIXED: Reduced from 24 to 22
+    marginBottom: 24, // FIXED: Reduced from 28 to 24
+    lineHeight: 20, // FIXED: Reduced from 22 to 20
   },
   featuresGrid: {
-    gap: 16, // FIXED: Reduced from 20 to 16
+    gap: 14, // FIXED: Reduced from 16 to 14
   },
   featureCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 18, // FIXED: Reduced from 20 to 18
-    padding: 20, // FIXED: Reduced from 24 to 20
+    borderRadius: 16, // FIXED: Reduced from 18 to 16
+    padding: 18, // FIXED: Reduced from 20 to 18
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 }, // FIXED: Reduced shadow
-    shadowOpacity: 0.12, // FIXED: Reduced opacity
-    shadowRadius: 16, // FIXED: Reduced radius
-    elevation: 10, // FIXED: Reduced elevation
+    shadowOffset: { width: 0, height: 4 }, // FIXED: Reduced shadow
+    shadowOpacity: 0.1, // FIXED: Reduced opacity
+    shadowRadius: 12, // FIXED: Reduced radius
+    elevation: 6, // FIXED: Reduced elevation
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   featureIconContainer: {
-    width: 56, // FIXED: Reduced from 64 to 56
-    height: 56, // FIXED: Reduced from 64 to 56
-    borderRadius: 28, // FIXED: Reduced from 32 to 28
+    width: 48, // FIXED: Reduced from 56 to 48
+    height: 48, // FIXED: Reduced from 56 to 48
+    borderRadius: 24, // FIXED: Reduced from 28 to 24
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 14, // FIXED: Reduced from 16 to 14
+    marginBottom: 12, // FIXED: Reduced from 14 to 12
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 }, // FIXED: Reduced shadow
-    shadowOpacity: 0.15, // FIXED: Reduced opacity
-    shadowRadius: 6, // FIXED: Reduced radius
-    elevation: 5, // FIXED: Reduced elevation
+    shadowOffset: { width: 0, height: 2 }, // FIXED: Reduced shadow
+    shadowOpacity: 0.12, // FIXED: Reduced opacity
+    shadowRadius: 4, // FIXED: Reduced radius
+    elevation: 3, // FIXED: Reduced elevation
   },
   featureTitle: {
-    fontSize: 18, // FIXED: Reduced from 20 to 18
+    fontSize: 16, // FIXED: Reduced from 18 to 16
     fontWeight: '700',
     color: Colors.text,
-    marginBottom: 8, // FIXED: Reduced from 10 to 8
+    marginBottom: 6, // FIXED: Reduced from 8 to 6
     textAlign: 'center',
   },
   featureDescription: {
-    fontSize: 14, // FIXED: Reduced from 15 to 14
+    fontSize: 13, // FIXED: Reduced from 14 to 13
     color: Colors.textLight,
     textAlign: 'center',
-    lineHeight: 20, // FIXED: Reduced from 22 to 20
+    lineHeight: 18, // FIXED: Reduced from 20 to 18
   },
   statsSection: {
     padding: 20,
-    paddingTop: 40, // FIXED: Reduced from 50 to 40
+    paddingTop: 32, // FIXED: Reduced from 40 to 32
   },
   statsContainer: {
-    borderRadius: 18, // FIXED: Reduced from 20 to 18
+    borderRadius: 16, // FIXED: Reduced from 18 to 16
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 }, // FIXED: Reduced shadow
-    shadowOpacity: 0.12, // FIXED: Reduced opacity
-    shadowRadius: 16, // FIXED: Reduced radius
-    elevation: 10, // FIXED: Reduced elevation
+    shadowOffset: { width: 0, height: 4 }, // FIXED: Reduced shadow
+    shadowOpacity: 0.1, // FIXED: Reduced opacity
+    shadowRadius: 12, // FIXED: Reduced radius
+    elevation: 6, // FIXED: Reduced elevation
   },
   statsGradient: {
-    padding: 24, // FIXED: Reduced from 28 to 24
+    padding: 20, // FIXED: Reduced from 24 to 20
     alignItems: 'center',
   },
   statsTitle: {
-    fontSize: 20, // FIXED: Reduced from 24 to 20
+    fontSize: 18, // FIXED: Reduced from 20 to 18
     fontWeight: '800',
     color: Colors.text,
-    marginBottom: 20, // FIXED: Reduced from 24 to 20
+    marginBottom: 16, // FIXED: Reduced from 20 to 16
     textAlign: 'center',
   },
   statsGrid: {
@@ -536,17 +536,17 @@ const styles = StyleSheet.create({
   statItem: {
     alignItems: 'center',
     minWidth: '45%',
-    marginBottom: 16, // FIXED: Reduced from 20 to 16
+    marginBottom: 12, // FIXED: Reduced from 16 to 12
   },
   statNumber: {
-    fontSize: 28, // FIXED: Reduced from 32 to 28
+    fontSize: 24, // FIXED: Reduced from 28 to 24
     fontWeight: '800',
     color: Colors.primary,
-    marginTop: 4, // FIXED: Reduced from 6 to 4
+    marginTop: 3, // FIXED: Reduced from 4 to 3
     marginBottom: 2,
   },
   statLabel: {
-    fontSize: 13, // FIXED: Reduced from 14 to 13
+    fontSize: 12, // FIXED: Reduced from 13 to 12
     color: Colors.textLight,
     fontWeight: '600',
   },
@@ -556,15 +556,15 @@ const styles = StyleSheet.create({
   },
   testimonialCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 14, // FIXED: Reduced from 16 to 14
-    padding: 18, // FIXED: Reduced from 20 to 18
-    marginRight: 16, // FIXED: Reduced from 20 to 16
+    borderRadius: 12, // FIXED: Reduced from 14 to 12
+    padding: 16, // FIXED: Reduced from 18 to 16
+    marginRight: 14, // FIXED: Reduced from 16 to 14
     width: width - 80,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 }, // FIXED: Reduced shadow
-    shadowOpacity: 0.12, // FIXED: Reduced opacity
-    shadowRadius: 10, // FIXED: Reduced radius
-    elevation: 6, // FIXED: Reduced elevation
+    shadowOffset: { width: 0, height: 2 }, // FIXED: Reduced shadow
+    shadowOpacity: 0.1, // FIXED: Reduced opacity
+    shadowRadius: 8, // FIXED: Reduced radius
+    elevation: 4, // FIXED: Reduced elevation
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
@@ -572,82 +572,82 @@ const styles = StyleSheet.create({
   testimonialHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10, // FIXED: Reduced from 12 to 10
+    marginBottom: 8, // FIXED: Reduced from 10 to 8
   },
   testimonialImage: {
-    width: 44, // FIXED: Reduced from 48 to 44
-    height: 44, // FIXED: Reduced from 48 to 44
-    borderRadius: 22, // FIXED: Reduced from 24 to 22
-    marginRight: 10, // FIXED: Reduced from 12 to 10
+    width: 40, // FIXED: Reduced from 44 to 40
+    height: 40, // FIXED: Reduced from 44 to 40
+    borderRadius: 20, // FIXED: Reduced from 22 to 20
+    marginRight: 8, // FIXED: Reduced from 10 to 8
   },
   testimonialInfo: {
     flex: 1,
   },
   testimonialName: {
-    fontSize: 15, // FIXED: Reduced from 16 to 15
+    fontSize: 14, // FIXED: Reduced from 15 to 14
     fontWeight: '700',
     color: Colors.text,
     marginBottom: 2,
   },
   testimonialRole: {
-    fontSize: 12, // FIXED: Reduced from 13 to 12
+    fontSize: 11, // FIXED: Reduced from 12 to 11
     color: Colors.textLight,
   },
   testimonialRating: {
     flexDirection: 'row',
   },
   star: {
-    fontSize: 12, // FIXED: Reduced from 14 to 12
+    fontSize: 11, // FIXED: Reduced from 12 to 11
   },
   testimonialComment: {
-    fontSize: 13, // FIXED: Reduced from 14 to 13
+    fontSize: 12, // FIXED: Reduced from 13 to 12
     color: Colors.text,
-    lineHeight: 18, // FIXED: Reduced from 20 to 18
+    lineHeight: 16, // FIXED: Reduced from 18 to 16
     fontStyle: 'italic',
   },
   ctaSection: {
     padding: 20,
-    paddingTop: 40, // FIXED: Reduced from 50 to 40
+    paddingTop: 32, // FIXED: Reduced from 40 to 32
   },
   ctaBlur: {
-    borderRadius: 18, // FIXED: Reduced from 20 to 18
+    borderRadius: 16, // FIXED: Reduced from 18 to 16
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 }, // FIXED: Reduced shadow
-    shadowOpacity: 0.25, // FIXED: Reduced opacity
-    shadowRadius: 20, // FIXED: Reduced radius
-    elevation: 12, // FIXED: Reduced elevation
+    shadowOffset: { width: 0, height: 6 }, // FIXED: Reduced shadow
+    shadowOpacity: 0.2, // FIXED: Reduced opacity
+    shadowRadius: 16, // FIXED: Reduced radius
+    elevation: 8, // FIXED: Reduced elevation
   },
   ctaContainer: {
-    padding: 24, // FIXED: Reduced from 28 to 24
+    padding: 20, // FIXED: Reduced from 24 to 20
     alignItems: 'center',
   },
   ctaTitle: {
-    fontSize: 24, // FIXED: Reduced from 28 to 24
+    fontSize: 22, // FIXED: Reduced from 24 to 22
     fontWeight: '800',
     color: '#fff',
     textAlign: 'center',
-    marginBottom: 8, // FIXED: Reduced from 10 to 8
+    marginBottom: 6, // FIXED: Reduced from 8 to 6
   },
   ctaSubtitle: {
-    fontSize: 15, // FIXED: Reduced from 16 to 15
+    fontSize: 14, // FIXED: Reduced from 15 to 14
     color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
-    marginBottom: 20, // FIXED: Reduced from 24 to 20
-    lineHeight: 22, // FIXED: Reduced from 24 to 22
+    marginBottom: 16, // FIXED: Reduced from 20 to 16
+    lineHeight: 20, // FIXED: Reduced from 22 to 20
   },
   ctaButtons: {
-    gap: 14, // FIXED: Reduced from 16 to 14
+    gap: 12, // FIXED: Reduced from 14 to 12
     alignItems: 'center',
   },
   ctaButton: {
     backgroundColor: '#fff',
-    paddingHorizontal: 32, // FIXED: Reduced from 36 to 32
+    paddingHorizontal: 28, // FIXED: Reduced from 32 to 28
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 }, // FIXED: Reduced shadow
-    shadowOpacity: 0.25, // FIXED: Reduced opacity
-    shadowRadius: 12, // FIXED: Reduced radius
-    elevation: 10, // FIXED: Reduced elevation
+    shadowOffset: { width: 0, height: 4 }, // FIXED: Reduced shadow
+    shadowOpacity: 0.2, // FIXED: Reduced opacity
+    shadowRadius: 8, // FIXED: Reduced radius
+    elevation: 6, // FIXED: Reduced elevation
   },
   ctaButtonText: {
     color: Colors.primary,
@@ -656,19 +656,19 @@ const styles = StyleSheet.create({
   ctaSecondaryButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6, // FIXED: Reduced from 8 to 6
-    marginTop: 10, // FIXED: Reduced from 12 to 10
+    gap: 4, // FIXED: Reduced from 6 to 4
+    marginTop: 8, // FIXED: Reduced from 10 to 8
   },
   ctaSecondaryText: {
-    fontSize: 15, // FIXED: Reduced from 16 to 15
+    fontSize: 14, // FIXED: Reduced from 15 to 14
     color: '#fff',
     fontWeight: '600',
     textDecorationLine: 'underline',
   },
   footer: {
     backgroundColor: Colors.backgroundAlt,
-    padding: 28, // FIXED: Reduced from 32 to 28
-    paddingBottom: 50, // FIXED: Reduced from 60 to 50
+    padding: 24, // FIXED: Reduced from 28 to 24
+    paddingBottom: 40, // FIXED: Reduced from 50 to 40
   },
   footerContent: {
     alignItems: 'center',
@@ -676,23 +676,23 @@ const styles = StyleSheet.create({
   footerLogo: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 14, // FIXED: Reduced from 16 to 14
+    marginBottom: 12, // FIXED: Reduced from 14 to 12
   },
   footerLogoText: {
-    fontSize: 20, // FIXED: Reduced from 24 to 20
+    fontSize: 18, // FIXED: Reduced from 20 to 18
     fontWeight: '800',
     color: Colors.primary,
-    marginLeft: 6, // FIXED: Reduced from 8 to 6
+    marginLeft: 4, // FIXED: Reduced from 6 to 4
   },
   footerText: {
-    fontSize: 14, // FIXED: Reduced from 15 to 14
+    fontSize: 13, // FIXED: Reduced from 14 to 13
     color: Colors.textLight,
     textAlign: 'center',
-    marginBottom: 14, // FIXED: Reduced from 16 to 14
-    lineHeight: 20, // FIXED: Reduced from 22 to 20
+    marginBottom: 12, // FIXED: Reduced from 14 to 12
+    lineHeight: 18, // FIXED: Reduced from 20 to 18
   },
   footerCopyright: {
-    fontSize: 12, // FIXED: Reduced from 13 to 12
+    fontSize: 11, // FIXED: Reduced from 12 to 11
     color: Colors.textLight,
     textAlign: 'center',
   },
