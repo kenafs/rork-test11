@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { StyleSheet, View, TextInput, TouchableOpacity, Platform } from 'react-native';
 import { Search, X, MapPin } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
 import Animated, { 
   useSharedValue, 
   useAnimatedStyle, 
@@ -46,7 +45,7 @@ export default function SearchBar({
   
   const handleFocus = () => {
     setIsFocused(true);
-    focusScale.value = withSpring(1.01, { damping: 15, stiffness: 300 });
+    focusScale.value = withSpring(1.02, { damping: 15, stiffness: 300 });
     focusOpacity.value = withTiming(1, { duration: 200 });
   };
   
@@ -71,12 +70,11 @@ export default function SearchBar({
   return (
     <View style={styles.container}>
       <Animated.View style={[styles.searchWrapper, animatedContainerStyle]}>
-        {/* Glow Effect */}
         <Animated.View style={[styles.glowEffect, animatedGlowStyle]} />
         
-        <BlurView intensity={20} style={styles.searchContainer}>
+        <View style={styles.searchContainer}>
           <View style={styles.searchInner}>
-            <Search size={18} color={isFocused ? Colors.primary : Colors.textLight} style={styles.searchIcon} />
+            <Search size={20} color={isFocused ? Colors.primary : Colors.textLight} style={styles.searchIcon} />
             
             <AnimatedTextInput
               style={styles.input}
@@ -93,13 +91,11 @@ export default function SearchBar({
             
             {value.length > 0 && (
               <TouchableOpacity onPress={onClear} style={styles.clearButton}>
-                <BlurView intensity={40} style={styles.clearButtonBlur}>
-                  <X size={14} color={Colors.textLight} />
-                </BlurView>
+                <X size={16} color={Colors.textLight} />
               </TouchableOpacity>
             )}
           </View>
-        </BlurView>
+        </View>
       </Animated.View>
       
       {showLocationButton && (
@@ -114,7 +110,7 @@ export default function SearchBar({
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
           >
-            <MapPin size={18} color="#fff" />
+            <MapPin size={20} color="#fff" />
           </LinearGradient>
         </TouchableOpacity>
       )}
@@ -126,9 +122,9 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 10, // FIXED: Reduced from 12 to 10
-    gap: 10, // FIXED: Reduced from 12 to 10
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    gap: 16,
   },
   searchWrapper: {
     flex: 1,
@@ -136,73 +132,69 @@ const styles = StyleSheet.create({
   },
   glowEffect: {
     position: 'absolute',
-    top: -3, // FIXED: Reduced from -4 to -3
-    left: -3, // FIXED: Reduced from -4 to -3
-    right: -3, // FIXED: Reduced from -4 to -3
-    bottom: -3, // FIXED: Reduced from -4 to -3
-    borderRadius: 16, // FIXED: Reduced from 20 to 16
+    top: -4,
+    left: -4,
+    right: -4,
+    bottom: -4,
+    borderRadius: 24,
     backgroundColor: Colors.primary,
-    opacity: 0.2,
+    opacity: 0.1,
     shadowColor: Colors.primary,
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 10, // FIXED: Reduced from 12 to 10
-    elevation: 6, // FIXED: Reduced from 8 to 6
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
   },
   searchContainer: {
-    borderRadius: 14, // FIXED: Reduced from 16 to 14
+    borderRadius: 20,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    shadowColor: Colors.shadow,
-    shadowOffset: { width: 0, height: 3 }, // FIXED: Reduced shadow
-    shadowOpacity: 0.12, // FIXED: Reduced opacity
-    shadowRadius: 10, // FIXED: Reduced radius
-    elevation: 6, // FIXED: Reduced elevation
+    borderColor: Colors.border,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 8,
+    backgroundColor: '#fff',
   },
   searchInner: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14, // FIXED: Reduced from 16 to 14
-    paddingVertical: 10, // FIXED: Reduced from 12 to 10
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
   },
   searchIcon: {
-    marginRight: 10, // FIXED: Reduced from 12 to 10
+    marginRight: 12,
   },
   input: {
     flex: 1,
-    fontSize: 15, // FIXED: Reduced from 16 to 15
+    fontSize: 16,
     color: Colors.text,
     fontWeight: '500',
   },
   clearButton: {
-    width: 24, // FIXED: Reduced from 28 to 24
-    height: 24, // FIXED: Reduced from 28 to 24
-    borderRadius: 12, // FIXED: Reduced from 14 to 12
-    overflow: 'hidden',
-    marginLeft: 6, // FIXED: Reduced from 8 to 6
-  },
-  clearButtonBlur: {
-    width: 24, // FIXED: Reduced from 28 to 24
-    height: 24, // FIXED: Reduced from 28 to 24
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: Colors.backgroundAlt,
     justifyContent: 'center',
     alignItems: 'center',
+    marginLeft: 8,
   },
   locationButton: {
-    width: 44, // FIXED: Reduced from 52 to 44
-    height: 44, // FIXED: Reduced from 52 to 44
-    borderRadius: 14, // FIXED: Reduced from 16 to 14
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     overflow: 'hidden',
     shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 3 }, // FIXED: Reduced shadow
-    shadowOpacity: 0.25, // FIXED: Reduced opacity
-    shadowRadius: 6, // FIXED: Reduced radius
-    elevation: 6, // FIXED: Reduced elevation
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
   },
   locationGradient: {
-    width: 44, // FIXED: Reduced from 52 to 44
-    height: 44, // FIXED: Reduced from 52 to 44
+    width: 56,
+    height: 56,
     justifyContent: 'center',
     alignItems: 'center',
   },

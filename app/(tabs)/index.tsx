@@ -13,7 +13,6 @@ import ListingCard from '@/components/ListingCard';
 import LocationPermissionRequest from '@/components/LocationPermissionRequest';
 import Button from '@/components/Button';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
 import Animated, { 
   FadeIn, 
   SlideInDown, 
@@ -55,7 +54,6 @@ export default function HomeScreen() {
   } = useLocation();
   const { t } = useLanguage();
   
-  // FIXED: Use the computed favorites hook
   const { favorites } = useFavoritesComputed();
   
   const [refreshing, setRefreshing] = useState(false);
@@ -122,11 +120,9 @@ export default function HomeScreen() {
     filterBySearch('');
   };
   
-  // Ensure arrays are always defined
   const safeFilteredListings = Array.isArray(filteredListings) ? filteredListings : [];
   const safeFavorites = Array.isArray(favorites) ? favorites : [];
   
-  // Authenticated user experience - CRITICAL FIX: Much more compact header design
   const getWelcomeMessage = () => {
     switch (user?.userType) {
       case 'provider':
@@ -182,60 +178,53 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
       
-      {/* FIXED: Much more compact and elegant header */}
+      {/* Modern Header */}
       <Animated.View style={[styles.header, headerStyle]}>
-        <BlurView intensity={80} style={styles.headerBlur}>
-          <LinearGradient
-            colors={[Colors.primary, Colors.secondary]}
-            style={styles.headerGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
-            <Animated.View entering={FadeIn.delay(200)} style={styles.headerContent}>
-              <View style={styles.welcomeSection}>
-                <Text style={styles.welcomeText}>{getWelcomeMessage()}</Text>
-                <Text style={styles.subtitleText}>{getSubtitle()}</Text>
-              </View>
-              
-              {/* FIXED: Much more compact stats row */}
-              <Animated.View entering={SlideInDown.delay(400)} style={styles.statsRow}>
-                {[
-                  { icon: Heart, value: safeFavorites.length || 0, label: 'Favoris', color: '#FF6B6B' },
-                  { icon: Star, value: user?.rating?.toFixed(1) || '4.8', label: 'Note', color: '#FFD700' },
-                  { icon: TrendingUp, value: safeFilteredListings.length, label: 'Offres', color: '#10B981' },
-                  { icon: Sparkles, value: '12', label: 'En ligne', color: '#8B5CF6' }
-                ].map((stat, index) => (
-                  <Animated.View 
-                    key={`stat-${index}`}
-                    entering={ZoomIn.delay(600 + index * 100)}
-                    style={styles.statCardWrapper}
-                  >
-                    <BlurView intensity={30} style={styles.statCard}>
-                      <stat.icon size={8} color={stat.color} />
-                      <Text style={styles.statCardNumber}>{stat.value}</Text>
-                      <Text style={styles.statCardLabel}>{stat.label}</Text>
-                    </BlurView>
-                  </Animated.View>
-                ))}
-              </Animated.View>
-              
-              {user && user.userType !== 'client' && (
-                <Animated.View entering={SlideInDown.delay(800)} style={styles.createButtonContainer}>
-                  <TouchableOpacity 
-                    style={styles.createButton}
-                    onPress={handleCreatePress}
-                    activeOpacity={0.8}
-                  >
-                    <BlurView intensity={40} style={styles.createButtonBlur}>
-                      <Plus size={12} color="#fff" />
-                      <Text style={styles.createButtonText}>{getCreateButtonText()}</Text>
-                    </BlurView>
-                  </TouchableOpacity>
+        <LinearGradient
+          colors={[Colors.primary, Colors.secondary]}
+          style={styles.headerGradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        >
+          <Animated.View entering={FadeIn.delay(200)} style={styles.headerContent}>
+            <View style={styles.welcomeSection}>
+              <Text style={styles.welcomeText}>{getWelcomeMessage()}</Text>
+              <Text style={styles.subtitleText}>{getSubtitle()}</Text>
+            </View>
+            
+            <Animated.View entering={SlideInDown.delay(400)} style={styles.statsRow}>
+              {[
+                { icon: Heart, value: safeFavorites.length || 0, label: 'Favoris', color: '#FF6B6B' },
+                { icon: Star, value: user?.rating?.toFixed(1) || '4.8', label: 'Note', color: '#FFD700' },
+                { icon: TrendingUp, value: safeFilteredListings.length, label: 'Offres', color: '#10B981' },
+                { icon: Sparkles, value: '12', label: 'En ligne', color: '#8B5CF6' }
+              ].map((stat, index) => (
+                <Animated.View 
+                  key={`stat-${index}`}
+                  entering={ZoomIn.delay(600 + index * 100)}
+                  style={styles.statCard}
+                >
+                  <stat.icon size={16} color={stat.color} />
+                  <Text style={styles.statNumber}>{stat.value}</Text>
+                  <Text style={styles.statLabel}>{stat.label}</Text>
                 </Animated.View>
-              )}
+              ))}
             </Animated.View>
-          </LinearGradient>
-        </BlurView>
+            
+            {user && user.userType !== 'client' && (
+              <Animated.View entering={SlideInDown.delay(800)} style={styles.createButtonContainer}>
+                <TouchableOpacity 
+                  style={styles.createButton}
+                  onPress={handleCreatePress}
+                  activeOpacity={0.8}
+                >
+                  <Plus size={16} color="#fff" />
+                  <Text style={styles.createButtonText}>{getCreateButtonText()}</Text>
+                </TouchableOpacity>
+              </Animated.View>
+            )}
+          </Animated.View>
+        </LinearGradient>
       </Animated.View>
       
       <AnimatedScrollView 
@@ -248,7 +237,7 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Search Bar with Enhanced Design */}
+        {/* Search Bar */}
         <Animated.View entering={SlideInDown.delay(1000)}>
           <SearchBar
             value={searchQuery || ''}
@@ -274,17 +263,17 @@ export default function HomeScreen() {
           />
         </Animated.View>
         
-        {/* Listings with Staggered Animation */}
+        {/* Listings */}
         <View style={styles.listingsContainer}>
           <Animated.View entering={FadeIn.delay(1600)} style={styles.listingsHeader}>
             <Text style={styles.listingsTitle}>
               {selectedCategory ? 'Résultats filtrés' : 'Annonces récentes'}
             </Text>
-            <BlurView intensity={20} style={styles.countBadge}>
+            <View style={styles.countBadge}>
               <Text style={styles.listingsCount}>
                 {safeFilteredListings.length}
               </Text>
-            </BlurView>
+            </View>
           </Animated.View>
           
           {safeFilteredListings.length > 0 ? (
@@ -298,18 +287,18 @@ export default function HomeScreen() {
             ))
           ) : (
             <Animated.View entering={FadeIn.delay(2000)} style={styles.emptyState}>
-              <BlurView intensity={20} style={styles.emptyStateCard}>
+              <View style={styles.emptyStateCard}>
                 <Text style={styles.emptyTitle}>Aucun résultat</Text>
                 <Text style={styles.emptyText}>
                   Essayez de modifier vos critères de recherche
                 </Text>
-              </BlurView>
+              </View>
             </Animated.View>
           )}
         </View>
       </AnimatedScrollView>
       
-      {/* Enhanced Floating Action Button for Clients */}
+      {/* Floating Action Button for Clients */}
       {user && user.userType === 'client' && (
         <Animated.View style={[styles.fab, fabStyle]}>
           <TouchableOpacity 
@@ -317,14 +306,12 @@ export default function HomeScreen() {
             onPress={handleCreatePress}
             activeOpacity={0.8}
           >
-            <BlurView intensity={80} style={styles.fabBlur}>
-              <LinearGradient
-                colors={[Colors.primary, Colors.secondary]}
-                style={styles.fabGradient}
-              >
-                <Plus size={24} color="#fff" />
-              </LinearGradient>
-            </BlurView>
+            <LinearGradient
+              colors={[Colors.primary, Colors.secondary]}
+              style={styles.fabGradient}
+            >
+              <Plus size={24} color="#fff" />
+            </LinearGradient>
           </TouchableOpacity>
         </Animated.View>
       )}
@@ -335,39 +322,36 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.backgroundAlt,
+    backgroundColor: '#fff',
   },
   header: {
-    paddingTop: 25, // FIXED: Reduced from 35 to 25
-    paddingBottom: 6, // FIXED: Reduced from 8 to 6
+    paddingTop: 50,
+    paddingBottom: 20,
     zIndex: 10,
   },
-  headerBlur: {
-    overflow: 'hidden',
-  },
   headerGradient: {
-    paddingHorizontal: 20,
-    paddingVertical: 6, // FIXED: Reduced from 8 to 6
+    paddingHorizontal: 24,
+    paddingVertical: 24,
   },
   headerContent: {
     alignItems: 'center',
   },
   welcomeSection: {
     alignItems: 'center',
-    marginBottom: 6, // FIXED: Reduced from 8 to 6
+    marginBottom: 24,
     width: '100%',
   },
   welcomeText: {
-    fontSize: 18, // FIXED: Reduced from 20 to 18
+    fontSize: 24,
     fontWeight: '800',
     color: '#fff',
-    marginBottom: 1, // FIXED: Reduced from 2 to 1
+    marginBottom: 4,
     textAlign: 'center',
   },
   subtitleText: {
-    fontSize: 11, // FIXED: Reduced from 12 to 11
+    fontSize: 14,
     color: 'rgba(255, 255, 255, 0.9)',
-    lineHeight: 14, // FIXED: Reduced from 16 to 14
+    lineHeight: 20,
     textAlign: 'center',
     paddingHorizontal: 20,
   },
@@ -375,37 +359,32 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 4, // FIXED: Reduced from 6 to 4
-    marginBottom: 6, // FIXED: Reduced from 8 to 6
+    gap: 12,
+    marginBottom: 24,
     width: '100%',
     paddingHorizontal: 10,
   },
-  statCardWrapper: {
-    flex: 1,
-    maxWidth: 42, // FIXED: Reduced from 50 to 42
-    minWidth: 38, // FIXED: Reduced from 45 to 38
-  },
   statCard: {
-    borderRadius: 8, // FIXED: Reduced from 10 to 8
-    padding: 4, // FIXED: Reduced from 6 to 4
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 16,
+    padding: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
-    minHeight: 42, // FIXED: Reduced from 50 to 42
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    minHeight: 70,
   },
-  statCardNumber: {
-    fontSize: 9, // FIXED: Reduced from 10 to 9
+  statNumber: {
+    fontSize: 16,
     fontWeight: '700',
     color: '#fff',
-    marginTop: 1,
-    marginBottom: 1,
+    marginTop: 4,
+    marginBottom: 2,
     textAlign: 'center',
   },
-  statCardLabel: {
-    fontSize: 6, // FIXED: Reduced from 7 to 6
+  statLabel: {
+    fontSize: 10,
     color: 'rgba(255, 255, 255, 0.8)',
     fontWeight: '500',
     textAlign: 'center',
@@ -415,21 +394,20 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   createButton: {
-    borderRadius: 14, // FIXED: Reduced from 16 to 14
-    overflow: 'hidden',
-    minWidth: 120, // FIXED: Reduced from 140 to 120
-  },
-  createButtonBlur: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 5, // FIXED: Reduced from 6 to 5
-    paddingHorizontal: 10, // FIXED: Reduced from 12 to 10
-    gap: 3, // FIXED: Reduced from 4 to 3
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   createButtonText: {
     color: '#fff',
-    fontSize: 11, // FIXED: Reduced from 12 to 11
+    fontSize: 14,
     fontWeight: '600',
   },
   content: {
@@ -439,13 +417,13 @@ const styles = StyleSheet.create({
     paddingBottom: 140,
   },
   listingsContainer: {
-    padding: 16,
+    padding: 24,
   },
   listingsHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 24,
   },
   listingsTitle: {
     fontSize: 24,
@@ -453,12 +431,12 @@ const styles = StyleSheet.create({
     color: Colors.text,
   },
   countBadge: {
+    backgroundColor: Colors.backgroundAlt,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
-    overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(30, 58, 138, 0.2)',
+    borderColor: Colors.border,
   },
   listingsCount: {
     fontSize: 14,
@@ -470,12 +448,12 @@ const styles = StyleSheet.create({
     padding: 40,
   },
   emptyStateCard: {
+    backgroundColor: Colors.backgroundAlt,
     padding: 32,
     borderRadius: 20,
     alignItems: 'center',
-    overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: Colors.border,
   },
   emptyTitle: {
     fontSize: 20,
@@ -491,7 +469,7 @@ const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
     bottom: 120,
-    right: 20,
+    right: 24,
     zIndex: 10,
   },
   fabButton: {
@@ -499,22 +477,16 @@ const styles = StyleSheet.create({
     height: 64,
     borderRadius: 32,
     overflow: 'hidden',
-  },
-  fabBlur: {
-    width: 64,
-    height: 64,
-    justifyContent: 'center',
-    alignItems: 'center',
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 12,
   },
   fabGradient: {
     width: 64,
     height: 64,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
-    elevation: 12,
   },
 });

@@ -49,26 +49,25 @@ function RootLayoutNav() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
         <QueryClientProvider client={queryClient}>
-          <StatusBar style="light" backgroundColor={Colors.primary} />
+          <StatusBar style="dark" backgroundColor="#fff" />
           <Stack
             screenOptions={{
               headerStyle: {
-                backgroundColor: Colors.primary,
+                backgroundColor: '#fff',
               },
-              headerTintColor: '#fff',
+              headerTintColor: Colors.text,
               headerTitleStyle: {
                 fontWeight: '700',
                 fontSize: 18,
               },
               headerShadowVisible: false,
               contentStyle: {
-                backgroundColor: Colors.backgroundAlt,
+                backgroundColor: '#fff',
               },
               animation: 'slide_from_right',
               animationDuration: 300,
             }}
           >
-            {/* CRITICAL FIX: Landing page - always show first unless authenticated */}
             <Stack.Screen 
               name="index" 
               options={{ 
@@ -77,7 +76,6 @@ function RootLayoutNav() {
               }} 
             />
             
-            {/* Tabs - show if authenticated */}
             <Stack.Screen 
               name="(tabs)" 
               options={{ 
@@ -86,7 +84,6 @@ function RootLayoutNav() {
               }} 
             />
             
-            {/* Auth screens */}
             <Stack.Screen 
               name="(auth)/login" 
               options={{ 
@@ -112,7 +109,6 @@ function RootLayoutNav() {
               }} 
             />
             
-            {/* Other screens */}
             <Stack.Screen 
               name="listing/[id]" 
               options={{ 

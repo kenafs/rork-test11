@@ -7,7 +7,6 @@ import Colors from '@/constants/colors';
 import RatingStars from './RatingStars';
 import { MapPin, Clock, Euro } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
 import Animated, { 
   useSharedValue, 
   useAnimatedStyle, 
@@ -49,7 +48,6 @@ export default function ListingCard({ listing }: ListingCardProps) {
     return <Text style={styles.priceText}>{price}€</Text>;
   };
   
-  // CRITICAL FIX: Much better touch handling with proper sensitivity and gesture detection
   const handlePressIn = () => {
     scale.value = withSpring(0.98, { damping: 20, stiffness: 400 });
     if (Platform.OS !== 'web') {
@@ -101,10 +99,10 @@ export default function ListingCard({ listing }: ListingCardProps) {
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         activeOpacity={1}
-        delayPressIn={0} // CRITICAL FIX: No delay for immediate response
-        delayPressOut={100} // CRITICAL FIX: Short delay for smooth animation
-        delayLongPress={500} // CRITICAL FIX: Longer delay to prevent accidental long press
-        hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }} // CRITICAL FIX: Smaller hit area for better precision
+        delayPressIn={0}
+        delayPressOut={100}
+        delayLongPress={500}
+        hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }}
       >
         <View style={styles.imageContainer}>
           {listing.images && listing.images.length > 0 ? (
@@ -123,12 +121,12 @@ export default function ListingCard({ listing }: ListingCardProps) {
             </LinearGradient>
           )}
           
-          <BlurView intensity={80} style={styles.categoryBadge}>
+          <View style={styles.categoryBadge}>
             <Text style={styles.categoryText}>{listing.category}</Text>
-          </BlurView>
+          </View>
           
           <LinearGradient
-            colors={['transparent', 'rgba(15, 23, 42, 0.8)']}
+            colors={['transparent', 'rgba(0, 0, 0, 0.6)']}
             style={styles.imageOverlay}
           />
         </View>
@@ -142,7 +140,6 @@ export default function ListingCard({ listing }: ListingCardProps) {
             {listing.description}
           </Text>
           
-          {/* FIXED: Better centered creator info */}
           <View style={styles.creatorInfo}>
             <View style={styles.creatorAvatar}>
               {listing.creatorImage ? (
@@ -170,23 +167,21 @@ export default function ListingCard({ listing }: ListingCardProps) {
             </View>
           </View>
           
-          {/* FIXED: Better aligned footer */}
           <View style={styles.footer}>
             <View style={styles.locationContainer}>
-              <MapPin size={12} color={Colors.textLight} />
+              <MapPin size={14} color={Colors.textLight} />
               <Text style={styles.locationText}>{listing.location.city}</Text>
             </View>
             
             <View style={styles.priceContainer}>
-              <Euro size={12} color={Colors.primary} />
+              <Euro size={14} color={Colors.primary} />
               {formatPrice(listing.price)}
             </View>
           </View>
           
-          {/* FIXED: Better aligned meta info */}
           <View style={styles.metaInfo}>
             <View style={styles.dateContainer}>
-              <Clock size={10} color={Colors.textLight} />
+              <Clock size={12} color={Colors.textLight} />
               <Text style={styles.dateText}>
                 Publié le {formatDate(listing.createdAt)}
               </Text>
@@ -195,13 +190,12 @@ export default function ListingCard({ listing }: ListingCardProps) {
             {listing.tags && listing.tags.length > 0 && (
               <View style={styles.tagsContainer}>
                 {listing.tags.slice(0, 2).map((tag, index) => (
-                  <BlurView 
+                  <View 
                     key={`tag-${listing.id}-${tag}-${index}`} 
-                    intensity={20} 
                     style={styles.tag}
                   >
                     <Text style={styles.tagText}>{tag}</Text>
-                  </BlurView>
+                  </View>
                 ))}
                 {listing.tags.length > 2 && (
                   <Text style={styles.moreTagsText}>+{listing.tags.length - 2}</Text>
@@ -218,21 +212,23 @@ export default function ListingCard({ listing }: ListingCardProps) {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
-    borderRadius: 18, // FIXED: Reduced from 20 to 18
-    marginBottom: 14, // FIXED: Reduced from 16 to 14
-    shadowColor: Colors.shadow,
-    shadowOffset: { width: 0, height: 6 }, // FIXED: Reduced shadow
-    shadowOpacity: 0.15, // FIXED: Reduced opacity
-    shadowRadius: 12, // FIXED: Reduced radius
-    elevation: 8, // FIXED: Reduced elevation
+    borderRadius: 24,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 24,
+    elevation: 12,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   touchable: {
     flex: 1,
   },
   imageContainer: {
     position: 'relative',
-    height: 180, // FIXED: Reduced from 200 to 180
+    height: 220,
   },
   image: {
     width: '100%',
@@ -245,23 +241,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   placeholderText: {
-    fontSize: 36, // FIXED: Reduced from 40 to 36
+    fontSize: 40,
     opacity: 0.7,
   },
   categoryBadge: {
     position: 'absolute',
-    top: 14, // FIXED: Reduced from 16 to 14
-    left: 14, // FIXED: Reduced from 16 to 14
-    paddingHorizontal: 10, // FIXED: Reduced from 12 to 10
-    paddingVertical: 5, // FIXED: Reduced from 6 to 5
-    borderRadius: 14, // FIXED: Reduced from 16 to 14
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    top: 16,
+    left: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
   },
   categoryText: {
     color: '#fff',
-    fontSize: 10, // FIXED: Reduced from 11 to 10
+    fontSize: 12,
     fontWeight: '700',
   },
   imageOverlay: {
@@ -269,65 +263,59 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 50, // FIXED: Reduced from 60 to 50
+    height: 60,
   },
   content: {
-    padding: 18, // FIXED: Reduced from 20 to 18
+    padding: 24,
   },
   title: {
-    fontSize: 18, // FIXED: Reduced from 20 to 18
+    fontSize: 20,
     fontWeight: '800',
     color: Colors.text,
-    marginBottom: 5, // FIXED: Reduced from 6 to 5
-    lineHeight: 24, // FIXED: Reduced from 26 to 24
+    marginBottom: 8,
+    lineHeight: 26,
   },
   description: {
-    fontSize: 13, // FIXED: Reduced from 14 to 13
+    fontSize: 14,
     color: Colors.textLight,
-    lineHeight: 18, // FIXED: Reduced from 20 to 18
-    marginBottom: 14, // FIXED: Reduced from 16 to 14
+    lineHeight: 20,
+    marginBottom: 20,
   },
   creatorInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 14, // FIXED: Reduced from 16 to 14
-    paddingVertical: 1, // FIXED: Reduced padding for better alignment
+    marginBottom: 20,
   },
   creatorAvatar: {
-    width: 32, // FIXED: Reduced from 36 to 32
-    height: 32, // FIXED: Reduced from 36 to 32
-    borderRadius: 16, // FIXED: Reduced from 18 to 16
-    marginRight: 8, // FIXED: Reduced from 10 to 8
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 12,
     overflow: 'hidden',
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 2 }, // FIXED: Reduced shadow
-    shadowOpacity: 0.12, // FIXED: Reduced opacity
-    shadowRadius: 4, // FIXED: Reduced radius
-    elevation: 2, // FIXED: Reduced elevation
   },
   avatarImage: {
-    width: 32, // FIXED: Reduced from 36 to 32
-    height: 32, // FIXED: Reduced from 36 to 32
-    borderRadius: 16, // FIXED: Reduced from 18 to 16
+    width: 40,
+    height: 40,
+    borderRadius: 20,
   },
   avatarGradient: {
-    width: 32, // FIXED: Reduced from 36 to 32
-    height: 32, // FIXED: Reduced from 36 to 32
-    borderRadius: 16, // FIXED: Reduced from 18 to 16
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarText: {
     color: '#fff',
-    fontSize: 13, // FIXED: Reduced from 14 to 13
+    fontSize: 16,
     fontWeight: '700',
   },
   creatorDetails: {
     flex: 1,
-    justifyContent: 'center', // FIXED: Center content vertically
+    justifyContent: 'center',
   },
   creatorName: {
-    fontSize: 14, // FIXED: Reduced from 15 to 14
+    fontSize: 16,
     fontWeight: '700',
     color: Colors.text,
     marginBottom: 2,
@@ -336,17 +324,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10, // FIXED: Reduced from 12 to 10
-    paddingVertical: 1, // FIXED: Add padding for better alignment
+    marginBottom: 16,
   },
   locationContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   locationText: {
-    fontSize: 12, // FIXED: Reduced from 13 to 12
+    fontSize: 14,
     color: Colors.textLight,
-    marginLeft: 3, // FIXED: Reduced from 4 to 3
+    marginLeft: 6,
     fontWeight: '500',
   },
   priceContainer: {
@@ -354,47 +341,46 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   priceText: {
-    fontSize: 16, // FIXED: Reduced from 18 to 16
+    fontSize: 18,
     fontWeight: '800',
     color: Colors.primary,
-    marginLeft: 3, // FIXED: Reduced from 4 to 3
+    marginLeft: 6,
   },
   metaInfo: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 1, // FIXED: Add padding for better alignment
   },
   dateContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   dateText: {
-    fontSize: 10, // FIXED: Reduced from 11 to 10
+    fontSize: 12,
     color: Colors.textMuted,
-    marginLeft: 3, // FIXED: Reduced from 4 to 3
+    marginLeft: 6,
     fontWeight: '500',
   },
   tagsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5, // FIXED: Reduced from 6 to 5
+    gap: 8,
   },
   tag: {
-    paddingHorizontal: 7, // FIXED: Reduced from 8 to 7
-    paddingVertical: 2, // FIXED: Reduced from 3 to 2
-    borderRadius: 8, // FIXED: Reduced from 10 to 8
-    overflow: 'hidden',
+    backgroundColor: Colors.backgroundAlt,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(30, 58, 138, 0.2)',
+    borderColor: Colors.border,
   },
   tagText: {
-    fontSize: 9, // FIXED: Reduced from 10 to 9
+    fontSize: 10,
     color: Colors.primary,
     fontWeight: '600',
   },
   moreTagsText: {
-    fontSize: 9, // FIXED: Reduced from 10 to 9
+    fontSize: 10,
     color: Colors.textMuted,
     fontWeight: '600',
   },

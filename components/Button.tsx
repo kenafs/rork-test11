@@ -1,7 +1,6 @@
 import React from 'react';
 import { StyleSheet, TouchableOpacity, Text, ActivityIndicator, ViewStyle, TextStyle, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
 import Animated, { 
   useSharedValue, 
   useAnimatedStyle, 
@@ -43,7 +42,7 @@ export default function Button({
   const opacity = useSharedValue(1);
   
   const handlePressIn = () => {
-    scale.value = withSpring(0.97, { damping: 15, stiffness: 300 });
+    scale.value = withSpring(0.96, { damping: 15, stiffness: 300 });
     opacity.value = withSpring(0.8, { damping: 15, stiffness: 300 });
   };
   
@@ -171,30 +170,6 @@ export default function Button({
     );
   }
   
-  if (variant === 'glass') {
-    return (
-      <AnimatedTouchableOpacity
-        style={[
-          styles.button,
-          getSizeStyle(),
-          fullWidth && styles.fullWidth,
-          disabled && styles.disabledButton,
-          style,
-          animatedStyle,
-        ]}
-        onPress={handlePress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        disabled={disabled || loading}
-        activeOpacity={1}
-      >
-        <BlurView intensity={80} style={[styles.blurButton, getSizeStyle()]}>
-          {renderButtonContent()}
-        </BlurView>
-      </AnimatedTouchableOpacity>
-    );
-  }
-  
   return (
     <AnimatedTouchableOpacity
       style={[
@@ -219,33 +194,26 @@ export default function Button({
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: 14, // FIXED: Reduced from 16 to 14
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 }, // FIXED: Reduced shadow
-    shadowOpacity: 0.15, // FIXED: Reduced opacity
-    shadowRadius: 8, // FIXED: Reduced radius
-    elevation: 6, // FIXED: Reduced elevation
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
     overflow: 'hidden',
   },
   buttonContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 5, // FIXED: Reduced from 6 to 5
+    gap: 8,
   },
   gradientButton: {
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
-  },
-  blurButton: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   primaryButton: {
     backgroundColor: Colors.primary,
@@ -262,19 +230,19 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   smallButton: {
-    paddingVertical: 8, // FIXED: Reduced from 10 to 8
-    paddingHorizontal: 14, // FIXED: Reduced from 16 to 14
-    borderRadius: 12, // FIXED: Reduced from 14 to 12
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 16,
   },
   mediumButton: {
-    paddingVertical: 12, // FIXED: Reduced from 14 to 12
-    paddingHorizontal: 20, // FIXED: Reduced from 24 to 20
-    borderRadius: 14, // FIXED: Reduced from 16 to 14
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 20,
   },
   largeButton: {
-    paddingVertical: 16, // FIXED: Reduced from 18 to 16
-    paddingHorizontal: 28, // FIXED: Reduced from 32 to 28
-    borderRadius: 18, // FIXED: Reduced from 20 to 18
+    paddingVertical: 20,
+    paddingHorizontal: 32,
+    borderRadius: 24,
   },
   fullWidth: {
     width: '100%',
@@ -282,7 +250,7 @@ const styles = StyleSheet.create({
   disabledButton: {
     backgroundColor: Colors.border,
     borderColor: Colors.border,
-    shadowOpacity: 0.03, // FIXED: Reduced from 0.05 to 0.03
+    shadowOpacity: 0.05,
   },
   primaryText: {
     color: '#fff',
@@ -301,13 +269,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   smallText: {
-    fontSize: 12, // FIXED: Reduced from 13 to 12
+    fontSize: 14,
   },
   mediumText: {
-    fontSize: 14, // FIXED: Reduced from 15 to 14
+    fontSize: 16,
   },
   largeText: {
-    fontSize: 16, // FIXED: Reduced from 17 to 16
+    fontSize: 18,
   },
   disabledText: {
     color: Colors.textLight,
