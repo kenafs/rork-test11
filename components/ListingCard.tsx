@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Platform } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Platform, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { Listing } from '@/types';
@@ -17,6 +17,8 @@ import Animated, {
   runOnJS
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
+
+const { width } = Dimensions.get('window');
 
 interface ListingCardProps {
   listing: Listing;
@@ -169,19 +171,19 @@ export default function ListingCard({ listing }: ListingCardProps) {
           
           <View style={styles.footer}>
             <View style={styles.locationContainer}>
-              <MapPin size={14} color={Colors.textLight} />
+              <MapPin size={12} color={Colors.textLight} />
               <Text style={styles.locationText}>{listing.location.city}</Text>
             </View>
             
             <View style={styles.priceContainer}>
-              <Euro size={14} color={Colors.primary} />
+              <Euro size={12} color={Colors.primary} />
               {formatPrice(listing.price)}
             </View>
           </View>
           
           <View style={styles.metaInfo}>
             <View style={styles.dateContainer}>
-              <Clock size={12} color={Colors.textLight} />
+              <Clock size={10} color={Colors.textLight} />
               <Text style={styles.dateText}>
                 Publié le {formatDate(listing.createdAt)}
               </Text>
@@ -212,8 +214,8 @@ export default function ListingCard({ listing }: ListingCardProps) {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
-    borderRadius: 24,
-    marginBottom: 20,
+    borderRadius: 20,
+    marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.12,
@@ -222,13 +224,16 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: Colors.border,
+    width: '100%',
+    alignSelf: 'center',
   },
   touchable: {
     flex: 1,
   },
   imageContainer: {
     position: 'relative',
-    height: 220,
+    height: 180,
+    width: '100%',
   },
   image: {
     width: '100%',
@@ -241,21 +246,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   placeholderText: {
-    fontSize: 40,
+    fontSize: 32,
     opacity: 0.7,
   },
   categoryBadge: {
     position: 'absolute',
-    top: 16,
-    left: 16,
+    top: 12,
+    left: 12,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
   },
   categoryText: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: '700',
   },
   imageOverlay: {
@@ -263,51 +268,51 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 60,
+    height: 40,
   },
   content: {
-    padding: 24,
+    padding: 16,
   },
   title: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: '800',
     color: Colors.text,
-    marginBottom: 8,
-    lineHeight: 26,
+    marginBottom: 6,
+    lineHeight: 22,
   },
   description: {
-    fontSize: 14,
+    fontSize: 12,
     color: Colors.textLight,
-    lineHeight: 20,
-    marginBottom: 20,
+    lineHeight: 16,
+    marginBottom: 16,
   },
   creatorInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
   },
   creatorAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 12,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginRight: 8,
     overflow: 'hidden',
   },
   avatarImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
   },
   avatarGradient: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: '700',
   },
   creatorDetails: {
@@ -315,7 +320,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   creatorName: {
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: '700',
     color: Colors.text,
     marginBottom: 2,
@@ -324,16 +329,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   locationContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   locationText: {
-    fontSize: 14,
+    fontSize: 12,
     color: Colors.textLight,
-    marginLeft: 6,
+    marginLeft: 4,
     fontWeight: '500',
   },
   priceContainer: {
@@ -341,10 +346,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   priceText: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: '800',
     color: Colors.primary,
-    marginLeft: 6,
+    marginLeft: 4,
   },
   metaInfo: {
     flexDirection: 'row',
@@ -356,31 +361,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   dateText: {
-    fontSize: 12,
+    fontSize: 10,
     color: Colors.textMuted,
-    marginLeft: 6,
+    marginLeft: 4,
     fontWeight: '500',
   },
   tagsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
   },
   tag: {
     backgroundColor: Colors.backgroundAlt,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: Colors.border,
   },
   tagText: {
-    fontSize: 10,
+    fontSize: 8,
     color: Colors.primary,
     fontWeight: '600',
   },
   moreTagsText: {
-    fontSize: 10,
+    fontSize: 8,
     color: Colors.textMuted,
     fontWeight: '600',
   },

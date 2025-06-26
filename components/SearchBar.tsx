@@ -11,6 +11,7 @@ import Animated, {
   Extrapolate
 } from 'react-native-reanimated';
 import Colors from '@/constants/colors';
+import * as Haptics from 'expo-haptics';
 
 interface SearchBarProps {
   value: string;
@@ -55,6 +56,13 @@ export default function SearchBar({
     focusOpacity.value = withTiming(0, { duration: 200 });
   };
   
+  const handleLocationPress = () => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    onLocationPress?.();
+  };
+  
   const animatedContainerStyle = useAnimatedStyle(() => {
     return {
       transform: [{ scale: focusScale.value }],
@@ -74,7 +82,7 @@ export default function SearchBar({
         
         <View style={styles.searchContainer}>
           <View style={styles.searchInner}>
-            <Search size={20} color={isFocused ? Colors.primary : Colors.textLight} style={styles.searchIcon} />
+            <Search size={18} color={isFocused ? Colors.primary : Colors.textLight} style={styles.searchIcon} />
             
             <AnimatedTextInput
               style={styles.input}
@@ -91,7 +99,7 @@ export default function SearchBar({
             
             {value.length > 0 && (
               <TouchableOpacity onPress={onClear} style={styles.clearButton}>
-                <X size={16} color={Colors.textLight} />
+                <X size={14} color={Colors.textLight} />
               </TouchableOpacity>
             )}
           </View>
@@ -101,7 +109,7 @@ export default function SearchBar({
       {showLocationButton && (
         <TouchableOpacity 
           style={styles.locationButton}
-          onPress={onLocationPress}
+          onPress={handleLocationPress}
           activeOpacity={0.8}
         >
           <LinearGradient
@@ -110,7 +118,7 @@ export default function SearchBar({
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
           >
-            <MapPin size={20} color="#fff" />
+            <MapPin size={18} color="#fff" />
           </LinearGradient>
         </TouchableOpacity>
       )}
@@ -122,9 +130,9 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    gap: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    gap: 12,
   },
   searchWrapper: {
     flex: 1,
@@ -132,69 +140,69 @@ const styles = StyleSheet.create({
   },
   glowEffect: {
     position: 'absolute',
-    top: -4,
-    left: -4,
-    right: -4,
-    bottom: -4,
-    borderRadius: 24,
+    top: -3,
+    left: -3,
+    right: -3,
+    bottom: -3,
+    borderRadius: 20,
     backgroundColor: Colors.primary,
     opacity: 0.1,
     shadowColor: Colors.primary,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 8,
+    shadowRadius: 10,
+    elevation: 6,
   },
   searchContainer: {
-    borderRadius: 20,
+    borderRadius: 16,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: Colors.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 8,
+    shadowRadius: 10,
+    elevation: 6,
     backgroundColor: '#fff',
   },
   searchInner: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   searchIcon: {
-    marginRight: 12,
+    marginRight: 10,
   },
   input: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 14,
     color: Colors.text,
     fontWeight: '500',
   },
   clearButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: Colors.backgroundAlt,
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 8,
+    marginLeft: 6,
   },
   locationButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     overflow: 'hidden',
     shadowColor: Colors.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 8,
+    shadowRadius: 10,
+    elevation: 6,
   },
   locationGradient: {
-    width: 56,
-    height: 56,
+    width: 48,
+    height: 48,
     justifyContent: 'center',
     alignItems: 'center',
   },

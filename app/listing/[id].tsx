@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Alert, Platform, Dimensions } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { useAuth } from '@/hooks/useAuth';
@@ -27,6 +27,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 
+const { width, height } = Dimensions.get('window');
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
 export default function ListingDetailScreen() {
@@ -438,10 +439,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   scrollContent: {
-    paddingBottom: 140,
+    paddingBottom: 120,
   },
   imageContainer: {
-    height: 400,
+    height: 320,
     position: 'relative',
   },
   image: {
@@ -455,7 +456,7 @@ const styles = StyleSheet.create({
   placeholderText: {
     color: '#fff',
     fontWeight: '700',
-    fontSize: 24,
+    fontSize: 20,
   },
   imageOverlay: {
     position: 'absolute',
@@ -466,16 +467,16 @@ const styles = StyleSheet.create({
   },
   categoryBadge: {
     position: 'absolute',
-    bottom: 24,
-    left: 24,
+    bottom: 20,
+    left: 20,
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
   },
   categoryText: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '700',
   },
   headerControls: {
@@ -485,26 +486,26 @@ const styles = StyleSheet.create({
     right: 0,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     zIndex: 10,
   },
   headerButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   headerActions: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 8,
   },
   contentCard: {
     backgroundColor: '#fff',
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    marginTop: -32,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    marginTop: -24,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -8 },
     shadowOpacity: 0.1,
@@ -513,23 +514,23 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   detailsContainer: {
-    padding: 32,
+    padding: 24,
   },
   title: {
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: '800',
     color: Colors.text,
-    marginBottom: 24,
-    lineHeight: 40,
+    marginBottom: 20,
+    lineHeight: 32,
   },
   creatorContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 32,
-    padding: 20,
+    marginBottom: 24,
+    padding: 16,
     backgroundColor: Colors.backgroundAlt,
-    borderRadius: 20,
+    borderRadius: 16,
   },
   creatorInfo: {
     flexDirection: 'row',
@@ -537,17 +538,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   creatorImage: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    marginRight: 16,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    marginRight: 12,
   },
   creatorImagePlaceholder: {
     justifyContent: 'center',
     alignItems: 'center',
   },
   creatorImageText: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '700',
     color: '#fff',
   },
@@ -555,35 +556,35 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   creatorName: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
     color: Colors.text,
     marginBottom: 4,
   },
   typeBadge: {
     backgroundColor: Colors.primary,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
   },
   typeText: {
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: '700',
     color: '#fff',
   },
   infoContainer: {
-    marginBottom: 32,
+    marginBottom: 24,
   },
   infoItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   infoIcon: {
-    marginRight: 12,
+    marginRight: 8,
   },
   infoText: {
-    fontSize: 16,
+    fontSize: 14,
     color: Colors.text,
     fontWeight: '500',
   },
@@ -591,54 +592,54 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-    marginTop: 16,
+    marginTop: 12,
   },
   tag: {
     backgroundColor: Colors.backgroundAlt,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: Colors.border,
   },
   tagText: {
-    fontSize: 12,
+    fontSize: 10,
     color: Colors.primary,
     fontWeight: '600',
   },
   divider: {
     height: 1,
     backgroundColor: Colors.border,
-    marginVertical: 32,
+    marginVertical: 24,
   },
   sectionTitle: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: '700',
     color: Colors.text,
-    marginBottom: 16,
+    marginBottom: 12,
   },
   description: {
-    fontSize: 16,
+    fontSize: 14,
     color: Colors.text,
-    lineHeight: 26,
+    lineHeight: 22,
   },
   priceContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 24,
+    padding: 20,
     backgroundColor: Colors.backgroundAlt,
-    borderRadius: 20,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: Colors.border,
   },
   priceLabel: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
     color: Colors.text,
   },
   price: {
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: '800',
     color: Colors.primary,
   },
@@ -651,18 +652,17 @@ const styles = StyleSheet.create({
   },
   actionBlur: {
     flexDirection: 'row',
-    padding: 24,
+    padding: 20,
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderTopWidth: 1,
     borderTopColor: Colors.border,
+    gap: 12,
   },
   contactButton: {
     flex: 1,
-    marginRight: 8,
   },
   quoteButton: {
     flex: 1,
-    marginLeft: 8,
   },
   notFoundContainer: {
     flex: 1,
@@ -671,7 +671,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   notFoundText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
     color: Colors.text,
     marginBottom: 16,

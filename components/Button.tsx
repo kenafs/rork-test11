@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, TouchableOpacity, Text, ActivityIndicator, ViewStyle, TextStyle, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, Text, ActivityIndicator, ViewStyle, TextStyle, View, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { 
   useSharedValue, 
@@ -8,6 +8,7 @@ import Animated, {
   runOnJS
 } from 'react-native-reanimated';
 import Colors from '@/constants/colors';
+import * as Haptics from 'expo-haptics';
 
 interface ButtonProps {
   title: string;
@@ -44,6 +45,10 @@ export default function Button({
   const handlePressIn = () => {
     scale.value = withSpring(0.96, { damping: 15, stiffness: 300 });
     opacity.value = withSpring(0.8, { damping: 15, stiffness: 300 });
+    
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
   };
   
   const handlePressOut = () => {
@@ -53,6 +58,9 @@ export default function Button({
   
   const handlePress = () => {
     if (!disabled && !loading) {
+      if (Platform.OS !== 'web') {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      }
       onPress();
     }
   };
@@ -194,21 +202,21 @@ export default function Button({
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: 20,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
+    shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowRadius: 12,
+    elevation: 6,
     overflow: 'hidden',
   },
   buttonContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: 6,
   },
   gradientButton: {
     justifyContent: 'center',
@@ -230,19 +238,19 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   smallButton: {
-    paddingVertical: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+  },
+  mediumButton: {
+    paddingVertical: 14,
     paddingHorizontal: 20,
     borderRadius: 16,
   },
-  mediumButton: {
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 20,
-  },
   largeButton: {
-    paddingVertical: 20,
-    paddingHorizontal: 32,
-    borderRadius: 24,
+    paddingVertical: 18,
+    paddingHorizontal: 28,
+    borderRadius: 20,
   },
   fullWidth: {
     width: '100%',
@@ -269,13 +277,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   smallText: {
-    fontSize: 14,
+    fontSize: 12,
   },
   mediumText: {
-    fontSize: 16,
+    fontSize: 14,
   },
   largeText: {
-    fontSize: 18,
+    fontSize: 16,
   },
   disabledText: {
     color: Colors.textLight,

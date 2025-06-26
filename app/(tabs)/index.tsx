@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, RefreshControl, Alert } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, RefreshControl, Alert, Dimensions } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useListings } from '@/hooks/useListings';
@@ -26,6 +26,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Plus, MapPin, Star, Users, Calendar, Heart, TrendingUp, Sparkles, ArrowRight } from 'lucide-react-native';
 
+const { width, height } = Dimensions.get('window');
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
 export default function HomeScreen() {
@@ -178,7 +179,7 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
       
-      {/* Modern Header */}
+      {/* Compact Modern Header */}
       <Animated.View style={[styles.header, headerStyle]}>
         <LinearGradient
           colors={[Colors.primary, Colors.secondary]}
@@ -197,14 +198,13 @@ export default function HomeScreen() {
                 { icon: Heart, value: safeFavorites.length || 0, label: 'Favoris', color: '#FF6B6B' },
                 { icon: Star, value: user?.rating?.toFixed(1) || '4.8', label: 'Note', color: '#FFD700' },
                 { icon: TrendingUp, value: safeFilteredListings.length, label: 'Offres', color: '#10B981' },
-                { icon: Sparkles, value: '12', label: 'En ligne', color: '#8B5CF6' }
               ].map((stat, index) => (
                 <Animated.View 
                   key={`stat-${index}`}
                   entering={ZoomIn.delay(600 + index * 100)}
                   style={styles.statCard}
                 >
-                  <stat.icon size={16} color={stat.color} />
+                  <stat.icon size={14} color={stat.color} />
                   <Text style={styles.statNumber}>{stat.value}</Text>
                   <Text style={styles.statLabel}>{stat.label}</Text>
                 </Animated.View>
@@ -218,7 +218,7 @@ export default function HomeScreen() {
                   onPress={handleCreatePress}
                   activeOpacity={0.8}
                 >
-                  <Plus size={16} color="#fff" />
+                  <Plus size={14} color="#fff" />
                   <Text style={styles.createButtonText}>{getCreateButtonText()}</Text>
                 </TouchableOpacity>
               </Animated.View>
@@ -277,14 +277,17 @@ export default function HomeScreen() {
           </Animated.View>
           
           {safeFilteredListings.length > 0 ? (
-            safeFilteredListings.map((listing, index) => (
-              <Animated.View
-                key={`listing-${listing.id}-${index}-${listing.createdAt}`}
-                entering={SlideInDown.delay(1800 + index * 100)}
-              >
-                <ListingCard listing={listing} />
-              </Animated.View>
-            ))
+            <View style={styles.listingsGrid}>
+              {safeFilteredListings.map((listing, index) => (
+                <Animated.View
+                  key={`listing-${listing.id}-${index}-${listing.createdAt}`}
+                  entering={SlideInDown.delay(1800 + index * 100)}
+                  style={styles.listingWrapper}
+                >
+                  <ListingCard listing={listing} />
+                </Animated.View>
+              ))}
+            </View>
           ) : (
             <Animated.View entering={FadeIn.delay(2000)} style={styles.emptyState}>
               <View style={styles.emptyStateCard}>
@@ -326,32 +329,31 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingTop: 50,
-    paddingBottom: 20,
     zIndex: 10,
   },
   headerGradient: {
-    paddingHorizontal: 24,
-    paddingVertical: 24,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
   },
   headerContent: {
     alignItems: 'center',
   },
   welcomeSection: {
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 16,
     width: '100%',
   },
   welcomeText: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '800',
     color: '#fff',
     marginBottom: 4,
     textAlign: 'center',
   },
   subtitleText: {
-    fontSize: 14,
+    fontSize: 12,
     color: 'rgba(255, 255, 255, 0.9)',
-    lineHeight: 20,
+    lineHeight: 16,
     textAlign: 'center',
     paddingHorizontal: 20,
   },
@@ -359,32 +361,32 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 12,
-    marginBottom: 24,
+    gap: 8,
+    marginBottom: 16,
     width: '100%',
     paddingHorizontal: 10,
   },
   statCard: {
     flex: 1,
     backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    borderRadius: 16,
-    padding: 12,
+    borderRadius: 12,
+    padding: 8,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
-    minHeight: 70,
+    minHeight: 50,
   },
   statNumber: {
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: '700',
     color: '#fff',
-    marginTop: 4,
-    marginBottom: 2,
+    marginTop: 2,
+    marginBottom: 1,
     textAlign: 'center',
   },
   statLabel: {
-    fontSize: 10,
+    fontSize: 8,
     color: 'rgba(255, 255, 255, 0.8)',
     fontWeight: '500',
     textAlign: 'center',
@@ -398,84 +400,92 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 20,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    gap: 8,
+    borderRadius: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    gap: 6,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   createButtonText: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
   },
   content: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 140,
+    paddingBottom: 120,
   },
   listingsContainer: {
-    padding: 24,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
   },
   listingsHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 20,
   },
   listingsTitle: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '700',
     color: Colors.text,
   },
   countBadge: {
     backgroundColor: Colors.backgroundAlt,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: Colors.border,
   },
   listingsCount: {
-    fontSize: 14,
+    fontSize: 12,
     color: Colors.primary,
     fontWeight: '700',
   },
+  listingsGrid: {
+    gap: 16,
+  },
+  listingWrapper: {
+    width: '100%',
+  },
   emptyState: {
     alignItems: 'center',
-    padding: 40,
+    padding: 32,
   },
   emptyStateCard: {
     backgroundColor: Colors.backgroundAlt,
-    padding: 32,
-    borderRadius: 20,
+    padding: 24,
+    borderRadius: 16,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: Colors.border,
+    maxWidth: 280,
   },
   emptyTitle: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: '600',
     color: Colors.text,
     marginBottom: 8,
   },
   emptyText: {
-    fontSize: 14,
+    fontSize: 12,
     color: Colors.textLight,
     textAlign: 'center',
   },
   fab: {
     position: 'absolute',
-    bottom: 120,
-    right: 24,
+    bottom: 100,
+    right: 20,
     zIndex: 10,
   },
   fabButton: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     overflow: 'hidden',
     shadowColor: Colors.primary,
     shadowOffset: { width: 0, height: 8 },
@@ -484,8 +494,8 @@ const styles = StyleSheet.create({
     elevation: 12,
   },
   fabGradient: {
-    width: 64,
-    height: 64,
+    width: 56,
+    height: 56,
     justifyContent: 'center',
     alignItems: 'center',
   },
