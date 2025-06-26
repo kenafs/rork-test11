@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/hooks/useAuth';
 import Colors, { gradients } from '@/constants/colors';
 import Button from '@/components/Button';
@@ -25,6 +26,7 @@ const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
 export default function LandingScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { isAuthenticated, user } = useAuth();
   
   const scrollY = useSharedValue(0);
@@ -136,7 +138,7 @@ export default function LandingScreen() {
   ];
   
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <AnimatedScrollView 
         style={styles.scrollView} 
         showsVerticalScrollIndicator={false}
@@ -332,13 +334,13 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   hero: {
-    paddingTop: 60,
+    paddingTop: 40,
     paddingBottom: 32,
     paddingHorizontal: 20,
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: height * 0.85,
+    minHeight: height * 0.75,
   },
   heroContent: {
     alignItems: 'center',

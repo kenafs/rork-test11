@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, RefreshControl, Alert, Dimensions } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/hooks/useAuth';
 import { useListings } from '@/hooks/useListings';
 import { useLocation } from '@/hooks/useLocation';
@@ -31,6 +32,7 @@ const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
 export default function HomeScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { user, isAuthenticated } = useAuth();
   const { 
     filteredListings = [], 
@@ -75,12 +77,20 @@ export default function HomeScreen() {
     const translateY = interpolate(
       scrollY.value,
       [0, 100],
-      [0, -10],
+      [0, -50],
+      Extrapolate.CLAMP
+    );
+    
+    const opacity = interpolate(
+      scrollY.value,
+      [0, 80],
+      [1, 0.8],
       Extrapolate.CLAMP
     );
     
     return {
       transform: [{ translateY }],
+      opacity,
     };
   });
   
@@ -137,19 +147,6 @@ export default function HomeScreen() {
     }
   };
   
-  const getSubtitle = () => {
-    switch (user?.userType) {
-      case 'provider':
-        return "Gérez vos annonces et développez votre activité";
-      case 'business':
-        return "Proposez vos services et attirez de nouveaux clients";
-      case 'client':
-        return "Trouvez le prestataire parfait pour votre événement";
-      default:
-        return "Trouvez le prestataire parfait pour votre événement";
-    }
-  };
-  
   const getCreateButtonText = () => {
     switch (user?.userType) {
       case 'provider':
@@ -179,8 +176,8 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
       
-      {/* Compact Modern Header */}
-      <Animated.View style={[styles.header, headerStyle]}>
+      {/* Compact Modern Header - Now Scrollable */}
+      <Animated.View style={[styles.header, { paddingTop: insets.top + 20 }, headerStyle]}>
         <LinearGradient
           colors={[Colors.primary, Colors.secondary]}
           style={styles.headerGradient}
@@ -190,35 +187,16 @@ export default function HomeScreen() {
           <Animated.View entering={FadeIn.delay(200)} style={styles.headerContent}>
             <View style={styles.welcomeSection}>
               <Text style={styles.welcomeText}>{getWelcomeMessage()}</Text>
-              <Text style={styles.subtitleText}>{getSubtitle()}</Text>
             </View>
             
-            <Animated.View entering={SlideInDown.delay(400)} style={styles.statsRow}>
-              {[
-                { icon: Heart, value: safeFavorites.length || 0, label: 'Favoris', color: '#FF6B6B' },
-                { icon: Star, value: user?.rating?.toFixed(1) || '4.8', label: 'Note', color: '#FFD700' },
-                { icon: TrendingUp, value: safeFilteredListings.length, label: 'Offres', color: '#10B981' },
-              ].map((stat, index) => (
-                <Animated.View 
-                  key={`stat-${index}`}
-                  entering={ZoomIn.delay(600 + index * 100)}
-                  style={styles.statCard}
-                >
-                  <stat.icon size={14} color={stat.color} />
-                  <Text style={styles.statNumber}>{stat.value}</Text>
-                  <Text style={styles.statLabel}>{stat.label}</Text>
-                </Animated.View>
-              ))}
-            </Animated.View>
-            
             {user && user.userType !== 'client' && (
-              <Animated.View entering={SlideInDown.delay(800)} style={styles.createButtonContainer}>
+              <Animated.View entering={SlideInDown.delay(400)} style={styles.createButtonContainer}>
                 <TouchableOpacity 
                   style={styles.createButton}
                   onPress={handleCreatePress}
                   activeOpacity={0.8}
                 >
-                  <Plus size={14} color="#fff" />
+                  <Plus size={16} color="#fff" />
                   <Text style={styles.createButtonText}>{getCreateButtonText()}</Text>
                 </TouchableOpacity>
               </Animated.View>
@@ -235,10 +213,10 @@ export default function HomeScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingTop: 140 }]}
       >
         {/* Search Bar */}
-        <Animated.View entering={SlideInDown.delay(1000)}>
+        <Animated.View entering={SlideInDown.delay(600)}>
           <SearchBar
             value={searchQuery || ''}
             onChangeText={handleSearch}
@@ -250,13 +228,13 @@ export default function HomeScreen() {
         
         {/* Location Permission Request */}
         {!hasPermission && (
-          <Animated.View entering={FadeIn.delay(1200)}>
+          <Animated.View entering={FadeIn.delay(800)}>
             <LocationPermissionRequest onRequestPermission={requestPermission} />
           </Animated.View>
         )}
         
         {/* Category Filter */}
-        <Animated.View entering={SlideInDown.delay(1400)}>
+        <Animated.View entering={SlideInDown.delay(1000)}>
           <CategoryFilter
             selectedCategory={selectedCategory}
             onSelectCategory={filterByCategory}
@@ -265,7 +243,7 @@ export default function HomeScreen() {
         
         {/* Listings */}
         <View style={styles.listingsContainer}>
-          <Animated.View entering={FadeIn.delay(1600)} style={styles.listingsHeader}>
+          <Animated.View entering={FadeIn.delay(1200)} style={styles.listingsHeader}>
             <Text style={styles.listingsTitle}>
               {selectedCategory ? 'Résultats filtrés' : 'Annonces récentes'}
             </Text>
@@ -281,7 +259,7 @@ export default function HomeScreen() {
               {safeFilteredListings.map((listing, index) => (
                 <Animated.View
                   key={`listing-${listing.id}-${index}-${listing.createdAt}`}
-                  entering={SlideInDown.delay(1800 + index * 100)}
+                  entering={SlideInDown.delay(1400 + index * 100)}
                   style={styles.listingWrapper}
                 >
                   <ListingCard listing={listing} />
@@ -289,7 +267,7 @@ export default function HomeScreen() {
               ))}
             </View>
           ) : (
-            <Animated.View entering={FadeIn.delay(2000)} style={styles.emptyState}>
+            <Animated.View entering={FadeIn.delay(1600)} style={styles.emptyState}>
               <View style={styles.emptyStateCard}>
                 <Text style={styles.emptyTitle}>Aucun résultat</Text>
                 <Text style={styles.emptyText}>
@@ -328,12 +306,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   header: {
-    paddingTop: 50,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     zIndex: 10,
   },
   headerGradient: {
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingVertical: 20,
   },
   headerContent: {
     alignItems: 'center',
@@ -344,51 +325,9 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   welcomeText: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: '800',
     color: '#fff',
-    marginBottom: 4,
-    textAlign: 'center',
-  },
-  subtitleText: {
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.9)',
-    lineHeight: 16,
-    textAlign: 'center',
-    paddingHorizontal: 20,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 16,
-    width: '100%',
-    paddingHorizontal: 10,
-  },
-  statCard: {
-    flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    borderRadius: 12,
-    padding: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    minHeight: 50,
-  },
-  statNumber: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#fff',
-    marginTop: 2,
-    marginBottom: 1,
-    textAlign: 'center',
-  },
-  statLabel: {
-    fontSize: 8,
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontWeight: '500',
     textAlign: 'center',
   },
   createButtonContainer: {
@@ -400,16 +339,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 16,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    gap: 6,
+    borderRadius: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    gap: 8,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   createButtonText: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '600',
   },
   content: {

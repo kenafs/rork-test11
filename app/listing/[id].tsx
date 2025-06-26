@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Alert, Platform, Dimensions } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/hooks/useAuth';
 import { useFavoritesComputed } from '@/hooks/useFavorites';
 import { useMessages } from '@/hooks/useMessages';
@@ -33,6 +34,7 @@ const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 export default function ListingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { isAuthenticated, user } = useAuth();
   const { isFavorite, addToFavorites, removeFromFavorites } = useFavoritesComputed();
   const { createConversation } = useMessages();
@@ -46,7 +48,7 @@ export default function ListingDetailScreen() {
   
   if (!listing) {
     return (
-      <View style={styles.notFoundContainer}>
+      <View style={[styles.notFoundContainer, { paddingTop: insets.top + 20 }]}>
         <Text style={styles.notFoundText}>Annonce non trouvée</Text>
         <Button 
           title="Retour aux annonces" 
@@ -94,11 +96,11 @@ export default function ListingDetailScreen() {
     };
   });
   
-  const blurStyle = useAnimatedStyle(() => {
+  const headerControlsStyle = useAnimatedStyle(() => {
     const opacity = interpolate(
       scrollY.value,
       [200, 300],
-      [0, 1],
+      [1, 0.9],
       Extrapolate.CLAMP
     );
     
@@ -248,36 +250,6 @@ export default function ListingDetailScreen() {
           </View>
         </Animated.View>
         
-        {/* Floating Header Controls */}
-        <View style={styles.headerControls}>
-          <TouchableOpacity 
-            style={styles.headerButton}
-            onPress={() => router.back()}
-          >
-            <ChevronLeft size={24} color="#fff" />
-          </TouchableOpacity>
-          
-          <View style={styles.headerActions}>
-            <TouchableOpacity 
-              style={styles.headerButton}
-              onPress={handleShare}
-            >
-              <Share size={20} color="#fff" />
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={styles.headerButton}
-              onPress={toggleFavorite}
-            >
-              <Heart 
-                size={20} 
-                color="#fff" 
-                fill={isListingFavorite ? '#fff' : 'transparent'} 
-              />
-            </TouchableOpacity>
-          </View>
-        </View>
-        
         {/* Content Card */}
         <Animated.View 
           entering={SlideInDown.delay(300).springify()}
@@ -387,11 +359,41 @@ export default function ListingDetailScreen() {
         </Animated.View>
       </AnimatedScrollView>
       
+      {/* Floating Header Controls */}
+      <Animated.View style={[styles.headerControls, { paddingTop: insets.top + 10 }, headerControlsStyle]}>
+        <TouchableOpacity 
+          style={styles.headerButton}
+          onPress={() => router.back()}
+        >
+          <ChevronLeft size={24} color="#fff" />
+        </TouchableOpacity>
+        
+        <View style={styles.headerActions}>
+          <TouchableOpacity 
+            style={styles.headerButton}
+            onPress={handleShare}
+          >
+            <Share size={20} color="#fff" />
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.headerButton}
+            onPress={toggleFavorite}
+          >
+            <Heart 
+              size={20} 
+              color="#fff" 
+              fill={isListingFavorite ? '#fff' : 'transparent'} 
+            />
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
+      
       {/* Floating Action Buttons */}
       {!isOwnListing && (
         <Animated.View 
           entering={SlideInDown.delay(1000)}
-          style={styles.actionContainer}
+          style={[styles.actionContainer, { paddingBottom: insets.bottom + 20 }]}
         >
           <View style={styles.actionBlur}>
             <Button
@@ -418,7 +420,7 @@ export default function ListingDetailScreen() {
       {isOwnListing && (
         <Animated.View 
           entering={SlideInDown.delay(1000)}
-          style={styles.actionContainer}
+          style={[styles.actionContainer, { paddingBottom: insets.bottom + 20 }]}
         >
           <View style={styles.actionBlur}>
             <Button
@@ -481,7 +483,7 @@ const styles = StyleSheet.create({
   },
   headerControls: {
     position: 'absolute',
-    top: 50,
+    top: 0,
     left: 0,
     right: 0,
     flexDirection: 'row',
@@ -648,7 +650,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
   },
   actionBlur: {
     flexDirection: 'row',
