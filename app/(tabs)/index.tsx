@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, RefreshControl, Alert, Dimensions } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, RefreshControl, Alert, Dimensions, Platform } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/hooks/useAuth';
@@ -13,11 +13,9 @@ import CategoryFilter from '@/components/CategoryFilter';
 import ListingCard from '@/components/ListingCard';
 import LocationPermissionRequest from '@/components/LocationPermissionRequest';
 import Button from '@/components/Button';
-import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { 
   FadeIn, 
   SlideInDown, 
-  ZoomIn,
   useSharedValue,
   useAnimatedStyle,
   withSpring,
@@ -25,7 +23,8 @@ import Animated, {
   interpolate,
   Extrapolate
 } from 'react-native-reanimated';
-import { Plus, MapPin, Star, Users, Calendar, Heart, TrendingUp, Sparkles, ArrowRight } from 'lucide-react-native';
+import { Plus, Search } from 'lucide-react-native';
+import * as Haptics from 'expo-haptics';
 
 const { width, height } = Dimensions.get('window');
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
@@ -61,7 +60,6 @@ export default function HomeScreen() {
   
   const [refreshing, setRefreshing] = useState(false);
   const scrollY = useSharedValue(0);
-  const fabScale = useSharedValue(1);
   
   useEffect(() => {
     fetchListings();
@@ -74,6 +72,13 @@ export default function HomeScreen() {
   });
   
   const headerStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(
+      scrollY.value,
+      [0, 100],
+      [1, 0],
+      Extrapolate.CLAMP
+    );
+    
     const translateY = interpolate(
       scrollY.value,
       [0, 100],
@@ -81,30 +86,9 @@ export default function HomeScreen() {
       Extrapolate.CLAMP
     );
     
-    const opacity = interpolate(
-      scrollY.value,
-      [0, 80],
-      [1, 0.8],
-      Extrapolate.CLAMP
-    );
-    
     return {
+      opacity,
       transform: [{ translateY }],
-      opacity,
-    };
-  });
-  
-  const fabStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(
-      scrollY.value,
-      [0, 200],
-      [1, 0.8],
-      Extrapolate.CLAMP
-    );
-    
-    return {
-      opacity,
-      transform: [{ scale: fabScale.value }],
     };
   });
   
@@ -132,38 +116,16 @@ export default function HomeScreen() {
   };
   
   const safeFilteredListings = Array.isArray(filteredListings) ? filteredListings : [];
-  const safeFavorites = Array.isArray(favorites) ? favorites : [];
   
   const getWelcomeMessage = () => {
-    switch (user?.userType) {
-      case 'provider':
-        return `Bonjour ${user.name.split(' ')[0]} 👋`;
-      case 'business':
-        return `Bienvenue ${user.name} 🏢`;
-      case 'client':
-        return `Salut ${user.name.split(' ')[0]} 😊`;
-      default:
-        return `Bonjour ${user?.name.split(' ')[0] || 'Utilisateur'} 👋`;
-    }
-  };
-  
-  const getCreateButtonText = () => {
-    switch (user?.userType) {
-      case 'provider':
-        return "✨ Créer une annonce";
-      case 'business':
-        return "🏢 Ajouter un service";
-      case 'client':
-        return "🔍 Rechercher";
-      default:
-        return "✨ Créer une annonce";
-    }
+    const firstName = user?.name?.split(' ')[0] || 'Utilisateur';
+    return `Salut ${firstName} 👋`;
   };
   
   const handleCreatePress = () => {
-    fabScale.value = withSpring(0.9, { damping: 15 }, () => {
-      fabScale.value = withSpring(1);
-    });
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
     
     if (user?.userType === 'client') {
       router.push('/(tabs)/search');
@@ -176,90 +138,66 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
       
-      {/* Compact Modern Header - Now Scrollable */}
-      <Animated.View style={[styles.header, { paddingTop: insets.top + 20 }, headerStyle]}>
-        <LinearGradient
-          colors={[Colors.primary, Colors.secondary]}
-          style={styles.headerGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
-          <Animated.View entering={FadeIn.delay(200)} style={styles.headerContent}>
-            <View style={styles.welcomeSection}>
-              <Text style={styles.welcomeText}>{getWelcomeMessage()}</Text>
-            </View>
-            
-            {user && user.userType !== 'client' && (
-              <Animated.View entering={SlideInDown.delay(400)} style={styles.createButtonContainer}>
-                <TouchableOpacity 
-                  style={styles.createButton}
-                  onPress={handleCreatePress}
-                  activeOpacity={0.8}
-                >
-                  <Plus size={16} color="#fff" />
-                  <Text style={styles.createButtonText}>{getCreateButtonText()}</Text>
-                </TouchableOpacity>
-              </Animated.View>
-            )}
-          </Animated.View>
-        </LinearGradient>
-      </Animated.View>
-      
       <AnimatedScrollView 
-        style={styles.content}
+        style={styles.scrollView}
         onScroll={scrollHandler}
         scrollEventThrottle={16}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.scrollContent, { paddingTop: 140 }]}
+        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 20 }]}
       >
+        {/* Welcome Header - Disappears on scroll */}
+        <Animated.View style={[styles.welcomeHeader, headerStyle]}>
+          <Animated.Text entering={FadeIn.delay(200)} style={styles.welcomeText}>
+            {getWelcomeMessage()}
+          </Animated.Text>
+        </Animated.View>
+        
         {/* Search Bar */}
-        <Animated.View entering={SlideInDown.delay(600)}>
+        <Animated.View entering={SlideInDown.delay(400)} style={styles.searchSection}>
           <SearchBar
             value={searchQuery || ''}
             onChangeText={handleSearch}
             onClear={handleClearSearch}
             onLocationPress={handleLocationPress}
-            placeholder="Rechercher un prestataire..."
+            placeholder="Où souhaitez-vous organiser votre événement ?"
           />
         </Animated.View>
         
         {/* Location Permission Request */}
         {!hasPermission && (
-          <Animated.View entering={FadeIn.delay(800)}>
+          <Animated.View entering={FadeIn.delay(600)}>
             <LocationPermissionRequest onRequestPermission={requestPermission} />
           </Animated.View>
         )}
         
         {/* Category Filter */}
-        <Animated.View entering={SlideInDown.delay(1000)}>
+        <Animated.View entering={SlideInDown.delay(800)}>
           <CategoryFilter
             selectedCategory={selectedCategory}
             onSelectCategory={filterByCategory}
           />
         </Animated.View>
         
-        {/* Listings */}
-        <View style={styles.listingsContainer}>
-          <Animated.View entering={FadeIn.delay(1200)} style={styles.listingsHeader}>
-            <Text style={styles.listingsTitle}>
-              {selectedCategory ? 'Résultats filtrés' : 'Annonces récentes'}
+        {/* Listings Section */}
+        <View style={styles.listingsSection}>
+          <Animated.View entering={FadeIn.delay(1000)} style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>
+              {selectedCategory ? 'Résultats filtrés' : 'Découvrir'}
             </Text>
-            <View style={styles.countBadge}>
-              <Text style={styles.listingsCount}>
-                {safeFilteredListings.length}
-              </Text>
-            </View>
+            <Text style={styles.sectionSubtitle}>
+              {safeFilteredListings.length} option{safeFilteredListings.length > 1 ? 's' : ''} disponible{safeFilteredListings.length > 1 ? 's' : ''}
+            </Text>
           </Animated.View>
           
           {safeFilteredListings.length > 0 ? (
             <View style={styles.listingsGrid}>
               {safeFilteredListings.map((listing, index) => (
                 <Animated.View
-                  key={`listing-${listing.id}-${index}-${listing.createdAt}`}
-                  entering={SlideInDown.delay(1400 + index * 100)}
+                  key={`listing-${listing.id}-${index}`}
+                  entering={SlideInDown.delay(1200 + index * 100)}
                   style={styles.listingWrapper}
                 >
                   <ListingCard listing={listing} />
@@ -267,35 +205,33 @@ export default function HomeScreen() {
               ))}
             </View>
           ) : (
-            <Animated.View entering={FadeIn.delay(1600)} style={styles.emptyState}>
-              <View style={styles.emptyStateCard}>
-                <Text style={styles.emptyTitle}>Aucun résultat</Text>
-                <Text style={styles.emptyText}>
-                  Essayez de modifier vos critères de recherche
-                </Text>
-              </View>
+            <Animated.View entering={FadeIn.delay(1400)} style={styles.emptyState}>
+              <Text style={styles.emptyTitle}>Aucun résultat</Text>
+              <Text style={styles.emptyText}>
+                Essayez de modifier vos critères de recherche
+              </Text>
             </Animated.View>
           )}
         </View>
       </AnimatedScrollView>
       
-      {/* Floating Action Button for Clients */}
-      {user && user.userType === 'client' && (
-        <Animated.View style={[styles.fab, fabStyle]}>
-          <TouchableOpacity 
-            style={styles.fabButton}
-            onPress={handleCreatePress}
-            activeOpacity={0.8}
-          >
-            <LinearGradient
-              colors={[Colors.primary, Colors.secondary]}
-              style={styles.fabGradient}
-            >
-              <Plus size={24} color="#fff" />
-            </LinearGradient>
-          </TouchableOpacity>
-        </Animated.View>
-      )}
+      {/* Floating Action Button */}
+      <Animated.View 
+        entering={SlideInDown.delay(1600)}
+        style={[styles.fab, { bottom: insets.bottom + 100 }]}
+      >
+        <TouchableOpacity 
+          style={styles.fabButton}
+          onPress={handleCreatePress}
+          activeOpacity={0.8}
+        >
+          {user?.userType === 'client' ? (
+            <Search size={24} color="#fff" />
+          ) : (
+            <Plus size={24} color="#fff" />
+          )}
+        </TouchableOpacity>
+      </Animated.View>
     </View>
   );
 }
@@ -303,138 +239,87 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.background,
   },
-  header: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 10,
-  },
-  headerGradient: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-  },
-  headerContent: {
-    alignItems: 'center',
-  },
-  welcomeSection: {
-    alignItems: 'center',
-    marginBottom: 16,
-    width: '100%',
-  },
-  welcomeText: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#fff',
-    textAlign: 'center',
-  },
-  createButtonContainer: {
-    alignItems: 'center',
-    width: '100%',
-  },
-  createButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 20,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    gap: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-  },
-  createButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  content: {
+  scrollView: {
     flex: 1,
   },
   scrollContent: {
     paddingBottom: 120,
   },
-  listingsContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+  welcomeHeader: {
+    paddingHorizontal: 24,
+    paddingVertical: 20,
   },
-  listingsHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  listingsTitle: {
-    fontSize: 20,
+  welcomeText: {
+    fontSize: 32,
     fontWeight: '700',
     color: Colors.text,
+    letterSpacing: -0.5,
   },
-  countBadge: {
-    backgroundColor: Colors.backgroundAlt,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: Colors.border,
+  searchSection: {
+    paddingHorizontal: 24,
+    marginBottom: 24,
   },
-  listingsCount: {
-    fontSize: 12,
-    color: Colors.primary,
+  listingsSection: {
+    paddingHorizontal: 24,
+    paddingTop: 16,
+  },
+  sectionHeader: {
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    fontSize: 24,
     fontWeight: '700',
+    color: Colors.text,
+    marginBottom: 4,
+    letterSpacing: -0.3,
+  },
+  sectionSubtitle: {
+    fontSize: 16,
+    color: Colors.textLight,
+    fontWeight: '400',
   },
   listingsGrid: {
-    gap: 16,
+    gap: 24,
   },
   listingWrapper: {
     width: '100%',
   },
   emptyState: {
     alignItems: 'center',
-    padding: 32,
-  },
-  emptyStateCard: {
-    backgroundColor: Colors.backgroundAlt,
-    padding: 24,
-    borderRadius: 16,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Colors.border,
-    maxWidth: 280,
+    paddingVertical: 60,
   },
   emptyTitle: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: '600',
     color: Colors.text,
     marginBottom: 8,
   },
   emptyText: {
-    fontSize: 12,
+    fontSize: 16,
     color: Colors.textLight,
     textAlign: 'center',
   },
   fab: {
     position: 'absolute',
-    bottom: 100,
-    right: 20,
-    zIndex: 10,
-  },
-  fabButton: {
+    right: 24,
     width: 56,
     height: 56,
     borderRadius: 28,
-    overflow: 'hidden',
+    backgroundColor: Colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
     shadowColor: Colors.primary,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 16,
     elevation: 12,
   },
-  fabGradient: {
+  fabButton: {
     width: 56,
     height: 56,
+    borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
   },

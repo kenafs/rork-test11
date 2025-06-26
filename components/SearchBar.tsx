@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, TextInput, TouchableOpacity, Platform } from 'react-native';
 import { Search, X, MapPin } from 'lucide-react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { 
   useSharedValue, 
   useAnimatedStyle, 
@@ -69,20 +68,26 @@ export default function SearchBar({
     };
   });
   
-  const animatedGlowStyle = useAnimatedStyle(() => {
+  const animatedBorderStyle = useAnimatedStyle(() => {
+    const borderColor = interpolate(
+      focusOpacity.value,
+      [0, 1],
+      [0, 1],
+      Extrapolate.CLAMP
+    );
+    
     return {
-      opacity: focusOpacity.value,
+      borderColor: `rgba(255, 56, 92, ${borderColor * 0.3})`,
+      borderWidth: 1 + borderColor,
     };
   });
   
   return (
     <View style={styles.container}>
       <Animated.View style={[styles.searchWrapper, animatedContainerStyle]}>
-        <Animated.View style={[styles.glowEffect, animatedGlowStyle]} />
-        
-        <View style={styles.searchContainer}>
+        <Animated.View style={[styles.searchContainer, animatedBorderStyle]}>
           <View style={styles.searchInner}>
-            <Search size={18} color={isFocused ? Colors.primary : Colors.textLight} style={styles.searchIcon} />
+            <Search size={20} color={isFocused ? Colors.primary : Colors.textLight} style={styles.searchIcon} />
             
             <AnimatedTextInput
               style={styles.input}
@@ -99,11 +104,11 @@ export default function SearchBar({
             
             {value.length > 0 && (
               <TouchableOpacity onPress={onClear} style={styles.clearButton}>
-                <X size={14} color={Colors.textLight} />
+                <X size={16} color={Colors.textLight} />
               </TouchableOpacity>
             )}
           </View>
-        </View>
+        </Animated.View>
       </Animated.View>
       
       {showLocationButton && (
@@ -112,14 +117,7 @@ export default function SearchBar({
           onPress={handleLocationPress}
           activeOpacity={0.8}
         >
-          <LinearGradient
-            colors={[Colors.primary, Colors.secondary]}
-            style={styles.locationGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
-            <MapPin size={18} color="#fff" />
-          </LinearGradient>
+          <MapPin size={20} color={Colors.primary} />
         </TouchableOpacity>
       )}
     </View>
@@ -130,28 +128,10 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
     gap: 12,
   },
   searchWrapper: {
     flex: 1,
-    position: 'relative',
-  },
-  glowEffect: {
-    position: 'absolute',
-    top: -3,
-    left: -3,
-    right: -3,
-    bottom: -3,
-    borderRadius: 20,
-    backgroundColor: Colors.primary,
-    opacity: 0.1,
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 6,
   },
   searchContainer: {
     borderRadius: 16,
@@ -159,51 +139,49 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.border,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 6,
-    backgroundColor: '#fff',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 4,
+    backgroundColor: Colors.background,
   },
   searchInner: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 14,
   },
   searchIcon: {
-    marginRight: 10,
+    marginRight: 12,
   },
   input: {
     flex: 1,
-    fontSize: 14,
+    fontSize: 16,
     color: Colors.text,
     fontWeight: '500',
   },
   clearButton: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: Colors.backgroundAlt,
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 6,
+    marginLeft: 8,
   },
   locationButton: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    overflow: 'hidden',
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 6,
-  },
-  locationGradient: {
-    width: 48,
-    height: 48,
+    backgroundColor: Colors.background,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
 });

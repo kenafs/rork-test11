@@ -1,11 +1,9 @@
 import React from 'react';
 import { StyleSheet, TouchableOpacity, Text, ActivityIndicator, ViewStyle, TextStyle, View, Platform } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { 
   useSharedValue, 
   useAnimatedStyle, 
   withSpring,
-  runOnJS
 } from 'react-native-reanimated';
 import Colors from '@/constants/colors';
 import * as Haptics from 'expo-haptics';
@@ -13,7 +11,7 @@ import * as Haptics from 'expo-haptics';
 interface ButtonProps {
   title: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'outline' | 'glass';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
   size?: 'small' | 'medium' | 'large';
   disabled?: boolean;
   loading?: boolean;
@@ -21,7 +19,6 @@ interface ButtonProps {
   textStyle?: TextStyle;
   fullWidth?: boolean;
   icon?: React.ReactNode;
-  gradient?: boolean;
 }
 
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
@@ -37,7 +34,6 @@ export default function Button({
   textStyle,
   fullWidth = false,
   icon,
-  gradient = true,
 }: ButtonProps) {
   const scale = useSharedValue(1);
   const opacity = useSharedValue(1);
@@ -79,8 +75,8 @@ export default function Button({
         return styles.secondaryButton;
       case 'outline':
         return styles.outlineButton;
-      case 'glass':
-        return styles.glassButton;
+      case 'ghost':
+        return styles.ghostButton;
       default:
         return styles.primaryButton;
     }
@@ -93,8 +89,8 @@ export default function Button({
         return styles.secondaryText;
       case 'outline':
         return styles.outlineText;
-      case 'glass':
-        return styles.glassText;
+      case 'ghost':
+        return styles.ghostText;
       default:
         return styles.primaryText;
     }
@@ -128,7 +124,7 @@ export default function Button({
     <View style={styles.buttonContent}>
       {loading ? (
         <ActivityIndicator 
-          color={variant === 'outline' || variant === 'glass' ? Colors.primary : '#fff'} 
+          color={variant === 'outline' || variant === 'ghost' ? Colors.primary : '#fff'} 
           size="small" 
         />
       ) : (
@@ -148,35 +144,6 @@ export default function Button({
       )}
     </View>
   );
-  
-  if (variant === 'primary' && gradient) {
-    return (
-      <AnimatedTouchableOpacity
-        style={[
-          styles.button,
-          getSizeStyle(),
-          fullWidth && styles.fullWidth,
-          disabled && styles.disabledButton,
-          style,
-          animatedStyle,
-        ]}
-        onPress={handlePress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        disabled={disabled || loading}
-        activeOpacity={1}
-      >
-        <LinearGradient
-          colors={disabled ? [Colors.border, Colors.border] : [Colors.primary, Colors.secondary]}
-          style={[styles.gradientButton, getSizeStyle()]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
-          {renderButtonContent()}
-        </LinearGradient>
-      </AnimatedTouchableOpacity>
-    );
-  }
   
   return (
     <AnimatedTouchableOpacity
@@ -206,22 +173,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 6,
-    overflow: 'hidden',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   buttonContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-  },
-  gradientButton: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
+    gap: 8,
   },
   primaryButton: {
     backgroundColor: Colors.primary,
@@ -233,9 +194,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     borderWidth: 2,
     borderColor: Colors.primary,
+    shadowOpacity: 0.05,
   },
-  glassButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  ghostButton: {
+    backgroundColor: 'transparent',
+    shadowOpacity: 0,
   },
   smallButton: {
     paddingVertical: 10,
@@ -256,9 +219,9 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   disabledButton: {
-    backgroundColor: Colors.border,
-    borderColor: Colors.border,
-    shadowOpacity: 0.05,
+    backgroundColor: Colors.disabled,
+    borderColor: Colors.disabled,
+    shadowOpacity: 0.02,
   },
   primaryText: {
     color: '#fff',
@@ -272,18 +235,18 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     fontWeight: '700',
   },
-  glassText: {
-    color: '#fff',
-    fontWeight: '700',
+  ghostText: {
+    color: Colors.primary,
+    fontWeight: '600',
   },
   smallText: {
-    fontSize: 12,
-  },
-  mediumText: {
     fontSize: 14,
   },
-  largeText: {
+  mediumText: {
     fontSize: 16,
+  },
+  largeText: {
+    fontSize: 18,
   },
   disabledText: {
     color: Colors.textLight,

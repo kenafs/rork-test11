@@ -15,12 +15,12 @@ export default function TabLayout() {
           height: Platform.OS === 'ios' ? 85 : 70,
           paddingBottom: Platform.OS === 'ios' ? 30 : 16,
           paddingTop: 12,
-          backgroundColor: '#fff',
+          backgroundColor: Colors.background,
           shadowColor: '#000',
-          shadowOffset: { width: 0, height: -8 },
+          shadowOffset: { width: 0, height: -4 },
           shadowOpacity: 0.1,
-          shadowRadius: 20,
-          elevation: 20,
+          shadowRadius: 16,
+          elevation: 16,
           borderTopLeftRadius: 20,
           borderTopRightRadius: 20,
           position: 'absolute',
@@ -28,7 +28,7 @@ export default function TabLayout() {
           marginBottom: 0,
         },
         tabBarLabelStyle: {
-          fontSize: 10,
+          fontSize: 11,
           fontWeight: '600',
           marginTop: 4,
         },
@@ -36,15 +36,16 @@ export default function TabLayout() {
           marginTop: 2,
         },
         headerStyle: {
-          backgroundColor: '#fff',
+          backgroundColor: Colors.background,
           shadowColor: 'transparent',
           elevation: 0,
           borderBottomWidth: 0,
         },
         headerTitleStyle: {
-          fontWeight: '800',
-          fontSize: 18,
+          fontWeight: '700',
+          fontSize: 20,
           color: Colors.text,
+          letterSpacing: -0.3,
         },
         tabBarItemStyle: {
           borderRadius: 12,
@@ -59,7 +60,7 @@ export default function TabLayout() {
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <Home 
-              size={focused ? 24 : 20}
+              size={focused ? 26 : 22}
               color={color} 
               fill={focused ? color : 'transparent'}
               strokeWidth={focused ? 2.5 : 2}
@@ -73,7 +74,7 @@ export default function TabLayout() {
           title: "Recherche",
           tabBarIcon: ({ color, focused }) => (
             <Search 
-              size={focused ? 24 : 20}
+              size={focused ? 26 : 22}
               color={color}
               strokeWidth={focused ? 2.5 : 2}
             />
@@ -86,7 +87,7 @@ export default function TabLayout() {
           title: "Publier",
           tabBarIcon: ({ color, focused }) => (
             <PlusCircle 
-              size={focused ? 24 : 20}
+              size={focused ? 26 : 22}
               color={color}
               fill={focused ? color : 'transparent'}
               strokeWidth={focused ? 2.5 : 2}
@@ -100,7 +101,7 @@ export default function TabLayout() {
           title: "Messages",
           tabBarIcon: ({ color, focused }) => (
             <MessageCircle 
-              size={focused ? 24 : 20}
+              size={focused ? 26 : 22}
               color={color}
               fill={focused ? color : 'transparent'}
               strokeWidth={focused ? 2.5 : 2}
@@ -114,7 +115,7 @@ export default function TabLayout() {
           title: "Profil",
           tabBarIcon: ({ color, focused }) => (
             <User 
-              size={focused ? 24 : 20}
+              size={focused ? 26 : 22}
               color={color}
               fill={focused ? color : 'transparent'}
               strokeWidth={focused ? 2.5 : 2}

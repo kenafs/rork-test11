@@ -5,16 +5,13 @@ import { Image } from 'expo-image';
 import { Listing } from '@/types';
 import Colors from '@/constants/colors';
 import RatingStars from './RatingStars';
-import { MapPin, Clock, Euro } from 'lucide-react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { MapPin, Euro } from 'lucide-react-native';
 import Animated, { 
   useSharedValue, 
   useAnimatedStyle, 
-  withSpring, 
-  withTiming,
+  withSpring,
   interpolate,
-  Extrapolate,
-  runOnJS
+  Extrapolate
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 
@@ -28,7 +25,6 @@ export default function ListingCard({ listing }: ListingCardProps) {
   const router = useRouter();
   const scale = useSharedValue(1);
   const opacity = useSharedValue(1);
-  const translateY = useSharedValue(0);
   
   const handlePress = () => {
     if (Platform.OS !== 'web') {
@@ -37,17 +33,9 @@ export default function ListingCard({ listing }: ListingCardProps) {
     router.push(`/listing/${listing.id}`);
   };
   
-  const formatDate = (timestamp: number) => {
-    const date = new Date(timestamp);
-    return date.toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'short',
-    });
-  };
-  
   const formatPrice = (price?: number) => {
-    if (!price) return <Text style={styles.priceText}>Prix sur demande</Text>;
-    return <Text style={styles.priceText}>{price}€</Text>;
+    if (!price) return 'Prix sur demande';
+    return `${price}€`;
   };
   
   const handlePressIn = () => {
@@ -63,48 +51,19 @@ export default function ListingCard({ listing }: ListingCardProps) {
   
   const animatedStyle = useAnimatedStyle(() => {
     return {
-      transform: [
-        { scale: scale.value },
-        { translateY: translateY.value }
-      ],
+      transform: [{ scale: scale.value }],
       opacity: opacity.value,
     };
   });
   
-  const cardShadowStyle = useAnimatedStyle(() => {
-    const shadowOpacity = interpolate(
-      scale.value,
-      [0.98, 1],
-      [0.08, 0.15],
-      Extrapolate.CLAMP
-    );
-    
-    const shadowRadius = interpolate(
-      scale.value,
-      [0.98, 1],
-      [8, 12],
-      Extrapolate.CLAMP
-    );
-    
-    return {
-      shadowOpacity,
-      shadowRadius,
-      elevation: shadowRadius / 2,
-    };
-  });
-  
   return (
-    <Animated.View style={[styles.container, animatedStyle, cardShadowStyle]}>
+    <Animated.View style={[styles.container, animatedStyle]}>
       <TouchableOpacity 
         style={styles.touchable}
         onPress={handlePress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         activeOpacity={1}
-        delayPressIn={0}
-        delayPressOut={100}
-        delayLongPress={500}
-        hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }}
       >
         <View style={styles.imageContainer}>
           {listing.images && listing.images.length > 0 ? (
@@ -115,94 +74,53 @@ export default function ListingCard({ listing }: ListingCardProps) {
               transition={300}
             />
           ) : (
-            <LinearGradient
-              colors={[Colors.primary, Colors.secondary]}
-              style={styles.placeholderImage}
-            >
+            <View style={styles.placeholderImage}>
               <Text style={styles.placeholderText}>📷</Text>
-            </LinearGradient>
+            </View>
           )}
-          
-          <View style={styles.categoryBadge}>
-            <Text style={styles.categoryText}>{listing.category}</Text>
-          </View>
-          
-          <LinearGradient
-            colors={['transparent', 'rgba(0, 0, 0, 0.6)']}
-            style={styles.imageOverlay}
-          />
         </View>
         
         <View style={styles.content}>
-          <Text style={styles.title} numberOfLines={2}>
-            {listing.title}
-          </Text>
+          <View style={styles.header}>
+            <Text style={styles.title} numberOfLines={2}>
+              {listing.title}
+            </Text>
+            <Text style={styles.price}>
+              {formatPrice(listing.price)}
+            </Text>
+          </View>
+          
+          <View style={styles.locationContainer}>
+            <MapPin size={14} color={Colors.textLight} />
+            <Text style={styles.locationText}>{listing.location.city}</Text>
+          </View>
           
           <Text style={styles.description} numberOfLines={2}>
             {listing.description}
           </Text>
           
-          <View style={styles.creatorInfo}>
-            <View style={styles.creatorAvatar}>
-              {listing.creatorImage ? (
-                <Image source={{ uri: listing.creatorImage }} style={styles.avatarImage} />
-              ) : (
-                <LinearGradient
-                  colors={[Colors.primary, Colors.secondary]}
-                  style={styles.avatarGradient}
-                >
-                  <Text style={styles.avatarText}>
-                    {listing.creatorName?.charAt(0) || '?'}
-                  </Text>
-                </LinearGradient>
-              )}
-            </View>
-            <View style={styles.creatorDetails}>
-              <Text style={styles.creatorName}>{listing.creatorName}</Text>
-              {listing.creatorRating !== undefined && listing.creatorRating > 0 && (
-                <RatingStars 
-                  rating={listing.creatorRating} 
-                  size="small" 
-                  showNumber={false}
-                />
-              )}
-            </View>
-          </View>
-          
           <View style={styles.footer}>
-            <View style={styles.locationContainer}>
-              <MapPin size={12} color={Colors.textLight} />
-              <Text style={styles.locationText}>{listing.location.city}</Text>
-            </View>
-            
-            <View style={styles.priceContainer}>
-              <Euro size={12} color={Colors.primary} />
-              {formatPrice(listing.price)}
-            </View>
-          </View>
-          
-          <View style={styles.metaInfo}>
-            <View style={styles.dateContainer}>
-              <Clock size={10} color={Colors.textLight} />
-              <Text style={styles.dateText}>
-                Publié le {formatDate(listing.createdAt)}
-              </Text>
-            </View>
-            
-            {listing.tags && listing.tags.length > 0 && (
-              <View style={styles.tagsContainer}>
-                {listing.tags.slice(0, 2).map((tag, index) => (
-                  <View 
-                    key={`tag-${listing.id}-${tag}-${index}`} 
-                    style={styles.tag}
-                  >
-                    <Text style={styles.tagText}>{tag}</Text>
+            <View style={styles.creatorInfo}>
+              <View style={styles.creatorAvatar}>
+                {listing.creatorImage ? (
+                  <Image source={{ uri: listing.creatorImage }} style={styles.avatarImage} />
+                ) : (
+                  <View style={styles.avatarPlaceholder}>
+                    <Text style={styles.avatarText}>
+                      {listing.creatorName?.charAt(0) || '?'}
+                    </Text>
                   </View>
-                ))}
-                {listing.tags.length > 2 && (
-                  <Text style={styles.moreTagsText}>+{listing.tags.length - 2}</Text>
                 )}
               </View>
+              <Text style={styles.creatorName}>{listing.creatorName}</Text>
+            </View>
+            
+            {listing.creatorRating !== undefined && listing.creatorRating > 0 && (
+              <RatingStars 
+                rating={listing.creatorRating} 
+                size="small" 
+                showNumber={false}
+              />
             )}
           </View>
         </View>
@@ -213,26 +131,21 @@ export default function ListingCard({ listing }: ListingCardProps) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    marginBottom: 16,
+    backgroundColor: Colors.background,
+    borderRadius: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.12,
-    shadowRadius: 24,
-    elevation: 12,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 8,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: Colors.border,
     width: '100%',
-    alignSelf: 'center',
   },
   touchable: {
     flex: 1,
   },
   imageContainer: {
-    position: 'relative',
-    height: 180,
+    height: 200,
     width: '100%',
   },
   image: {
@@ -242,54 +155,64 @@ const styles = StyleSheet.create({
   placeholderImage: {
     width: '100%',
     height: '100%',
+    backgroundColor: Colors.backgroundAlt,
     justifyContent: 'center',
     alignItems: 'center',
   },
   placeholderText: {
     fontSize: 32,
-    opacity: 0.7,
-  },
-  categoryBadge: {
-    position: 'absolute',
-    top: 12,
-    left: 12,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  categoryText: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  imageOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 40,
+    opacity: 0.5,
   },
   content: {
     padding: 16,
   },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
   title: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.text,
+    flex: 1,
+    marginRight: 8,
+    lineHeight: 24,
+    letterSpacing: -0.3,
+  },
+  price: {
     fontSize: 16,
     fontWeight: '800',
-    color: Colors.text,
-    marginBottom: 6,
-    lineHeight: 22,
+    color: Colors.primary,
+  },
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  locationText: {
+    fontSize: 14,
+    color: Colors.textLight,
+    marginLeft: 4,
+    fontWeight: '500',
   },
   description: {
-    fontSize: 12,
+    fontSize: 14,
     color: Colors.textLight,
-    lineHeight: 16,
+    lineHeight: 20,
     marginBottom: 16,
+    fontWeight: '400',
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   creatorInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    flex: 1,
   },
   creatorAvatar: {
     width: 32,
@@ -301,92 +224,23 @@ const styles = StyleSheet.create({
   avatarImage: {
     width: 32,
     height: 32,
-    borderRadius: 16,
   },
-  avatarGradient: {
+  avatarPlaceholder: {
     width: 32,
     height: 32,
-    borderRadius: 16,
+    backgroundColor: Colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarText: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '700',
-  },
-  creatorDetails: {
-    flex: 1,
-    justifyContent: 'center',
   },
   creatorName: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: Colors.text,
-    marginBottom: 2,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  locationContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  locationText: {
-    fontSize: 12,
-    color: Colors.textLight,
-    marginLeft: 4,
-    fontWeight: '500',
-  },
-  priceContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  priceText: {
     fontSize: 14,
-    fontWeight: '800',
-    color: Colors.primary,
-    marginLeft: 4,
-  },
-  metaInfo: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  dateContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  dateText: {
-    fontSize: 10,
-    color: Colors.textMuted,
-    marginLeft: 4,
-    fontWeight: '500',
-  },
-  tagsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  tag: {
-    backgroundColor: Colors.backgroundAlt,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  tagText: {
-    fontSize: 8,
-    color: Colors.primary,
     fontWeight: '600',
-  },
-  moreTagsText: {
-    fontSize: 8,
-    color: Colors.textMuted,
-    fontWeight: '600',
+    color: Colors.text,
+    flex: 1,
   },
 });
