@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { User, UserType, DemoAccount } from '@/types';
+import { User, UserType, DemoAccount, PortfolioItem } from '@/types';
 
 interface AuthState {
   user: User | null;
@@ -11,7 +11,7 @@ interface AuthState {
   login: (email: string, password: string) => Promise<boolean>;
   register: (userData: Omit<User, 'id' | 'createdAt'>) => Promise<boolean>;
   logout: () => Promise<void>;
-  updateProfile: (updates: Partial<User>) => Promise<boolean>;
+  updateProfile: (updates: Partial<User & { portfolio?: PortfolioItem[] }>) => Promise<boolean>;
   loginWithDemo: (demoAccount: DemoAccount) => Promise<boolean>;
 }
 
@@ -42,6 +42,7 @@ export const useAuth = create<AuthState>()(
               longitude: 2.3522,
               city: 'Paris',
             },
+            portfolio: [],
             createdAt: Date.now(),
           };
           
@@ -75,6 +76,7 @@ export const useAuth = create<AuthState>()(
             id: `user-${Date.now()}`,
             rating: 0,
             reviewCount: 0,
+            portfolio: [],
             createdAt: Date.now(),
           };
           
@@ -162,7 +164,7 @@ export const useAuth = create<AuthState>()(
         }
       },
       
-      updateProfile: async (updates: Partial<User>) => {
+      updateProfile: async (updates: Partial<User & { portfolio?: PortfolioItem[] }>) => {
         set({ isLoading: true });
         
         try {
@@ -196,8 +198,13 @@ export const useAuth = create<AuthState>()(
         try {
           await new Promise(resolve => setTimeout(resolve, 1000));
           
+          // FIXED: Use consistent ID for Sophie Martin
+          const userId = demoAccount.email === 'sophie.martin@demo.com' 
+            ? 'demo-client-sophie-martin'
+            : `demo-${demoAccount.userType}-${Date.now()}`;
+          
           const demoUser: User = {
-            id: `demo-${demoAccount.userType}-${Date.now()}`,
+            id: userId,
             name: demoAccount.name,
             email: demoAccount.email,
             userType: demoAccount.userType,
@@ -212,6 +219,7 @@ export const useAuth = create<AuthState>()(
               longitude: 2.3522,
               city: demoAccount.city,
             },
+            portfolio: [],
             createdAt: Date.now(),
           };
           

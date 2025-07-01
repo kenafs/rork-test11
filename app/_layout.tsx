@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { trpc, trpcClient } from "@/lib/trpc";
-import { useAuth } from "@/hooks/useAuth";
 import Colors from "@/constants/colors";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -44,18 +43,31 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
-  const [queryClient] = useState(() => new QueryClient());
+  const [queryClient] = useState(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: 3,
+        retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        networkMode: 'offlineFirst',
+      },
+    },
+  }));
 
   return (
     <SafeAreaProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <trpc.Provider client={trpcClient} queryClient={queryClient}>
           <QueryClientProvider client={queryClient}>
-            <StatusBar style="light" backgroundColor="transparent" translucent />
+            <StatusBar 
+              style="dark" 
+              backgroundColor="transparent" 
+              translucent 
+            />
             <Stack
               screenOptions={{
                 headerStyle: {
-                  backgroundColor: '#fff',
+                  backgroundColor: Colors.surface,
                 },
                 headerTintColor: Colors.text,
                 headerTitleStyle: {
@@ -64,10 +76,13 @@ function RootLayoutNav() {
                 },
                 headerShadowVisible: false,
                 contentStyle: {
-                  backgroundColor: '#fff',
+                  backgroundColor: Colors.background,
                 },
                 animation: 'slide_from_right',
                 animationDuration: 300,
+                // FIXED: Enable gesture handling for better swipe back on iOS
+                gestureEnabled: true,
+                gestureDirection: 'horizontal',
               }}
             >
               <Stack.Screen 
@@ -118,6 +133,7 @@ function RootLayoutNav() {
                   headerBackTitle: "Retour",
                   headerShown: false,
                   animation: 'slide_from_right',
+                  gestureEnabled: true,
                 }} 
               />
               <Stack.Screen 
@@ -126,6 +142,7 @@ function RootLayoutNav() {
                   title: "Profil",
                   headerBackTitle: "Retour",
                   animation: 'slide_from_right',
+                  gestureEnabled: true,
                 }} 
               />
               <Stack.Screen 
@@ -135,6 +152,7 @@ function RootLayoutNav() {
                   headerBackTitle: "Retour",
                   presentation: "modal",
                   animation: 'slide_from_bottom',
+                  gestureEnabled: true,
                 }} 
               />
               <Stack.Screen 
@@ -143,6 +161,7 @@ function RootLayoutNav() {
                   title: "Conversation",
                   headerBackTitle: "Retour",
                   animation: 'slide_from_right',
+                  gestureEnabled: true,
                 }} 
               />
               <Stack.Screen 
@@ -152,6 +171,7 @@ function RootLayoutNav() {
                   headerBackTitle: "Retour",
                   presentation: "modal",
                   animation: 'slide_from_bottom',
+                  gestureEnabled: true,
                 }} 
               />
               <Stack.Screen 
@@ -160,6 +180,7 @@ function RootLayoutNav() {
                   title: "Mes favoris",
                   headerBackTitle: "Retour",
                   animation: 'slide_from_right',
+                  gestureEnabled: true,
                 }} 
               />
               <Stack.Screen 
@@ -168,6 +189,7 @@ function RootLayoutNav() {
                   title: "Mes devis",
                   headerBackTitle: "Retour",
                   animation: 'slide_from_right',
+                  gestureEnabled: true,
                 }} 
               />
               <Stack.Screen 
@@ -176,6 +198,7 @@ function RootLayoutNav() {
                   title: "Mes annonces",
                   headerBackTitle: "Retour",
                   animation: 'slide_from_right',
+                  gestureEnabled: true,
                 }} 
               />
               <Stack.Screen 
@@ -184,6 +207,7 @@ function RootLayoutNav() {
                   title: "Avis et notes",
                   headerBackTitle: "Retour",
                   animation: 'slide_from_right',
+                  gestureEnabled: true,
                 }} 
               />
               <Stack.Screen 
@@ -192,6 +216,7 @@ function RootLayoutNav() {
                   title: "Paramètres",
                   headerBackTitle: "Retour",
                   animation: 'slide_from_right',
+                  gestureEnabled: true,
                 }} 
               />
               <Stack.Screen 
@@ -200,6 +225,7 @@ function RootLayoutNav() {
                   title: "Modifier le profil",
                   headerBackTitle: "Retour",
                   animation: 'slide_from_right',
+                  gestureEnabled: true,
                 }} 
               />
             </Stack>

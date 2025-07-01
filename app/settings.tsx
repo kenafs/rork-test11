@@ -8,8 +8,6 @@ import { LANGUAGES } from '@/constants/languages';
 import { SettingItem } from '@/types';
 import Colors from '@/constants/colors';
 import { 
-  Moon, 
-  Sun, 
   Bell, 
   Shield, 
   CreditCard, 
@@ -27,11 +25,9 @@ export default function SettingsScreen() {
   const router = useRouter();
   const { user, logout } = useAuth();
   const { 
-    darkMode, 
     notifications, 
     emailNotifications, 
     pushNotifications,
-    toggleDarkMode,
     toggleNotifications,
     toggleEmailNotifications,
     togglePushNotifications
@@ -123,15 +119,6 @@ export default function SettingsScreen() {
     );
   };
 
-  const handleDarkModeToggle = () => {
-    console.log("Toggling dark mode from:", darkMode, "to:", !darkMode);
-    toggleDarkMode();
-    Alert.alert(
-      "Mode d'affichage", 
-      !darkMode ? "Mode sombre activé" : "Mode clair activé"
-    );
-  };
-
   const handleNotificationsToggle = () => {
     console.log("Toggling notifications from:", notifications, "to:", !notifications);
     toggleNotifications();
@@ -163,14 +150,6 @@ export default function SettingsScreen() {
     {
       title: "Apparence",
       items: [
-        {
-          icon: darkMode ? Moon : Sun,
-          title: "Mode sombre",
-          subtitle: darkMode ? "Thème sombre activé" : "Thème clair activé",
-          type: "switch" as const,
-          value: darkMode,
-          onToggle: handleDarkModeToggle,
-        },
         {
           icon: Globe,
           title: "Langue",
@@ -226,7 +205,7 @@ export default function SettingsScreen() {
           type: "navigation" as const,
           onPress: handlePrivacy,
         },
-        ...(user?.userType === "provider" ? [{
+        ...(user?.userType === "provider" || user?.userType === "business" ? [{
           icon: CreditCard,
           title: "Paiements",
           subtitle: "Cartes et virements",
@@ -362,7 +341,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 120, // Add padding to prevent content being hidden behind tab bar
+    paddingBottom: 120,
   },
   userSection: {
     backgroundColor: "#fff",

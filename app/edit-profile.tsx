@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, TextInput, TouchableOpacity, Alert, Image } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TextInput, TouchableOpacity, Alert, Image, Modal } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
+import { PortfolioItem } from '@/types';
 import Colors from '@/constants/colors';
 import Button from '@/components/Button';
-import { User, Mail, Phone, MapPin, Globe, Instagram, Camera, Save } from 'lucide-react-native';
+import { User, Mail, Phone, MapPin, Globe, Instagram, Camera, Save, Plus, Trash2, X, Calendar, Tag } from 'lucide-react-native';
+import Animated, { FadeIn, SlideInDown } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 
 export default function EditProfileScreen() {
   const router = useRouter();
@@ -24,6 +28,22 @@ export default function EditProfileScreen() {
     city: user?.city || user?.location?.city || '',
   });
   
+  // Portfolio management
+  const [portfolio, setPortfolio] = useState<PortfolioItem[]>(user?.portfolio || []);
+  const [showPortfolioModal, setShowPortfolioModal] = useState(false);
+  const [editingPortfolioItem, setEditingPortfolioItem] = useState<PortfolioItem | null>(null);
+  const [portfolioForm, setPortfolioForm] = useState({
+    title: '',
+    description: '',
+    mediaUrl: '',
+    mediaType: 'image' as 'image' | 'video',
+    eventType: '',
+    eventDate: new Date(),
+    clientName: '',
+    tags: '',
+    featured: false,
+  });
+  
   const handleSave = async () => {
     if (!formData.name.trim()) {
       Alert.alert('Erreur', 'Le nom est obligatoire');
@@ -38,6 +58,7 @@ export default function EditProfileScreen() {
     try {
       const success = await updateProfile({
         ...formData,
+        portfolio,
         location: {
           ...user?.location,
           city: formData.city,
@@ -60,6 +81,81 @@ export default function EditProfileScreen() {
   
   const updateField = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+  
+  // Portfolio management functions
+  const openPortfolioModal = (item?: PortfolioItem) => {
+    if (item) {
+      setEditingPortfolioItem(item);
+      setPortfolioForm({
+        title: item.title,
+        description: item.description,
+        mediaUrl: item.mediaUrl,
+        mediaType: item.mediaType,
+        eventType: item.eventType,
+        eventDate: new Date(item.eventDate),
+        clientName: item.clientName || '',
+        tags: item.tags?.join(', ') || '',
+        featured: item.featured || false,
+      });
+    } else {
+      setEditingPortfolioItem(null);
+      setPortfolioForm({
+        title: '',
+        description: '',
+        mediaUrl: '',
+        mediaType: 'image',
+        eventType: '',
+        eventDate: new Date(),
+        clientName: '',
+        tags: '',
+        featured: false,
+      });
+    }
+    setShowPortfolioModal(true);
+  };
+  
+  const savePortfolioItem = () => {
+    if (!portfolioForm.title.trim() || !portfolioForm.mediaUrl.trim()) {
+      Alert.alert('Erreur', 'Le titre et l\'URL du média sont obligatoires');
+      return;
+    }
+    
+    const portfolioItem: PortfolioItem = {
+      id: editingPortfolioItem?.id || `portfolio-${Date.now()}`,
+      title: portfolioForm.title,
+      description: portfolioForm.description,
+      mediaUrl: portfolioForm.mediaUrl,
+      mediaType: portfolioForm.mediaType,
+      eventType: portfolioForm.eventType,
+      eventDate: portfolioForm.eventDate.getTime(),
+      clientName: portfolioForm.clientName || undefined,
+      tags: portfolioForm.tags ? portfolioForm.tags.split(',').map(tag => tag.trim()).filter(Boolean) : undefined,
+      featured: portfolioForm.featured,
+    };
+    
+    if (editingPortfolioItem) {
+      setPortfolio(prev => prev.map(item => item.id === editingPortfolioItem.id ? portfolioItem : item));
+    } else {
+      setPortfolio(prev => [...prev, portfolioItem]);
+    }
+    
+    setShowPortfolioModal(false);
+  };
+  
+  const deletePortfolioItem = (id: string) => {
+    Alert.alert(
+      'Supprimer',
+      'Êtes-vous sûr de vouloir supprimer cet élément du portfolio ?',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        { 
+          text: 'Supprimer', 
+          style: 'destructive',
+          onPress: () => setPortfolio(prev => prev.filter(item => item.id !== id))
+        }
+      ]
+    );
   };
   
   if (!user) {
@@ -236,6 +332,74 @@ export default function EditProfileScreen() {
               />
             </View>
           </View>
+          
+          {/* Portfolio Section */}
+          {(user.userType === 'provider' || user.userType === 'business') && (
+            <Animated.View entering={SlideInDown.delay(400)} style={styles.section}>
+              <View style={styles.portfolioHeader}>
+                <Text style={styles.sectionTitle}>Portfolio</Text>
+                <TouchableOpacity 
+                  style={styles.addPortfolioButton}
+                  onPress={() => openPortfolioModal()}
+                >
+                  <Plus size={20} color="#fff" />
+                </TouchableOpacity>
+              </View>
+              
+              {portfolio.length > 0 ? (
+                <View style={styles.portfolioGrid}>
+                  {portfolio.map((item, index) => (
+                    <Animated.View 
+                      key={item.id} 
+                      entering={FadeIn.delay(500 + index * 100)}
+                      style={styles.portfolioItem}
+                    >
+                      <Image source={{ uri: item.mediaUrl }} style={styles.portfolioImage} />
+                      
+                      {item.featured && (
+                        <View style={styles.featuredBadge}>
+                          <Text style={styles.featuredText}>★</Text>
+                        </View>
+                      )}
+                      
+                      <LinearGradient
+                        colors={['transparent', 'rgba(0,0,0,0.8)']}
+                        style={styles.portfolioOverlay}
+                      >
+                        <Text style={styles.portfolioTitle} numberOfLines={1}>
+                          {item.title}
+                        </Text>
+                        <Text style={styles.portfolioEventType}>
+                          {item.eventType}
+                        </Text>
+                      </LinearGradient>
+                      
+                      <View style={styles.portfolioActions}>
+                        <TouchableOpacity 
+                          style={styles.editPortfolioButton}
+                          onPress={() => openPortfolioModal(item)}
+                        >
+                          <Text style={styles.editPortfolioText}>Modifier</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity 
+                          style={styles.deletePortfolioButton}
+                          onPress={() => deletePortfolioItem(item.id)}
+                        >
+                          <Trash2 size={14} color="#EF4444" />
+                        </TouchableOpacity>
+                      </View>
+                    </Animated.View>
+                  ))}
+                </View>
+              ) : (
+                <View style={styles.emptyPortfolio}>
+                  <Text style={styles.emptyPortfolioText}>
+                    Aucun élément dans votre portfolio. Ajoutez vos meilleures réalisations !
+                  </Text>
+                </View>
+              )}
+            </Animated.View>
+          )}
         </View>
         
         <View style={styles.buttonContainer}>
@@ -248,6 +412,127 @@ export default function EditProfileScreen() {
           />
         </View>
       </ScrollView>
+      
+      {/* Portfolio Modal */}
+      <Modal
+        visible={showPortfolioModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowPortfolioModal(false)}
+      >
+        <View style={styles.modalContainer}>
+          <BlurView intensity={80} style={styles.modalHeader}>
+            <LinearGradient
+              colors={[Colors.primary, Colors.secondary]}
+              style={styles.modalHeaderGradient}
+            >
+              <Text style={styles.modalTitle}>
+                {editingPortfolioItem ? 'Modifier' : 'Ajouter'} un élément
+              </Text>
+              <TouchableOpacity 
+                style={styles.modalCloseButton}
+                onPress={() => setShowPortfolioModal(false)}
+              >
+                <X size={24} color="#fff" />
+              </TouchableOpacity>
+            </LinearGradient>
+          </BlurView>
+          
+          <ScrollView style={styles.modalContent}>
+            <View style={styles.modalForm}>
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Titre *</Text>
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="Ex: Mariage Château de Versailles"
+                  value={portfolioForm.title}
+                  onChangeText={(text) => setPortfolioForm(prev => ({ ...prev, title: text }))}
+                  placeholderTextColor={Colors.textLight}
+                />
+              </View>
+              
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Description</Text>
+                <TextInput
+                  style={[styles.modalInput, styles.textArea]}
+                  placeholder="Décrivez ce projet..."
+                  value={portfolioForm.description}
+                  onChangeText={(text) => setPortfolioForm(prev => ({ ...prev, description: text }))}
+                  multiline
+                  numberOfLines={3}
+                  textAlignVertical="top"
+                  placeholderTextColor={Colors.textLight}
+                />
+              </View>
+              
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>URL de l'image/vidéo *</Text>
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="https://..."
+                  value={portfolioForm.mediaUrl}
+                  onChangeText={(text) => setPortfolioForm(prev => ({ ...prev, mediaUrl: text }))}
+                  keyboardType="url"
+                  autoCapitalize="none"
+                  placeholderTextColor={Colors.textLight}
+                />
+              </View>
+              
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Type d'événement</Text>
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="Ex: Mariage, Corporate, Festival"
+                  value={portfolioForm.eventType}
+                  onChangeText={(text) => setPortfolioForm(prev => ({ ...prev, eventType: text }))}
+                  placeholderTextColor={Colors.textLight}
+                />
+              </View>
+              
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Nom du client (optionnel)</Text>
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="Ex: Marie & Pierre"
+                  value={portfolioForm.clientName}
+                  onChangeText={(text) => setPortfolioForm(prev => ({ ...prev, clientName: text }))}
+                  placeholderTextColor={Colors.textLight}
+                />
+              </View>
+              
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Tags (séparés par des virgules)</Text>
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="Ex: Mariage, Romantique, Château"
+                  value={portfolioForm.tags}
+                  onChangeText={(text) => setPortfolioForm(prev => ({ ...prev, tags: text }))}
+                  placeholderTextColor={Colors.textLight}
+                />
+              </View>
+              
+              <View style={styles.checkboxContainer}>
+                <TouchableOpacity 
+                  style={[styles.checkbox, portfolioForm.featured && styles.checkboxChecked]}
+                  onPress={() => setPortfolioForm(prev => ({ ...prev, featured: !prev.featured }))}
+                >
+                  {portfolioForm.featured && <Text style={styles.checkboxText}>✓</Text>}
+                </TouchableOpacity>
+                <Text style={styles.checkboxLabel}>Mettre en avant (featured)</Text>
+              </View>
+            </View>
+          </ScrollView>
+          
+          <View style={styles.modalFooter}>
+            <Button
+              title={editingPortfolioItem ? 'Modifier' : 'Ajouter'}
+              onPress={savePortfolioItem}
+              fullWidth
+              style={styles.modalSaveButton}
+            />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -351,6 +636,112 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.backgroundAlt,
     minHeight: 100,
   },
+  portfolioHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  addPortfolioButton: {
+    backgroundColor: Colors.primary,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  portfolioGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  portfolioItem: {
+    width: '48%',
+    height: 120,
+    borderRadius: 12,
+    overflow: 'hidden',
+    position: 'relative',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  portfolioImage: {
+    width: '100%',
+    height: '100%',
+  },
+  featuredBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: '#FFD700',
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  featuredText: {
+    fontSize: 12,
+    color: '#fff',
+    fontWeight: '700',
+  },
+  portfolioOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 8,
+  },
+  portfolioTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#fff',
+    marginBottom: 2,
+  },
+  portfolioEventType: {
+    fontSize: 10,
+    color: 'rgba(255, 255, 255, 0.8)',
+  },
+  portfolioActions: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    flexDirection: 'row',
+    gap: 4,
+  },
+  editPortfolioButton: {
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  editPortfolioText: {
+    fontSize: 10,
+    color: '#fff',
+    fontWeight: '600',
+  },
+  deletePortfolioButton: {
+    backgroundColor: 'rgba(239, 68, 68, 0.9)',
+    padding: 4,
+    borderRadius: 8,
+  },
+  emptyPortfolio: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  emptyPortfolioText: {
+    fontSize: 14,
+    color: Colors.textLight,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
   buttonContainer: {
     padding: 20,
     paddingBottom: 40,
@@ -373,5 +764,96 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: Colors.textLight,
     textAlign: 'center',
+  },
+  // Modal styles
+  modalContainer: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  modalHeader: {
+    overflow: 'hidden',
+  },
+  modalHeaderGradient: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    paddingTop: 50,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#fff',
+  },
+  modalCloseButton: {
+    padding: 4,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  modalContent: {
+    flex: 1,
+  },
+  modalForm: {
+    padding: 20,
+  },
+  formGroup: {
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.text,
+    marginBottom: 8,
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 16,
+    color: Colors.text,
+    backgroundColor: Colors.backgroundAlt,
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderWidth: 2,
+    borderColor: Colors.border,
+    borderRadius: 6,
+    marginRight: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkboxChecked: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  checkboxText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  checkboxLabel: {
+    fontSize: 16,
+    color: Colors.text,
+  },
+  modalFooter: {
+    padding: 20,
+    paddingBottom: 40,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+  },
+  modalSaveButton: {
+    backgroundColor: Colors.primary,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
 });

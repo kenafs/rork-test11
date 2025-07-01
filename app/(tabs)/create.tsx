@@ -184,7 +184,7 @@ export default function CreateListingScreen() {
       case 'business':
         return {
           title: '✨ Publier une offre',
-          subtitle: 'Proposez votre établissement !'
+          subtitle: 'Proposez votre établissement ou vos services !'
         };
       default:
         return {
@@ -203,8 +203,8 @@ export default function CreateListingScreen() {
         };
       case 'business':
         return {
-          title: "Ex: Salle de réception avec terrasse",
-          description: "Décrivez votre établissement et ses équipements..."
+          title: "Ex: Salle de réception avec terrasse ou Service traiteur",
+          description: "Décrivez votre établissement, vos équipements ou vos services..."
         };
       default:
         return {

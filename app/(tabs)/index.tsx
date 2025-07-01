@@ -7,7 +7,8 @@ import { useListings } from '@/hooks/useListings';
 import { useLocation } from '@/hooks/useLocation';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useFavoritesComputed } from '@/hooks/useFavorites';
-import Colors from '@/constants/colors';
+import { useSettings } from '@/hooks/useSettings';
+import { getColors } from '@/constants/colors';
 import SearchBar from '@/components/SearchBar';
 import CategoryFilter from '@/components/CategoryFilter';
 import ListingCard from '@/components/ListingCard';
@@ -55,6 +56,8 @@ export default function HomeScreen() {
     hasPermission
   } = useLocation();
   const { t } = useLanguage();
+  const { darkMode } = useSettings();
+  const Colors = getColors(darkMode);
   
   const { favorites } = useFavoritesComputed();
   
@@ -69,27 +72,6 @@ export default function HomeScreen() {
     onScroll: (event) => {
       scrollY.value = event.contentOffset.y;
     },
-  });
-  
-  const headerStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(
-      scrollY.value,
-      [0, 100],
-      [1, 0],
-      Extrapolate.CLAMP
-    );
-    
-    const translateY = interpolate(
-      scrollY.value,
-      [0, 100],
-      [0, -50],
-      Extrapolate.CLAMP
-    );
-    
-    return {
-      opacity,
-      transform: [{ translateY }],
-    };
   });
   
   const handleRefresh = async () => {
@@ -135,7 +117,7 @@ export default function HomeScreen() {
   };
   
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: Colors.background }]}>
       <Stack.Screen options={{ headerShown: false }} />
       
       <AnimatedScrollView 
@@ -148,11 +130,11 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 20 }]}
       >
-        {/* Welcome Header - Disappears on scroll */}
-        <Animated.View style={[styles.welcomeHeader, headerStyle]}>
-          <Animated.Text entering={FadeIn.delay(200)} style={styles.welcomeText}>
+        {/* Welcome Header - Simple and clean */}
+        <Animated.View entering={FadeIn.delay(200)} style={styles.welcomeHeader}>
+          <Text style={[styles.welcomeText, { color: Colors.text }]}>
             {getWelcomeMessage()}
-          </Animated.Text>
+          </Text>
         </Animated.View>
         
         {/* Search Bar */}
@@ -184,10 +166,10 @@ export default function HomeScreen() {
         {/* Listings Section */}
         <View style={styles.listingsSection}>
           <Animated.View entering={FadeIn.delay(1000)} style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>
+            <Text style={[styles.sectionTitle, { color: Colors.text }]}>
               {selectedCategory ? 'Résultats filtrés' : 'Découvrir'}
             </Text>
-            <Text style={styles.sectionSubtitle}>
+            <Text style={[styles.sectionSubtitle, { color: Colors.textLight }]}>
               {safeFilteredListings.length} option{safeFilteredListings.length > 1 ? 's' : ''} disponible{safeFilteredListings.length > 1 ? 's' : ''}
             </Text>
           </Animated.View>
@@ -206,8 +188,8 @@ export default function HomeScreen() {
             </View>
           ) : (
             <Animated.View entering={FadeIn.delay(1400)} style={styles.emptyState}>
-              <Text style={styles.emptyTitle}>Aucun résultat</Text>
-              <Text style={styles.emptyText}>
+              <Text style={[styles.emptyTitle, { color: Colors.text }]}>Aucun résultat</Text>
+              <Text style={[styles.emptyText, { color: Colors.textLight }]}>
                 Essayez de modifier vos critères de recherche
               </Text>
             </Animated.View>
@@ -221,7 +203,7 @@ export default function HomeScreen() {
         style={[styles.fab, { bottom: insets.bottom + 100 }]}
       >
         <TouchableOpacity 
-          style={styles.fabButton}
+          style={[styles.fabButton, { backgroundColor: Colors.primary }]}
           onPress={handleCreatePress}
           activeOpacity={0.8}
         >
@@ -239,7 +221,6 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   scrollView: {
     flex: 1,
@@ -254,7 +235,6 @@ const styles = StyleSheet.create({
   welcomeText: {
     fontSize: 32,
     fontWeight: '700',
-    color: Colors.text,
     letterSpacing: -0.5,
   },
   searchSection: {
@@ -271,13 +251,11 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: Colors.text,
     marginBottom: 4,
     letterSpacing: -0.3,
   },
   sectionSubtitle: {
     fontSize: 16,
-    color: Colors.textLight,
     fontWeight: '400',
   },
   listingsGrid: {
@@ -293,12 +271,10 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: Colors.text,
     marginBottom: 8,
   },
   emptyText: {
     fontSize: 16,
-    color: Colors.textLight,
     textAlign: 'center',
   },
   fab: {
@@ -307,10 +283,9 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: Colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: Colors.primary,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 16,

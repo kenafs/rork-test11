@@ -1,7 +1,36 @@
+export type UserType = 'client' | 'provider' | 'business';
+
 export interface Location {
   latitude: number;
   longitude: number;
   city: string;
+  address?: string;
+}
+
+export interface PortfolioItem {
+  id: string;
+  title: string;
+  description: string;
+  mediaUrl: string;
+  mediaType: 'image' | 'video';
+  eventType: string;
+  eventDate: number;
+  clientName?: string;
+  tags?: string[];
+  featured?: boolean;
+}
+
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  description?: string;
+  startDate: number;
+  endDate: number;
+  location?: string;
+  attendees?: string[];
+  quoteId?: string;
+  status: 'scheduled' | 'confirmed' | 'completed' | 'cancelled';
+  reminders?: number[]; // Minutes before event
 }
 
 export interface User {
@@ -9,85 +38,77 @@ export interface User {
   name: string;
   email: string;
   phone?: string;
-  userType: UserType;
   profileImage?: string;
+  userType: UserType;
+  location: Location;
+  rating: number;
+  reviewCount: number;
   description?: string;
   website?: string;
   instagram?: string;
-  rating?: number;
-  reviewCount?: number;
-  location?: Location;
-  city?: string;
-  socialLinks?: {
-    instagram?: string;
-    website?: string;
-    facebook?: string;
-    linkedin?: string;
-  };
-  portfolio?: string[];
+  facebook?: string;
+  linkedin?: string;
+  portfolio?: PortfolioItem[];
   createdAt: number;
 }
 
 export interface Provider extends User {
   userType: 'provider';
+  services: string[];
   specialties?: string;
-  services?: string[];
   priceRange?: {
     min: number;
     max: number;
   };
   availability?: string[];
+  portfolio?: PortfolioItem[];
   socialLinks?: {
     instagram?: string;
     website?: string;
     facebook?: string;
     linkedin?: string;
   };
-  portfolio?: string[];
 }
 
-// FIXED: Business venues can now act as both providers and clients
 export interface Venue extends User {
   userType: 'business';
-  address?: string;
-  venueType?: string;
-  capacity?: number;
-  amenities?: string[];
+  venueType: string;
+  capacity: number;
+  amenities: string[];
   photos?: string[];
+  address?: string;
+  portfolio?: PortfolioItem[];
   socialLinks?: {
     instagram?: string;
     website?: string;
     facebook?: string;
     linkedin?: string;
   };
-  portfolio?: string[];
-  // FIXED: Allow venues to also be clients when they need services
-  canActAsClient?: boolean; // Venues can rent their space (provider) or hire services (client)
 }
 
 export interface Client extends User {
   userType: 'client';
+  preferences?: string[];
+  eventHistory?: string[];
 }
-
-export type UserType = 'client' | 'provider' | 'business';
 
 export interface Listing {
   id: string;
   title: string;
   description: string;
-  createdBy: string;
-  creatorType: UserType;
-  creatorName: string;
-  creatorImage?: string;
-  creatorRating?: number;
-  creatorReviewCount?: number;
-  location: Location;
   category: string;
   price?: number;
   images?: string[];
+  location: Location;
+  createdBy: string;
+  creatorName: string;
+  creatorImage?: string;
+  creatorType: UserType;
+  creatorRating?: number;
   tags?: string[];
   createdAt: number;
   updatedAt: number;
+  status: 'active' | 'inactive' | 'draft';
 }
 
 export interface Review {
@@ -96,16 +117,11 @@ export interface Review {
   reviewerName: string;
   reviewerImage?: string;
   targetId: string;
-  targetType?: 'user' | 'listing';
-  listingId?: string;
-  providerId?: string;
-  venueId?: string;
+  targetType: 'user' | 'listing';
   rating: number;
   comment: string;
-  response?: string;
-  helpful?: number;
   createdAt: number;
-  quoteId?: string; // Link to the completed quote that allows this review
+  quoteId?: string;
 }
 
 export interface Message {
@@ -116,7 +132,8 @@ export interface Message {
   content: string;
   timestamp: number;
   read: boolean;
-  type?: 'text' | 'quote' | 'image';
+  type: 'text' | 'image' | 'quote';
+  quoteId?: string;
 }
 
 export interface Conversation {
@@ -124,19 +141,9 @@ export interface Conversation {
   participants: string[];
   lastMessage?: Message;
   lastMessageTime?: number;
-  unreadCount: number;
   createdAt: number;
   updatedAt: number;
-}
-
-export interface Contact {
-  participantId: string;
-  participantName: string;
-  participantImage?: string;
-  participantType: 'client' | 'provider' | 'business';
-  lastMessage: string;
-  unread: number;
-  timestamp: number;
+  unreadCount: number;
 }
 
 export interface QuoteItem {
@@ -162,11 +169,16 @@ export interface Quote {
   currency: string;
   status: 'draft' | 'pending' | 'accepted' | 'rejected' | 'paid' | 'completed' | 'refunded';
   validUntil: number;
+  eventDate?: number;
+  eventLocation?: string;
+  eventDuration?: number; // in hours
+  specialRequests?: string;
   createdAt: number;
   updatedAt: number;
   paidAt?: number;
   completedAt?: number;
   refundedAt?: number;
+  calendarEventId?: string;
 }
 
 export interface DemoAccount {
@@ -174,23 +186,62 @@ export interface DemoAccount {
   name: string;
   email: string;
   profileImage?: string;
-  description?: string;
+  description: string;
+  city: string;
+  rating: number;
+  reviewCount: number;
+  
+  // Provider specific
   specialties?: string;
   website?: string;
   instagram?: string;
-  rating?: number;
-  reviewCount?: number;
-  city: string;
   services?: string[];
-  priceRange?: {
-    min: number;
-    max: number;
-  };
+  priceRange?: { min: number; max: number };
   availability?: string[];
+  
+  // Business specific
   address?: string;
   venueType?: string;
   capacity?: number;
   amenities?: string[];
-  // FIXED: Allow demo business accounts to act as clients too
   canActAsClient?: boolean;
+  
+  // Client specific - ENHANCED
+  hasReceivedQuotes?: boolean; // NEW: Flag to indicate demo quotes should be created
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  subcategories?: string[];
+}
+
+export interface SearchFilters {
+  category?: string;
+  location?: string;
+  priceMin?: number;
+  priceMax?: number;
+  rating?: number;
+  availability?: string[];
+  distance?: number;
+}
+
+export interface NotificationSettings {
+  push: boolean;
+  email: boolean;
+  sms: boolean;
+  marketing: boolean;
+}
+
+export interface AppSettings {
+  language: string;
+  currency: string;
+  notifications: NotificationSettings;
+  privacy: {
+    profileVisible: boolean;
+    showLocation: boolean;
+    allowMessages: boolean;
+  };
 }

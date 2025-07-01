@@ -6,7 +6,7 @@ import { useQuotes } from '@/hooks/useQuotes';
 import Colors from '@/constants/colors';
 import Button from '@/components/Button';
 import QuotePreview from '@/components/QuotePreview';
-import { FileText, Calendar, Euro, CheckCircle, XCircle, Clock, Eye, CreditCard, CheckSquare, X, Sparkles } from 'lucide-react-native';
+import { FileText, Calendar, Euro, CheckCircle, XCircle, Clock, Eye, CreditCard, CheckSquare, X, Sparkles, CalendarPlus } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import Animated, { 
@@ -23,6 +23,7 @@ import Animated, {
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import * as Haptics from 'expo-haptics';
+import * as ExpoCalendar from 'expo-calendar';
 
 export default function QuotesScreen() {
   const router = useRouter();
@@ -43,7 +44,7 @@ export default function QuotesScreen() {
     });
   }, []);
   
-  // FIXED: Get quotes based on user type using correct function
+  // Get quotes based on user type using correct function
   const userQuotes = user ? getQuotesForUser(user.id) : [];
   
   const shimmerStyle = useAnimatedStyle(() => {
@@ -98,6 +99,62 @@ export default function QuotesScreen() {
     }
   };
 
+  // Create calendar event for quote
+  const createCalendarEvent = async (quote: any) => {
+    try {
+      if (Platform.OS !== 'web') {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      }
+      
+      const { status } = await ExpoCalendar.requestCalendarPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission requise', 'L\'accès au calendrier est nécessaire pour créer l\'événement');
+        return;
+      }
+      
+      const calendars = await ExpoCalendar.getCalendarsAsync(ExpoCalendar.EntityTypes.EVENT);
+      const defaultCalendar = calendars.find(cal => cal.source.name === 'Default') || calendars[0];
+      
+      if (!defaultCalendar) {
+        Alert.alert('Erreur', 'Aucun calendrier disponible');
+        return;
+      }
+      
+      const eventDate = quote.eventDate ? new Date(quote.eventDate) : new Date();
+      const eventDuration = quote.eventDuration || 4; // Default 4 hours
+      
+      const eventDetails = {
+        title: `📋 ${quote.title}`,
+        startDate: eventDate,
+        endDate: new Date(eventDate.getTime() + (eventDuration * 60 * 60 * 1000)),
+        location: quote.eventLocation || 'À définir',
+        notes: `${quote.description}
+
+Montant: ${quote.total.toFixed(2)}€
+Devis #${quote.id.slice(-6)}
+
+${quote.specialRequests ? `Demandes spéciales: ${quote.specialRequests}` : ''}`,
+        calendarId: defaultCalendar.id,
+        alarms: [
+          { relativeOffset: -24 * 60 }, // 1 day before
+          { relativeOffset: -60 }, // 1 hour before
+        ],
+      };
+      
+      const eventId = await ExpoCalendar.createEventAsync(defaultCalendar.id, eventDetails);
+      
+      if (eventId) {
+        if (Platform.OS !== 'web') {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        }
+        Alert.alert('Succès', 'Événement ajouté au calendrier');
+      }
+    } catch (error) {
+      console.error('Error creating calendar event:', error);
+      Alert.alert('Erreur', 'Impossible de créer l\'événement dans le calendrier');
+    }
+  };
+
   const handleAcceptQuote = async (quoteId: string) => {
     if (Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -137,7 +194,7 @@ export default function QuotesScreen() {
     );
   };
 
-  // FIXED: Enhanced payment processing with better UX and client support
+  // Enhanced payment processing with better UX and client support
   const handlePayQuote = async (quoteId: string) => {
     Alert.alert(
       'Payer le devis',
@@ -281,6 +338,13 @@ export default function QuotesScreen() {
               padding: 20px;
               border-radius: 12px;
             }
+            .event-details {
+              background: linear-gradient(135deg, rgba(30, 58, 138, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);
+              border-left: 4px solid #1E3A8A;
+              padding: 20px;
+              margin: 20px 0;
+              border-radius: 8px;
+            }
             .info-row { 
               margin: 8px 0; 
               display: flex;
@@ -414,6 +478,19 @@ export default function QuotesScreen() {
                 <span class="info-value">${getStatusText(quote.status)}</span>
               </div>
             </div>
+            
+            ${quote.eventDate ? `
+            <div class="event-details">
+              <h3>📅 Détails de l'événement</h3>
+              <div class="info-row">
+                <span class="info-label">Date:</span>
+                <span class="info-value">${new Date(quote.eventDate).toLocaleDateString('fr-FR')} à ${new Date(quote.eventDate).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+              </div>
+              ${quote.eventLocation ? `<div class="info-row"><span class="info-label">Lieu:</span><span class="info-value">${quote.eventLocation}</span></div>` : ''}
+              ${quote.eventDuration ? `<div class="info-row"><span class="info-label">Durée:</span><span class="info-value">${quote.eventDuration}h</span></div>` : ''}
+              ${quote.specialRequests ? `<div class="info-row"><span class="info-label">Demandes spéciales:</span><span class="info-value">${quote.specialRequests}</span></div>` : ''}
+            </div>
+            ` : ''}
             
             <div class="description-section">
               <div class="description-title">${quote.title}</div>
@@ -618,6 +695,12 @@ export default function QuotesScreen() {
                       <View style={styles.quoteInfo}>
                         <Text style={styles.quoteTitle}>Devis #{quote.id.slice(-6)}</Text>
                         <Text style={styles.quoteSubtitle}>{quote.title}</Text>
+                        {quote.eventDate && (
+                          <Text style={styles.quoteEventDate}>
+                            📅 {new Date(quote.eventDate).toLocaleDateString('fr-FR')}
+                            {quote.eventLocation && ` • 📍 ${quote.eventLocation}`}
+                          </Text>
+                        )}
                       </View>
                       <LinearGradient
                         colors={[getStatusColor(quote.status), `${getStatusColor(quote.status)}CC`]}
@@ -662,7 +745,18 @@ export default function QuotesScreen() {
                         <Text style={styles.pdfButtonText}>PDF</Text>
                       </TouchableOpacity>
                       
-                      {/* FIXED: Business venues and clients can accept/reject quotes */}
+                      {/* Calendar button for accepted/paid/completed quotes */}
+                      {(quote.status === 'accepted' || quote.status === 'paid' || quote.status === 'completed') && quote.eventDate && (
+                        <TouchableOpacity 
+                          style={styles.calendarButton}
+                          onPress={() => createCalendarEvent(quote)}
+                        >
+                          <CalendarPlus size={12} color="#10B981" />
+                          <Text style={styles.calendarButtonText}>Calendrier</Text>
+                        </TouchableOpacity>
+                      )}
+                      
+                      {/* Business venues and clients can accept/reject quotes */}
                       {((user.userType === 'client') || 
                         (user.userType === 'business' && quote.clientId === user.id)) && 
                         quote.status === 'pending' && (
@@ -685,7 +779,7 @@ export default function QuotesScreen() {
                         </>
                       )}
                       
-                      {/* FIXED: Enhanced payment button with loading state for clients and business venues */}
+                      {/* Enhanced payment button with loading state for clients and business venues */}
                       {((user.userType === 'client') || 
                         (user.userType === 'business' && quote.clientId === user.id)) && 
                         quote.status === 'accepted' && (
@@ -701,7 +795,7 @@ export default function QuotesScreen() {
                         </TouchableOpacity>
                       )}
                       
-                      {/* FIXED: Both providers and business venues can complete quotes */}
+                      {/* Both providers and business venues can complete quotes */}
                       {((user.userType === 'provider') || 
                         (user.userType === 'business' && quote.providerId === user.id)) && 
                         quote.status === 'paid' && (
@@ -740,11 +834,14 @@ export default function QuotesScreen() {
                   <FileText size={64} color={Colors.textLight} />
                 </Animated.View>
                 <Animated.Text entering={SlideInDown.delay(1000)} style={styles.emptyTitle}>
-                  {user.userType === 'provider' ? 'Aucun devis créé' : 'Aucun devis reçu'}
+                  {user.userType === 'provider' ? 'Aucun devis créé' : 
+                   user.userType === 'business' ? 'Aucun devis' : 'Aucun devis reçu'}
                 </Animated.Text>
                 <Animated.Text entering={FadeIn.delay(1200)} style={styles.emptyText}>
                   {user.userType === 'provider' 
                     ? "Vous n'avez pas encore créé de devis. Créez votre premier devis depuis une conversation ou une annonce."
+                    : user.userType === 'business'
+                    ? "Vous n'avez pas encore créé ou reçu de devis. En tant qu'établissement, vous pouvez créer des devis et en recevoir."
                     : "Vous n'avez pas encore reçu de devis. Contactez des prestataires pour recevoir des propositions."
                   }
                 </Animated.Text>
@@ -804,47 +901,47 @@ const styles = StyleSheet.create({
     paddingBottom: 120,
   },
   header: {
-    paddingTop: 12, // FIXED: Reduced from 16 to 12
-    paddingBottom: 20, // FIXED: Reduced from 24 to 20
-    marginBottom: 12, // FIXED: Reduced from 16 to 12
+    paddingTop: 12,
+    paddingBottom: 20,
+    marginBottom: 12,
   },
   headerBlur: {
     paddingHorizontal: 20,
-    paddingVertical: 12, // FIXED: Reduced from 16 to 12
+    paddingVertical: 12,
   },
   headerContent: {
     alignItems: 'center',
   },
   headerIcon: {
-    marginBottom: 10, // FIXED: Reduced from 12 to 10
+    marginBottom: 10,
   },
   headerTitle: {
-    fontSize: 20, // FIXED: Reduced from 24 to 20
+    fontSize: 20,
     fontWeight: '800',
     color: '#fff',
-    marginBottom: 4, // FIXED: Reduced from 6 to 4
+    marginBottom: 4,
     textAlign: 'center',
   },
   headerSubtitle: {
-    fontSize: 13, // FIXED: Reduced from 14 to 13
+    fontSize: 13,
     color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
   },
   quoteCardWrapper: {
     marginHorizontal: 16,
-    marginBottom: 10, // FIXED: Reduced from 12 to 10
+    marginBottom: 10,
   },
   quoteCard: {
-    borderRadius: 14, // FIXED: Reduced from 16 to 14
+    borderRadius: 14,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 }, // FIXED: Reduced shadow
-    shadowOpacity: 0.1, // FIXED: Reduced opacity
-    shadowRadius: 8, // FIXED: Reduced radius
-    elevation: 4, // FIXED: Reduced elevation
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   quoteCardGradient: {
-    padding: 14, // FIXED: Reduced from 16 to 14
+    padding: 14,
     position: 'relative',
   },
   shimmerOverlay: {
@@ -863,85 +960,91 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 10, // FIXED: Reduced from 12 to 10
+    marginBottom: 10,
   },
   quoteInfo: {
     flex: 1,
-    marginRight: 8, // FIXED: Reduced from 10 to 8
+    marginRight: 8,
   },
   quoteTitle: {
-    fontSize: 16, // FIXED: Reduced from 18 to 16
+    fontSize: 16,
     fontWeight: '800',
     color: Colors.text,
-    marginBottom: 2, // FIXED: Reduced from 3 to 2
+    marginBottom: 2,
   },
   quoteSubtitle: {
-    fontSize: 13, // FIXED: Reduced from 14 to 13
+    fontSize: 13,
     color: Colors.textLight,
+    fontWeight: '500',
+    marginBottom: 2,
+  },
+  quoteEventDate: {
+    fontSize: 11,
+    color: Colors.primary,
     fontWeight: '500',
   },
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8, // FIXED: Reduced from 10 to 8
-    paddingVertical: 4, // FIXED: Reduced from 6 to 4
-    borderRadius: 12, // FIXED: Reduced from 16 to 12
-    gap: 3, // FIXED: Reduced from 4 to 3
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 3,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 }, // FIXED: Reduced shadow
-    shadowOpacity: 0.12, // FIXED: Reduced opacity
-    shadowRadius: 4, // FIXED: Reduced radius
-    elevation: 2, // FIXED: Reduced elevation
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 2,
   },
   statusText: {
-    fontSize: 10, // FIXED: Reduced from 11 to 10
+    fontSize: 10,
     fontWeight: '700',
     color: '#fff',
   },
   quoteDescription: {
-    fontSize: 12, // FIXED: Reduced from 13 to 12
+    fontSize: 12,
     color: Colors.textLight,
-    marginBottom: 14, // FIXED: Reduced from 16 to 14
-    lineHeight: 16, // FIXED: Reduced from 18 to 16
+    marginBottom: 14,
+    lineHeight: 16,
   },
   quoteDetails: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 14, // FIXED: Reduced from 16 to 14
+    marginBottom: 14,
   },
   quoteDetailItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4, // FIXED: Reduced from 6 to 4
+    gap: 4,
   },
   quoteAmount: {
-    fontSize: 16, // FIXED: Reduced from 18 to 16
+    fontSize: 16,
     fontWeight: '800',
     color: Colors.primary,
   },
   quoteDate: {
-    fontSize: 12, // FIXED: Reduced from 13 to 12
+    fontSize: 12,
     color: Colors.textLight,
     fontWeight: '500',
   },
   quoteActions: {
     flexDirection: 'row',
-    gap: 6, // FIXED: Reduced from 8 to 6
+    gap: 6,
     flexWrap: 'wrap',
   },
   viewButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(99, 102, 241, 0.1)',
-    paddingHorizontal: 10, // FIXED: Reduced from 12 to 10
-    paddingVertical: 6, // FIXED: Reduced from 8 to 6
-    borderRadius: 12, // FIXED: Reduced from 14 to 12
-    gap: 3, // FIXED: Reduced from 4 to 3
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    gap: 3,
     borderWidth: 1,
     borderColor: 'rgba(99, 102, 241, 0.2)',
   },
   viewButtonText: {
-    fontSize: 11, // FIXED: Reduced from 12 to 11
+    fontSize: 11,
     fontWeight: '600',
     color: Colors.primary,
   },
@@ -949,34 +1052,50 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(99, 102, 241, 0.1)',
-    paddingHorizontal: 10, // FIXED: Reduced from 12 to 10
-    paddingVertical: 6, // FIXED: Reduced from 8 to 6
-    borderRadius: 12, // FIXED: Reduced from 14 to 12
-    gap: 3, // FIXED: Reduced from 4 to 3
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    gap: 3,
     borderWidth: 1,
     borderColor: 'rgba(99, 102, 241, 0.2)',
   },
   pdfButtonText: {
-    fontSize: 11, // FIXED: Reduced from 12 to 11
+    fontSize: 11,
     fontWeight: '600',
     color: Colors.primary,
+  },
+  calendarButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    gap: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.2)',
+  },
+  calendarButtonText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#10B981',
   },
   acceptButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#10B981',
-    paddingHorizontal: 10, // FIXED: Reduced from 12 to 10
-    paddingVertical: 6, // FIXED: Reduced from 8 to 6
-    borderRadius: 12, // FIXED: Reduced from 14 to 12
-    gap: 3, // FIXED: Reduced from 4 to 3
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    gap: 3,
     shadowColor: '#10B981',
-    shadowOffset: { width: 0, height: 2 }, // FIXED: Reduced shadow
-    shadowOpacity: 0.2, // FIXED: Reduced opacity
-    shadowRadius: 4, // FIXED: Reduced radius
-    elevation: 2, // FIXED: Reduced elevation
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
   },
   acceptButtonText: {
-    fontSize: 11, // FIXED: Reduced from 12 to 11
+    fontSize: 11,
     fontWeight: '600',
     color: '#fff',
   },
@@ -984,18 +1103,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#EF4444',
-    paddingHorizontal: 10, // FIXED: Reduced from 12 to 10
-    paddingVertical: 6, // FIXED: Reduced from 8 to 6
-    borderRadius: 12, // FIXED: Reduced from 14 to 12
-    gap: 3, // FIXED: Reduced from 4 to 3
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    gap: 3,
     shadowColor: '#EF4444',
-    shadowOffset: { width: 0, height: 2 }, // FIXED: Reduced shadow
-    shadowOpacity: 0.2, // FIXED: Reduced opacity
-    shadowRadius: 4, // FIXED: Reduced radius
-    elevation: 2, // FIXED: Reduced elevation
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
   },
   rejectButtonText: {
-    fontSize: 11, // FIXED: Reduced from 12 to 11
+    fontSize: 11,
     fontWeight: '600',
     color: '#fff',
   },
@@ -1003,21 +1122,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#8B5CF6',
-    paddingHorizontal: 10, // FIXED: Reduced from 12 to 10
-    paddingVertical: 6, // FIXED: Reduced from 8 to 6
-    borderRadius: 12, // FIXED: Reduced from 14 to 12
-    gap: 3, // FIXED: Reduced from 4 to 3
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    gap: 3,
     shadowColor: '#8B5CF6',
-    shadowOffset: { width: 0, height: 2 }, // FIXED: Reduced shadow
-    shadowOpacity: 0.2, // FIXED: Reduced opacity
-    shadowRadius: 4, // FIXED: Reduced radius
-    elevation: 2, // FIXED: Reduced elevation
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
   },
   payButtonLoading: {
     opacity: 0.7,
   },
   payButtonText: {
-    fontSize: 11, // FIXED: Reduced from 12 to 11
+    fontSize: 11,
     fontWeight: '600',
     color: '#fff',
   },
@@ -1025,18 +1144,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#059669',
-    paddingHorizontal: 10, // FIXED: Reduced from 12 to 10
-    paddingVertical: 6, // FIXED: Reduced from 8 to 6
-    borderRadius: 12, // FIXED: Reduced from 14 to 12
-    gap: 3, // FIXED: Reduced from 4 to 3
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    gap: 3,
     shadowColor: '#059669',
-    shadowOffset: { width: 0, height: 2 }, // FIXED: Reduced shadow
-    shadowOpacity: 0.2, // FIXED: Reduced opacity
-    shadowRadius: 4, // FIXED: Reduced radius
-    elevation: 2, // FIXED: Reduced elevation
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
   },
   completeButtonText: {
-    fontSize: 11, // FIXED: Reduced from 12 to 11
+    fontSize: 11,
     fontWeight: '600',
     color: '#fff',
   },
@@ -1044,57 +1163,57 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(99, 102, 241, 0.1)',
-    paddingHorizontal: 10, // FIXED: Reduced from 12 to 10
-    paddingVertical: 6, // FIXED: Reduced from 8 to 6
-    borderRadius: 12, // FIXED: Reduced from 14 to 12
-    gap: 3, // FIXED: Reduced from 4 to 3
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    gap: 3,
     borderWidth: 1,
     borderColor: 'rgba(99, 102, 241, 0.2)',
   },
   reviewButtonText: {
-    fontSize: 11, // FIXED: Reduced from 12 to 11
+    fontSize: 11,
     fontWeight: '600',
     color: Colors.primary,
   },
   emptyStateWrapper: {
     marginHorizontal: 20,
-    marginTop: 24, // FIXED: Reduced from 32 to 24
+    marginTop: 24,
   },
   emptyState: {
-    borderRadius: 14, // FIXED: Reduced from 16 to 14
+    borderRadius: 14,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 }, // FIXED: Reduced shadow
-    shadowOpacity: 0.1, // FIXED: Reduced opacity
-    shadowRadius: 8, // FIXED: Reduced radius
-    elevation: 4, // FIXED: Reduced elevation
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   emptyStateGradient: {
     alignItems: 'center',
-    padding: 28, // FIXED: Reduced from 32 to 28
+    padding: 28,
   },
   emptyTitle: {
-    fontSize: 18, // FIXED: Reduced from 20 to 18
+    fontSize: 18,
     fontWeight: '800',
     color: Colors.text,
-    marginTop: 14, // FIXED: Reduced from 16 to 14
-    marginBottom: 8, // FIXED: Reduced from 10 to 8
+    marginTop: 14,
+    marginBottom: 8,
     textAlign: 'center',
   },
   emptyText: {
-    fontSize: 13, // FIXED: Reduced from 14 to 13
+    fontSize: 13,
     color: Colors.textLight,
     textAlign: 'center',
-    lineHeight: 18, // FIXED: Reduced from 20 to 18
-    marginBottom: 20, // FIXED: Reduced from 24 to 20
+    lineHeight: 18,
+    marginBottom: 20,
   },
   createButton: {
-    paddingHorizontal: 24, // FIXED: Reduced from 28 to 24
+    paddingHorizontal: 24,
     shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 }, // FIXED: Reduced shadow
-    shadowOpacity: 0.2, // FIXED: Reduced opacity
-    shadowRadius: 8, // FIXED: Reduced radius
-    elevation: 4, // FIXED: Reduced elevation
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   loginPromptGradient: {
     flex: 1,
@@ -1106,35 +1225,35 @@ const styles = StyleSheet.create({
     maxWidth: 400,
   },
   loginPromptCard: {
-    borderRadius: 16, // FIXED: Reduced from 20 to 16
-    padding: 28, // FIXED: Reduced from 32 to 28
+    borderRadius: 16,
+    padding: 28,
     alignItems: 'center',
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   loginTitle: {
-    fontSize: 18, // FIXED: Reduced from 20 to 18
+    fontSize: 18,
     fontWeight: '800',
     color: Colors.text,
-    marginTop: 14, // FIXED: Reduced from 16 to 14
-    marginBottom: 8, // FIXED: Reduced from 10 to 8
+    marginTop: 14,
+    marginBottom: 8,
     textAlign: 'center',
   },
   loginDescription: {
-    fontSize: 13, // FIXED: Reduced from 14 to 13
+    fontSize: 13,
     color: Colors.textLight,
     textAlign: 'center',
-    marginBottom: 20, // FIXED: Reduced from 24 to 20
-    lineHeight: 18, // FIXED: Reduced from 20 to 18
+    marginBottom: 20,
+    lineHeight: 18,
   },
   loginButton: {
-    paddingHorizontal: 24, // FIXED: Reduced from 28 to 24
+    paddingHorizontal: 24,
     shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 }, // FIXED: Reduced shadow
-    shadowOpacity: 0.2, // FIXED: Reduced opacity
-    shadowRadius: 8, // FIXED: Reduced radius
-    elevation: 4, // FIXED: Reduced elevation
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   modalContainer: {
     flex: 1,
@@ -1151,13 +1270,13 @@ const styles = StyleSheet.create({
     paddingTop: 50,
   },
   modalTitle: {
-    fontSize: 16, // FIXED: Reduced from 18 to 16
+    fontSize: 16,
     fontWeight: '800',
     color: '#fff',
   },
   closeButton: {
-    padding: 4, // FIXED: Reduced from 6 to 4
-    borderRadius: 12, // FIXED: Reduced from 16 to 12
+    padding: 4,
+    borderRadius: 12,
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
   },
 });

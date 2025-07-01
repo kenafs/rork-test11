@@ -28,7 +28,8 @@ const { width, height } = Dimensions.get('window');
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
 export default function ListingDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const params = useLocalSearchParams();
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { isAuthenticated, user } = useAuth();
@@ -39,13 +40,13 @@ export default function ListingDetailScreen() {
   const scrollY = useSharedValue(0);
   const [imageLoaded, setImageLoaded] = useState(false);
   
-  // Find the listing by ID
-  const listing = getListingById(id as string);
+  // Get listing with proper error handling
+  const listing = id ? getListingById(id) : null;
   
   if (!listing) {
     return (
-      <View style={[styles.notFoundContainer, { paddingTop: insets.top + 20 }]}>
-        <Text style={styles.notFoundText}>Annonce non trouvée</Text>
+      <View style={[styles.notFoundContainer, { paddingTop: insets.top + 20, backgroundColor: Colors.background }]}>
+        <Text style={[styles.notFoundText, { color: Colors.text }]}>Annonce non trouvée</Text>
         <Button 
           title="Retour" 
           onPress={() => router.back()}
@@ -59,8 +60,8 @@ export default function ListingDetailScreen() {
   const allUsers = [...mockProviders, ...mockVenues];
   const creatorUser = allUsers.find(u => u.id === listing.createdBy);
   
-  // Format price
-  const formattedPrice = listing.price 
+  // Format price with proper null checks
+  const formattedPrice = listing.price && typeof listing.price === 'number'
     ? `${listing.price.toLocaleString('fr-FR')}€${listing.category === 'Catering' ? '/pers' : ''}`
     : 'Prix sur demande';
   
@@ -202,11 +203,11 @@ export default function ListingDetailScreen() {
   const isListingFavorite = isAuthenticated && isFavorite(listing.id);
   
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: Colors.background }]}>
       {/* Animated Header */}
       <Animated.View style={[styles.header, { paddingTop: insets.top + 10 }, headerStyle]}>
         <TouchableOpacity 
-          style={styles.headerButton}
+          style={[styles.headerButton, { backgroundColor: Colors.surface }]}
           onPress={() => router.back()}
         >
           <ChevronLeft size={24} color={Colors.text} />
@@ -214,14 +215,14 @@ export default function ListingDetailScreen() {
         
         <View style={styles.headerActions}>
           <TouchableOpacity 
-            style={styles.headerButton}
+            style={[styles.headerButton, { backgroundColor: Colors.surface }]}
             onPress={handleShare}
           >
             <Share size={20} color={Colors.text} />
           </TouchableOpacity>
           
           <TouchableOpacity 
-            style={styles.headerButton}
+            style={[styles.headerButton, { backgroundColor: Colors.surface }]}
             onPress={toggleFavorite}
           >
             <Heart 
@@ -250,8 +251,10 @@ export default function ListingDetailScreen() {
               transition={500}
             />
           ) : (
-            <View style={styles.placeholderImage}>
-              <Text style={styles.placeholderText}>{listing.category}</Text>
+            <View style={[styles.placeholderImage, { backgroundColor: Colors.backgroundAlt }]}>
+              <Text style={[styles.placeholderText, { color: Colors.textLight }]}>
+                {listing.category || 'Image'}
+              </Text>
             </View>
           )}
         </Animated.View>
@@ -259,14 +262,14 @@ export default function ListingDetailScreen() {
         {/* Content */}
         <Animated.View 
           entering={SlideInDown.delay(300)}
-          style={styles.contentContainer}
+          style={[styles.contentContainer, { backgroundColor: Colors.background }]}
         >
           <View style={styles.content}>
             <Animated.Text 
               entering={FadeIn.delay(400)}
-              style={styles.title}
+              style={[styles.title, { color: Colors.text }]}
             >
-              {listing.title}
+              {listing.title || 'Titre non disponible'}
             </Animated.Text>
             
             <Animated.View 
@@ -283,15 +286,17 @@ export default function ListingDetailScreen() {
                     style={styles.creatorImage}
                   />
                 ) : (
-                  <View style={styles.creatorImagePlaceholder}>
+                  <View style={[styles.creatorImagePlaceholder, { backgroundColor: Colors.primary }]}>
                     <Text style={styles.creatorImageText}>
-                      {listing.creatorName.charAt(0)}
+                      {listing.creatorName ? listing.creatorName.charAt(0) : 'U'}
                     </Text>
                   </View>
                 )}
                 
                 <View style={styles.creatorDetails}>
-                  <Text style={styles.creatorName}>{listing.creatorName}</Text>
+                  <Text style={[styles.creatorName, { color: Colors.text }]}>
+                    {listing.creatorName || 'Utilisateur'}
+                  </Text>
                   {listing.creatorRating && (
                     <RatingStars 
                       rating={listing.creatorRating} 
@@ -310,44 +315,52 @@ export default function ListingDetailScreen() {
               {listing.location && listing.location.city && (
                 <View style={styles.infoItem}>
                   <MapPin size={18} color={Colors.primary} />
-                  <Text style={styles.infoText}>{listing.location.city}</Text>
+                  <Text style={[styles.infoText, { color: Colors.text }]}>
+                    {listing.location.city}
+                  </Text>
                 </View>
               )}
               
               <View style={styles.infoItem}>
                 <Clock size={18} color={Colors.primary} />
-                <Text style={styles.infoText}>
+                <Text style={[styles.infoText, { color: Colors.text }]}>
                   Publié le {new Date(listing.createdAt).toLocaleDateString('fr-FR')}
                 </Text>
               </View>
             </Animated.View>
             
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: Colors.border }]} />
             
             <Animated.View entering={FadeIn.delay(700)}>
-              <Text style={styles.sectionTitle}>Description</Text>
-              <Text style={styles.description}>{listing.description}</Text>
+              <Text style={[styles.sectionTitle, { color: Colors.text }]}>Description</Text>
+              <Text style={[styles.description, { color: Colors.text }]}>
+                {listing.description || 'Aucune description disponible'}
+              </Text>
             </Animated.View>
             
             {listing.tags && listing.tags.length > 0 && (
               <Animated.View entering={FadeIn.delay(800)}>
-                <Text style={styles.sectionTitle}>Tags</Text>
+                <Text style={[styles.sectionTitle, { color: Colors.text }]}>Tags</Text>
                 <View style={styles.tagsContainer}>
                   {listing.tags.map((tag, index) => (
-                    <View key={`tag-${index}`} style={styles.tag}>
-                      <Text style={styles.tagText}>{tag}</Text>
+                    <View key={`tag-${index}`} style={[styles.tag, { backgroundColor: Colors.backgroundAlt, borderColor: Colors.border }]}>
+                      <Text style={[styles.tagText, { color: Colors.primary }]}>
+                        {tag || ''}
+                      </Text>
                     </View>
                   ))}
                 </View>
               </Animated.View>
             )}
             
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: Colors.border }]} />
             
             <Animated.View entering={SlideInDown.delay(900)}>
-              <View style={styles.priceSection}>
-                <Text style={styles.priceLabel}>Prix</Text>
-                <Text style={styles.price}>{formattedPrice}</Text>
+              <View style={[styles.priceSection, { backgroundColor: Colors.backgroundAlt }]}>
+                <Text style={[styles.priceLabel, { color: Colors.text }]}>Prix</Text>
+                <Text style={[styles.price, { color: Colors.primary }]}>
+                  {formattedPrice}
+                </Text>
               </View>
             </Animated.View>
           </View>
@@ -358,7 +371,7 @@ export default function ListingDetailScreen() {
       {!isOwnListing && (
         <Animated.View 
           entering={SlideInDown.delay(1000)}
-          style={[styles.actionContainer, { paddingBottom: insets.bottom + 20 }]}
+          style={[styles.actionContainer, { paddingBottom: insets.bottom + 20, backgroundColor: Colors.background, borderTopColor: Colors.border }]}
         >
           <View style={styles.actionButtons}>
             <Button
@@ -387,7 +400,6 @@ export default function ListingDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   header: {
     position: 'absolute',
@@ -404,7 +416,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: Colors.background,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -431,17 +442,14 @@ const styles = StyleSheet.create({
   placeholderImage: {
     width: '100%',
     height: '100%',
-    backgroundColor: Colors.backgroundAlt,
     justifyContent: 'center',
     alignItems: 'center',
   },
   placeholderText: {
-    color: Colors.textLight,
     fontWeight: '600',
     fontSize: 18,
   },
   contentContainer: {
-    backgroundColor: Colors.background,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     marginTop: -24,
@@ -457,7 +465,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '800',
-    color: Colors.text,
     marginBottom: 20,
     lineHeight: 36,
     letterSpacing: -0.5,
@@ -479,7 +486,6 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: Colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -495,7 +501,6 @@ const styles = StyleSheet.create({
   creatorName: {
     fontSize: 18,
     fontWeight: '700',
-    color: Colors.text,
     marginBottom: 4,
   },
   infoSection: {
@@ -508,25 +513,21 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 16,
-    color: Colors.text,
     marginLeft: 8,
     fontWeight: '500',
   },
   divider: {
     height: 1,
-    backgroundColor: Colors.border,
     marginVertical: 24,
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: Colors.text,
     marginBottom: 12,
     letterSpacing: -0.3,
   },
   description: {
     fontSize: 16,
-    color: Colors.text,
     lineHeight: 24,
     fontWeight: '400',
   },
@@ -536,16 +537,13 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   tag: {
-    backgroundColor: Colors.backgroundAlt,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: Colors.border,
   },
   tagText: {
     fontSize: 12,
-    color: Colors.primary,
     fontWeight: '600',
   },
   priceSection: {
@@ -553,27 +551,22 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: Colors.backgroundAlt,
     borderRadius: 16,
   },
   priceLabel: {
     fontSize: 18,
     fontWeight: '600',
-    color: Colors.text,
   },
   price: {
     fontSize: 24,
     fontWeight: '800',
-    color: Colors.primary,
   },
   actionContainer: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: Colors.background,
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
   },
   actionButtons: {
     flexDirection: 'row',
@@ -595,7 +588,6 @@ const styles = StyleSheet.create({
   notFoundText: {
     fontSize: 18,
     fontWeight: '600',
-    color: Colors.text,
     marginBottom: 16,
   },
   backButtonStyle: {

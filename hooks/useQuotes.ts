@@ -23,11 +23,154 @@ interface QuotesState {
   getUserQuotes: () => Quote[];
   canReview: (quoteId: string) => boolean;
   getCompletedQuotesBetweenUsers: (userId1: string, userId2: string) => Quote[];
-  // FIXED: Add payment processing methods
   processPayment: (quoteId: string, paymentMethod: string) => Promise<boolean>;
   validatePayment: (quoteId: string) => Promise<boolean>;
   refundPayment: (quoteId: string) => Promise<boolean>;
+  initializeDemoQuotes: (clientId: string) => void;
 }
+
+// DEMO QUOTES: Create some sample quotes for demo client
+const createDemoQuotes = (clientId: string): Quote[] => [
+  {
+    id: 'quote-demo-1',
+    listingId: 'listing-1',
+    providerId: 'alex.dubois@djpro.com', // DJ Alex
+    clientId: clientId,
+    title: 'Animation DJ pour mariage',
+    description: 'Prestation DJ complète pour votre mariage avec matériel son et éclairage. Playlist personnalisée selon vos goûts musicaux.',
+    items: [
+      {
+        id: 'item-1',
+        name: 'Animation DJ',
+        description: 'Animation musicale de 19h à 2h du matin',
+        quantity: 1,
+        unitPrice: 800,
+        total: 800,
+      },
+      {
+        id: 'item-2',
+        name: 'Matériel son',
+        description: 'Système de sonorisation professionnel',
+        quantity: 1,
+        unitPrice: 200,
+        total: 200,
+      },
+      {
+        id: 'item-3',
+        name: 'Éclairage',
+        description: 'Éclairage d\'ambiance LED',
+        quantity: 1,
+        unitPrice: 150,
+        total: 150,
+      },
+    ],
+    subtotal: 1150,
+    tax: 230,
+    total: 1380,
+    currency: 'EUR',
+    status: 'pending',
+    validUntil: Date.now() + (30 * 24 * 60 * 60 * 1000), // 30 days from now
+    eventDate: Date.now() + (45 * 24 * 60 * 60 * 1000), // 45 days from now
+    eventLocation: 'Château de Versailles, Versailles',
+    eventDuration: 7,
+    specialRequests: 'Playlist avec musique des années 80-90 et hits actuels. Micro sans fil pour les discours.',
+    createdAt: Date.now() - (2 * 24 * 60 * 60 * 1000), // 2 days ago
+    updatedAt: Date.now() - (2 * 24 * 60 * 60 * 1000),
+  },
+  {
+    id: 'quote-demo-2',
+    listingId: 'listing-2',
+    providerId: 'julien@traiteur-moreau.fr', // Traiteur
+    clientId: clientId,
+    title: 'Traiteur pour événement d\'entreprise',
+    description: 'Menu gastronomique français pour 50 personnes avec service complet.',
+    items: [
+      {
+        id: 'item-4',
+        name: 'Menu gastronomique',
+        description: 'Entrée, plat, dessert par personne',
+        quantity: 50,
+        unitPrice: 45,
+        total: 2250,
+      },
+      {
+        id: 'item-5',
+        name: 'Service',
+        description: 'Personnel de service pour la soirée',
+        quantity: 3,
+        unitPrice: 120,
+        total: 360,
+      },
+      {
+        id: 'item-6',
+        name: 'Matériel',
+        description: 'Vaisselle, nappage, décoration',
+        quantity: 1,
+        unitPrice: 200,
+        total: 200,
+      },
+    ],
+    subtotal: 2810,
+    tax: 562,
+    total: 3372,
+    currency: 'EUR',
+    status: 'accepted',
+    validUntil: Date.now() + (25 * 24 * 60 * 60 * 1000), // 25 days from now
+    eventDate: Date.now() + (30 * 24 * 60 * 60 * 1000), // 30 days from now
+    eventLocation: 'Salle de réception Élégance, Paris 16e',
+    eventDuration: 4,
+    specialRequests: 'Menu végétarien pour 5 personnes. Service à partir de 19h30.',
+    createdAt: Date.now() - (5 * 24 * 60 * 60 * 1000), // 5 days ago
+    updatedAt: Date.now() - (1 * 24 * 60 * 60 * 1000), // 1 day ago
+  },
+  {
+    id: 'quote-demo-3',
+    listingId: 'listing-3',
+    providerId: 'camille@photo-events.fr', // Photographe
+    clientId: clientId,
+    title: 'Reportage photo pour mariage',
+    description: 'Reportage photo complet de votre mariage avec retouches et album.',
+    items: [
+      {
+        id: 'item-7',
+        name: 'Reportage photo',
+        description: 'Couverture complète de la journée',
+        quantity: 1,
+        unitPrice: 800,
+        total: 800,
+      },
+      {
+        id: 'item-8',
+        name: 'Retouches',
+        description: 'Retouche de 100 photos sélectionnées',
+        quantity: 1,
+        unitPrice: 200,
+        total: 200,
+      },
+      {
+        id: 'item-9',
+        name: 'Album photo',
+        description: 'Album premium 30x30cm, 50 pages',
+        quantity: 1,
+        unitPrice: 150,
+        total: 150,
+      },
+    ],
+    subtotal: 1150,
+    tax: 230,
+    total: 1380,
+    currency: 'EUR',
+    status: 'paid',
+    validUntil: Date.now() + (20 * 24 * 60 * 60 * 1000), // 20 days from now
+    eventDate: Date.now() + (45 * 24 * 60 * 60 * 1000), // Same as DJ quote
+    eventLocation: 'Château de Versailles, Versailles',
+    eventDuration: 8,
+    specialRequests: 'Photos de couple au coucher du soleil. Éviter les photos pendant le repas.',
+    paidAt: Date.now() - (12 * 60 * 60 * 1000), // 12 hours ago
+    createdAt: Date.now() - (7 * 24 * 60 * 60 * 1000), // 7 days ago
+    updatedAt: Date.now() - (12 * 60 * 60 * 1000), // 12 hours ago
+  },
+];
 
 export const useQuotes = create<QuotesState>()(
   persist(
@@ -147,7 +290,6 @@ export const useQuotes = create<QuotesState>()(
       },
       
       payQuote: async (id: string) => {
-        // FIXED: Enhanced payment processing with validation
         try {
           const quote = get().getQuoteById(id);
           if (!quote) {
@@ -242,7 +384,6 @@ export const useQuotes = create<QuotesState>()(
         );
       },
       
-      // FIXED: Enhanced payment processing methods
       processPayment: async (quoteId: string, paymentMethod: string) => {
         try {
           console.log(`Processing payment for quote ${quoteId} with method ${paymentMethod}`);
@@ -295,6 +436,29 @@ export const useQuotes = create<QuotesState>()(
         } catch (error) {
           console.error('Refund processing error:', error);
           return false;
+        }
+      },
+      
+      // FIXED: Initialize demo quotes for client with consistent ID
+      initializeDemoQuotes: (clientId: string) => {
+        const currentQuotes = get().quotes || [];
+        
+        console.log('Initializing demo quotes for client:', clientId);
+        const demoQuotes = createDemoQuotes(clientId);
+        
+        // Check if demo quotes already exist for this client
+        const hasExistingDemoQuotes = currentQuotes.some(quote => 
+          quote.clientId === clientId && quote.id.startsWith('quote-demo-')
+        );
+        
+        if (!hasExistingDemoQuotes) {
+          set({
+            quotes: [...currentQuotes, ...demoQuotes],
+          });
+          console.log('Demo quotes initialized for client:', clientId);
+          console.log('Demo quotes created:', demoQuotes);
+        } else {
+          console.log('Demo quotes already exist for client:', clientId);
         }
       },
     }),

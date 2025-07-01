@@ -9,7 +9,7 @@ import { mockProviders, mockVenues } from '@/mocks/users';
 import { QuoteItem } from '@/types';
 import Colors from '@/constants/colors';
 import Button from '@/components/Button';
-import { Plus, Trash2, Calculator, FileText } from 'lucide-react-native';
+import { Plus, Trash2, Calculator, FileText, MapPin, Clock } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import Animated, { 
@@ -18,11 +18,14 @@ import Animated, {
   ZoomIn,
   useSharedValue,
   useAnimatedStyle,
-  withSpring
+  withSpring,
+  withTiming
 } from 'react-native-reanimated';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import * as Haptics from 'expo-haptics';
+import * as ExpoCalendar from 'expo-calendar';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 export default function CreateQuoteScreen() {
   const { listingId } = useLocalSearchParams<{ listingId: string }>();
@@ -46,6 +49,14 @@ export default function CreateQuoteScreen() {
   ]);
   const [validDays, setValidDays] = useState('30');
   
+  // New fields for enhanced quote
+  const [eventDate, setEventDate] = useState<Date>(new Date());
+  const [eventLocation, setEventLocation] = useState('');
+  const [eventDuration, setEventDuration] = useState('4'); // hours
+  const [specialRequests, setSpecialRequests] = useState('');
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  
   const animatedScale = useSharedValue(1);
   
   // Find the listing or handle conversation quotes
@@ -60,15 +71,15 @@ export default function CreateQuoteScreen() {
   const allUsers = [...mockProviders, ...mockVenues];
   const conversationParticipant = conversationId ? allUsers.find(u => u.id === conversationId) : null;
   
-  // FIXED: Both providers and business establishments can create quotes
+  // Both providers and business establishments can create quotes
   if (!user || (user.userType !== 'provider' && user.userType !== 'business')) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: Colors.background }]}>
         <Stack.Screen options={{ title: 'Créer un devis' }} />
         <Animated.View entering={FadeIn} style={styles.errorContainer}>
           <FileText size={64} color={Colors.textLight} />
-          <Text style={styles.errorTitle}>Accès restreint</Text>
-          <Text style={styles.errorText}>
+          <Text style={[styles.errorTitle, { color: Colors.text }]}>Accès restreint</Text>
+          <Text style={[styles.errorText, { color: Colors.textLight }]}>
             Seuls les prestataires et établissements peuvent créer des devis
           </Text>
           <Button 
@@ -86,8 +97,8 @@ export default function CreateQuoteScreen() {
     if (Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-    animatedScale.value = withSpring(0.95, { damping: 15 }, () => {
-      animatedScale.value = withSpring(1);
+    animatedScale.value = withTiming(0.95, { duration: 100 }, () => {
+      animatedScale.value = withTiming(1, { duration: 100 });
     });
     
     const newItem: QuoteItem = {
@@ -131,6 +142,71 @@ export default function CreateQuoteScreen() {
   // Calculate total amount
   const totalAmount = items.reduce((sum, item) => sum + (item.total || 0), 0);
   
+  // Handle date change
+  const onDateChange = (event: any, selectedDate?: Date) => {
+    setShowDatePicker(false);
+    if (selectedDate) {
+      setEventDate(selectedDate);
+    }
+  };
+  
+  // Handle time change
+  const onTimeChange = (event: any, selectedTime?: Date) => {
+    setShowTimePicker(false);
+    if (selectedTime) {
+      const newDate = new Date(eventDate);
+      newDate.setHours(selectedTime.getHours());
+      newDate.setMinutes(selectedTime.getMinutes());
+      setEventDate(newDate);
+    }
+  };
+  
+  // Create calendar event
+  const createCalendarEvent = async (quote: any) => {
+    try {
+      const { status } = await ExpoCalendar.requestCalendarPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission requise', "L'accès au calendrier est nécessaire pour créer l'événement");
+        return;
+      }
+      
+      const calendars = await ExpoCalendar.getCalendarsAsync(ExpoCalendar.EntityTypes.EVENT);
+      const defaultCalendar = calendars.find(cal => cal.source.name === 'Default') || calendars[0];
+      
+      if (!defaultCalendar) {
+        Alert.alert('Erreur', 'Aucun calendrier disponible');
+        return;
+      }
+      
+      const eventDetails = {
+        title: `📋 ${quote.title}`,
+        startDate: new Date(eventDate),
+        endDate: new Date(eventDate.getTime() + (parseInt(eventDuration) * 60 * 60 * 1000)),
+        location: eventLocation || 'À définir',
+        notes: `${quote.description}
+
+Montant: ${quote.total.toFixed(2)}€
+Devis #${quote.id.slice(-6)}`,
+        calendarId: defaultCalendar.id,
+        alarms: [
+          { relativeOffset: -24 * 60 }, // 1 day before
+          { relativeOffset: -60 }, // 1 hour before
+        ],
+      };
+      
+      const eventId = await ExpoCalendar.createEventAsync(defaultCalendar.id, eventDetails);
+      
+      if (eventId) {
+        Alert.alert('Succès', 'Événement ajouté au calendrier');
+        return eventId;
+      }
+    } catch (error) {
+      console.error('Error creating calendar event:', error);
+      Alert.alert('Erreur', "Impossible de créer l'événement dans le calendrier");
+    }
+    return null;
+  };
+  
   // Generate PDF
   const generatePDF = async (quote: any) => {
     try {
@@ -147,6 +223,7 @@ export default function CreateQuoteScreen() {
             .quote-title { font-size: 20px; margin: 20px 0; }
             .info-section { margin: 20px 0; }
             .info-row { margin: 5px 0; }
+            .event-details { background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0; }
             .items-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
             .items-table th, .items-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
             .items-table th { background-color: #f2f2f2; }
@@ -167,6 +244,14 @@ export default function CreateQuoteScreen() {
             <div class="info-row"><strong>Email:</strong> ${user.email}</div>
             <div class="info-row"><strong>Date:</strong> ${new Date().toLocaleDateString('fr-FR')}</div>
             <div class="info-row"><strong>Valide jusqu'au:</strong> ${new Date(quote.validUntil).toLocaleDateString('fr-FR')}</div>
+          </div>
+          
+          <div class="event-details">
+            <h3>📅 Détails de l'événement</h3>
+            <div class="info-row"><strong>Date:</strong> ${new Date(eventDate).toLocaleDateString('fr-FR')} à ${new Date(eventDate).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</div>
+            <div class="info-row"><strong>Lieu:</strong> ${eventLocation || 'À définir'}</div>
+            <div class="info-row"><strong>Durée:</strong> ${eventDuration}h</div>
+            ${specialRequests ? `<div class="info-row"><strong>Demandes spéciales:</strong> ${specialRequests}</div>` : ''}
           </div>
           
           <div class="info-section">
@@ -227,7 +312,7 @@ export default function CreateQuoteScreen() {
     }
   };
   
-  // CRITICAL FIX: Handle submit with correct message recipient
+  // Handle submit with enhanced features
   const handleSubmit = async () => {
     if (!title.trim()) {
       Alert.alert('Erreur', 'Veuillez saisir un titre pour le devis');
@@ -255,7 +340,7 @@ export default function CreateQuoteScreen() {
         return;
       }
       
-      // Create the quote
+      // Create the quote with enhanced data
       const quote = await createQuote({
         listingId: listing?.id,
         providerId: user.id,
@@ -265,6 +350,10 @@ export default function CreateQuoteScreen() {
         items,
         status: 'pending',
         validUntil,
+        eventDate: eventDate.getTime(),
+        eventLocation: eventLocation || undefined,
+        eventDuration: parseInt(eventDuration),
+        specialRequests: specialRequests || undefined,
       });
       
       console.log('Quote created successfully:', quote);
@@ -272,9 +361,8 @@ export default function CreateQuoteScreen() {
       // Send the quote immediately
       await sendQuote(quote.id);
       
-      // CRITICAL FIX: Send message to the RECIPIENT (targetUserId), not the sender
+      // Send message to the RECIPIENT
       try {
-        // Get or create conversation with the target user
         let conversation = getConversationByParticipant(targetUserId);
         let conversationId: string;
         
@@ -286,12 +374,15 @@ export default function CreateQuoteScreen() {
           console.log('Using existing conversation:', conversationId);
         }
         
-        // CRITICAL FIX: Send quote notification message to the RECIPIENT
+        // Send quote notification message to the RECIPIENT
         const quoteMessage = `📋 **Nouveau devis reçu**
 
 **${title}**
 ${description}
 
+📅 **Date de l'événement:** ${new Date(eventDate).toLocaleDateString('fr-FR')} à ${new Date(eventDate).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+${eventLocation ? `📍 **Lieu:** ${eventLocation}` : ''}
+⏱️ **Durée:** ${eventDuration}h
 💰 **Montant total:** ${quote.total.toFixed(2)}€ TTC
 📅 **Valide jusqu'au:** ${new Date(validUntil).toLocaleDateString('fr-FR')}
 
@@ -299,7 +390,7 @@ Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
 
         console.log('Sending quote message to recipient:', targetUserId);
         
-        // CRITICAL FIX: Send message to targetUserId (recipient), not user.id (sender)
+        // Send message to targetUserId (recipient), not user.id (sender)
         await sendMessage(conversationId, quoteMessage, targetUserId);
         
         // Update contact with quote info for the RECIPIENT
@@ -312,7 +403,7 @@ Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
             participantType: targetUser.userType === 'provider' ? 'provider' : 
                             targetUser.userType === 'business' ? 'business' : 'client',
             lastMessage: `📋 Devis reçu: ${title} - ${quote.total.toFixed(2)}€`,
-            unread: 1, // FIXED: Set unread to 1 for recipient
+            unread: 1,
             timestamp: Date.now(),
           });
         }
@@ -320,11 +411,14 @@ Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
         console.log('Quote message sent successfully to recipient');
       } catch (messageError) {
         console.error('Error sending quote message:', messageError);
-        // Don't fail the whole process if message sending fails
-        Alert.alert('Attention', 'Devis créé mais impossible d\'envoyer la notification. Le devis est disponible dans la section "Devis".');
+        Alert.alert('Attention', "Devis créé mais impossible d'envoyer la notification. Le devis est disponible dans la section \"Devis\".");
       }
       
       Alert.alert('Succès', 'Devis créé et envoyé avec succès', [
+        { 
+          text: 'Ajouter au calendrier', 
+          onPress: () => createCalendarEvent(quote)
+        },
         { 
           text: 'Générer PDF', 
           onPress: () => generatePDF(quote)
@@ -351,7 +445,7 @@ Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
   });
   
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: Colors.backgroundAlt }]}>
       <Stack.Screen options={{ 
         title: 'Créer un devis',
         headerStyle: { backgroundColor: Colors.primary },
@@ -388,12 +482,12 @@ Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
           </Animated.View>
           
           <Animated.View entering={SlideInDown.delay(300)} style={styles.section}>
-            <Text style={styles.sectionTitle}>📝 Informations générales</Text>
+            <Text style={[styles.sectionTitle, { color: Colors.text }]}>📝 Informations générales</Text>
             
             <View style={styles.formGroup}>
-              <Text style={styles.label}>Titre du devis *</Text>
+              <Text style={[styles.label, { color: Colors.text }]}>Titre du devis *</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { backgroundColor: Colors.surface, borderColor: Colors.border, color: Colors.text }]}
                 value={title}
                 onChangeText={setTitle}
                 placeholder="Ex: Prestation DJ pour mariage"
@@ -402,9 +496,9 @@ Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
             </View>
             
             <View style={styles.formGroup}>
-              <Text style={styles.label}>Description *</Text>
+              <Text style={[styles.label, { color: Colors.text }]}>Description *</Text>
               <TextInput
-                style={[styles.input, styles.textArea]}
+                style={[styles.input, styles.textArea, { backgroundColor: Colors.surface, borderColor: Colors.border, color: Colors.text }]}
                 value={description}
                 onChangeText={setDescription}
                 placeholder="Décrivez votre prestation en détail..."
@@ -416,9 +510,9 @@ Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
             </View>
             
             <View style={styles.formGroup}>
-              <Text style={styles.label}>Validité (jours)</Text>
+              <Text style={[styles.label, { color: Colors.text }]}>Validité (jours)</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { backgroundColor: Colors.surface, borderColor: Colors.border, color: Colors.text }]}
                 value={validDays}
                 onChangeText={setValidDays}
                 placeholder="30"
@@ -428,9 +522,79 @@ Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
             </View>
           </Animated.View>
           
+          {/* Event Details Section */}
+          <Animated.View entering={SlideInDown.delay(350)} style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: Colors.text }]}>📅 Détails de l'événement</Text>
+            
+            <View style={styles.formGroup}>
+              <Text style={[styles.label, { color: Colors.text }]}>Date et heure de l'événement</Text>
+              <View style={styles.dateTimeContainer}>
+                <TouchableOpacity 
+                  style={[styles.dateTimeButton, { backgroundColor: Colors.surface, borderColor: Colors.border }]}
+                  onPress={() => setShowDatePicker(true)}
+                >
+                  <Clock size={20} color={Colors.primary} />
+                  <Text style={[styles.dateTimeText, { color: Colors.text }]}>
+                    {eventDate.toLocaleDateString('fr-FR')}
+                  </Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={[styles.dateTimeButton, { backgroundColor: Colors.surface, borderColor: Colors.border }]}
+                  onPress={() => setShowTimePicker(true)}
+                >
+                  <Clock size={20} color={Colors.primary} />
+                  <Text style={[styles.dateTimeText, { color: Colors.text }]}>
+                    {eventDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+            
+            <View style={styles.formGroup}>
+              <Text style={[styles.label, { color: Colors.text }]}>Lieu de l'événement</Text>
+              <View style={styles.inputWithIcon}>
+                <MapPin size={20} color={Colors.primary} />
+                <TextInput
+                  style={[styles.inputWithIconText, { color: Colors.text }]}
+                  value={eventLocation}
+                  onChangeText={setEventLocation}
+                  placeholder="Adresse ou nom du lieu"
+                  placeholderTextColor={Colors.textLight}
+                />
+              </View>
+            </View>
+            
+            <View style={styles.formGroup}>
+              <Text style={[styles.label, { color: Colors.text }]}>Durée estimée (heures)</Text>
+              <TextInput
+                style={[styles.input, { backgroundColor: Colors.surface, borderColor: Colors.border, color: Colors.text }]}
+                value={eventDuration}
+                onChangeText={setEventDuration}
+                placeholder="4"
+                keyboardType="numeric"
+                placeholderTextColor={Colors.textLight}
+              />
+            </View>
+            
+            <View style={styles.formGroup}>
+              <Text style={[styles.label, { color: Colors.text }]}>Demandes spéciales</Text>
+              <TextInput
+                style={[styles.input, styles.textArea, { backgroundColor: Colors.surface, borderColor: Colors.border, color: Colors.text }]}
+                value={specialRequests}
+                onChangeText={setSpecialRequests}
+                placeholder="Demandes particulières, contraintes, préférences..."
+                multiline
+                numberOfLines={3}
+                textAlignVertical="top"
+                placeholderTextColor={Colors.textLight}
+              />
+            </View>
+          </Animated.View>
+          
           <Animated.View entering={SlideInDown.delay(400)} style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>📋 Éléments du devis</Text>
+              <Text style={[styles.sectionTitle, { color: Colors.text }]}>📋 Éléments du devis</Text>
               <Animated.View style={animatedButtonStyle}>
                 <TouchableOpacity style={styles.addButton} onPress={addItem}>
                   <BlurView intensity={80} style={styles.addButtonBlur}>
@@ -445,9 +609,9 @@ Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
                 key={`quote-item-${item.id}`}
                 entering={SlideInDown.delay(500 + index * 100)}
               >
-                <BlurView intensity={10} style={styles.itemCard}>
+                <BlurView intensity={10} style={[styles.itemCard, { backgroundColor: 'rgba(255, 255, 255, 0.9)' }]}>
                   <View style={styles.itemHeader}>
-                    <Text style={styles.itemNumber}>Élément {index + 1}</Text>
+                    <Text style={[styles.itemNumber, { color: Colors.primary }]}>Élément {index + 1}</Text>
                     {items.length > 1 && (
                       <TouchableOpacity
                         style={styles.removeButton}
@@ -459,9 +623,9 @@ Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
                   </View>
                   
                   <View style={styles.formGroup}>
-                    <Text style={styles.label}>Nom/Description *</Text>
+                    <Text style={[styles.label, { color: Colors.text }]}>Nom/Description *</Text>
                     <TextInput
-                      style={styles.input}
+                      style={[styles.input, { backgroundColor: Colors.surface, borderColor: Colors.border, color: Colors.text }]}
                       value={item.name}
                       onChangeText={(value) => updateItem(item.id, 'name', value)}
                       placeholder="Ex: Animation musicale"
@@ -470,9 +634,9 @@ Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
                   </View>
                   
                   <View style={styles.formGroup}>
-                    <Text style={styles.label}>Description détaillée</Text>
+                    <Text style={[styles.label, { color: Colors.text }]}>Description détaillée</Text>
                     <TextInput
-                      style={styles.input}
+                      style={[styles.input, { backgroundColor: Colors.surface, borderColor: Colors.border, color: Colors.text }]}
                       value={item.description || ''}
                       onChangeText={(value) => updateItem(item.id, 'description', value)}
                       placeholder="Détails supplémentaires (optionnel)"
@@ -482,9 +646,9 @@ Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
                   
                   <View style={styles.row}>
                     <View style={styles.halfWidth}>
-                      <Text style={styles.label}>Quantité *</Text>
+                      <Text style={[styles.label, { color: Colors.text }]}>Quantité *</Text>
                       <TextInput
-                        style={styles.input}
+                        style={[styles.input, { backgroundColor: Colors.surface, borderColor: Colors.border, color: Colors.text }]}
                         value={item.quantity.toString()}
                         onChangeText={(value) => updateItem(item.id, 'quantity', parseInt(value) || 1)}
                         keyboardType="numeric"
@@ -493,9 +657,9 @@ Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
                     </View>
                     
                     <View style={styles.halfWidth}>
-                      <Text style={styles.label}>Prix unitaire (€) *</Text>
+                      <Text style={[styles.label, { color: Colors.text }]}>Prix unitaire (€) *</Text>
                       <TextInput
-                        style={styles.input}
+                        style={[styles.input, { backgroundColor: Colors.surface, borderColor: Colors.border, color: Colors.text }]}
                         value={item.unitPrice.toString()}
                         onChangeText={(value) => updateItem(item.id, 'unitPrice', parseFloat(value) || 0)}
                         keyboardType="numeric"
@@ -504,9 +668,9 @@ Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
                     </View>
                   </View>
                   
-                  <View style={styles.totalRow}>
-                    <Text style={styles.totalLabel}>Total:</Text>
-                    <Text style={styles.totalValue}>{(item.total || 0).toFixed(2)}€</Text>
+                  <View style={[styles.totalRow, { borderTopColor: Colors.border }]}>
+                    <Text style={[styles.totalLabel, { color: Colors.text }]}>Total:</Text>
+                    <Text style={[styles.totalValue, { color: Colors.primary }]}>{(item.total || 0).toFixed(2)}€</Text>
                   </View>
                 </BlurView>
               </Animated.View>
@@ -514,18 +678,21 @@ Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
           </Animated.View>
           
           <Animated.View entering={ZoomIn.delay(600)}>
-            <BlurView intensity={20} style={styles.summaryCard}>
+            <BlurView intensity={20} style={[styles.summaryCard, { borderColor: 'rgba(30, 58, 138, 0.2)' }]}>
               <LinearGradient
                 colors={['rgba(30, 58, 138, 0.1)', 'rgba(59, 130, 246, 0.1)']}
                 style={styles.summaryGradient}
               >
                 <View style={styles.summaryRow}>
                   <Calculator size={24} color={Colors.primary} />
-                  <Text style={styles.summaryTitle}>Total du devis</Text>
+                  <Text style={[styles.summaryTitle, { color: Colors.text }]}>Total du devis</Text>
                 </View>
-                <Text style={styles.summaryAmount}>{totalAmount.toFixed(2)}€</Text>
-                <Text style={styles.summaryNote}>
+                <Text style={[styles.summaryAmount, { color: Colors.primary }]}>{totalAmount.toFixed(2)}€</Text>
+                <Text style={[styles.summaryNote, { color: Colors.textLight }]}>
                   Valide pendant {validDays} jours
+                </Text>
+                <Text style={[styles.summaryEventInfo, { color: Colors.textLight }]}>
+                  📅 {eventDate.toLocaleDateString('fr-FR')} • ⏱️ {eventDuration}h
                 </Text>
               </LinearGradient>
             </BlurView>
@@ -533,7 +700,7 @@ Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
         </ScrollView>
         
         <Animated.View entering={SlideInDown.delay(800)}>
-          <BlurView intensity={80} style={styles.footer}>
+          <BlurView intensity={80} style={[styles.footer, { borderTopColor: 'rgba(255, 255, 255, 0.2)' }]}>
             <Button
               title="📤 Envoyer le devis"
               onPress={handleSubmit}
@@ -544,6 +711,26 @@ Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
           </BlurView>
         </Animated.View>
       </KeyboardAvoidingView>
+      
+      {/* Date/Time Pickers */}
+      {showDatePicker && (
+        <DateTimePicker
+          value={eventDate}
+          mode="date"
+          display="default"
+          onChange={onDateChange}
+          minimumDate={new Date()}
+        />
+      )}
+      
+      {showTimePicker && (
+        <DateTimePicker
+          value={eventDate}
+          mode="time"
+          display="default"
+          onChange={onTimeChange}
+        />
+      )}
     </View>
   );
 }
@@ -551,7 +738,6 @@ Vous pouvez consulter et répondre à ce devis dans la section "Devis".`;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.backgroundAlt,
   },
   keyboardContainer: {
     flex: 1,
@@ -606,7 +792,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: Colors.text,
   },
   addButton: {
     width: 44,
@@ -619,7 +804,7 @@ const styles = StyleSheet.create({
     height: 44,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: Colors.primary,
+    backgroundColor: '#FF385C',
   },
   formGroup: {
     marginBottom: 16,
@@ -627,18 +812,14 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: '600',
-    color: Colors.text,
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: Colors.border,
     borderRadius: 16,
     padding: 16,
     fontSize: 16,
-    color: Colors.text,
-    shadowColor: Colors.shadow,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
@@ -648,6 +829,48 @@ const styles = StyleSheet.create({
     minHeight: 100,
     textAlignVertical: 'top',
   },
+  dateTimeContainer: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  dateTimeButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 16,
+    gap: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  dateTimeText: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  inputWithIcon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    backgroundColor: Colors.surface,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  inputWithIconText: {
+    flex: 1,
+    paddingVertical: 16,
+    paddingLeft: 12,
+    fontSize: 16,
+  },
   itemCard: {
     borderRadius: 20,
     padding: 20,
@@ -655,7 +878,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
   },
   itemHeader: {
     flexDirection: 'row',
@@ -666,7 +888,6 @@ const styles = StyleSheet.create({
   itemNumber: {
     fontSize: 16,
     fontWeight: '700',
-    color: Colors.primary,
   },
   removeButton: {
     padding: 8,
@@ -685,24 +906,20 @@ const styles = StyleSheet.create({
     marginTop: 16,
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
   },
   totalLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: Colors.text,
   },
   totalValue: {
     fontSize: 18,
     fontWeight: '700',
-    color: Colors.primary,
   },
   summaryCard: {
     borderRadius: 20,
     marginHorizontal: 20,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(30, 58, 138, 0.2)',
   },
   summaryGradient: {
     padding: 24,
@@ -715,30 +932,31 @@ const styles = StyleSheet.create({
   summaryTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: Colors.text,
     marginLeft: 12,
   },
   summaryAmount: {
     fontSize: 32,
     fontWeight: '800',
-    color: Colors.primary,
     textAlign: 'center',
     marginBottom: 8,
   },
   summaryNote: {
     fontSize: 14,
-    color: Colors.textLight,
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  summaryEventInfo: {
+    fontSize: 12,
     textAlign: 'center',
   },
   footer: {
     padding: 20,
     paddingBottom: Platform.OS === 'ios' ? 34 : 20,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.2)',
   },
   submitButton: {
-    backgroundColor: Colors.primary,
-    shadowColor: Colors.primary,
+    backgroundColor: '#FF385C',
+    shadowColor: '#FF385C',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 16,
@@ -753,18 +971,16 @@ const styles = StyleSheet.create({
   errorTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: Colors.text,
     marginTop: 16,
     marginBottom: 8,
   },
   errorText: {
     fontSize: 16,
-    color: Colors.textLight,
     textAlign: 'center',
     marginBottom: 24,
     lineHeight: 24,
   },
   backButton: {
-    backgroundColor: Colors.textLight,
+    backgroundColor: '#9E9E9E',
   },
 });

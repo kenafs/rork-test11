@@ -1,5 +1,5 @@
-import React from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Linking, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Linking, Alert, Dimensions, Modal } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,14 +11,45 @@ import Colors from '@/constants/colors';
 import RatingStars from '@/components/RatingStars';
 import Button from '@/components/Button';
 import ListingCard from '@/components/ListingCard';
-import { MapPin, Calendar, MessageCircle, Star, Instagram, Globe, Facebook, Linkedin, ExternalLink } from 'lucide-react-native';
-import { Provider, Venue } from '@/types';
+import { 
+  MapPin, 
+  Calendar, 
+  MessageCircle, 
+  Star, 
+  Instagram, 
+  Globe, 
+  Facebook, 
+  Linkedin, 
+  ExternalLink,
+  Play,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Eye
+} from 'lucide-react-native';
+import { Provider, Venue, PortfolioItem } from '@/types';
+import Animated, { 
+  FadeIn, 
+  SlideInDown, 
+  ZoomIn,
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring
+} from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
+
+const { width, height } = Dimensions.get('window');
 
 export default function ProfileDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user: currentUser, isAuthenticated } = useAuth();
   const { getCompletedQuotesBetweenUsers } = useQuotes();
+  
+  const [selectedPortfolioItem, setSelectedPortfolioItem] = useState<PortfolioItem | null>(null);
+  const [portfolioModalVisible, setPortfolioModalVisible] = useState(false);
+  const [currentPortfolioIndex, setCurrentPortfolioIndex] = useState(0);
   
   // Find the user by ID
   const allUsers = [...mockProviders, ...mockVenues];
@@ -30,11 +61,10 @@ export default function ProfileDetailScreen() {
   // Get reviews for this user
   const reviews = getReviewsForUser(id || '');
   
-  // Check if current user can review this user - FIXED: Only allow reviews for completed paid quotes
+  // Check if current user can review this user
   const canReview = () => {
     if (!currentUser || !user || currentUser.id === user.id) return false;
     
-    // Check if there are completed quotes between users
     const completedQuotes = getCompletedQuotesBetweenUsers(currentUser.id, user.id);
     return completedQuotes.length > 0;
   };
@@ -54,7 +84,6 @@ export default function ProfileDetailScreen() {
       return;
     }
     
-    // Navigate to conversation
     router.push(`/conversation/new?recipientId=${id}`);
   };
   
@@ -65,6 +94,25 @@ export default function ProfileDetailScreen() {
     } else {
       Alert.alert('Lien invalide', 'Ce lien ne peut pas être ouvert');
     }
+  };
+  
+  // Handle portfolio item press
+  const handlePortfolioItemPress = (item: PortfolioItem, index: number) => {
+    setSelectedPortfolioItem(item);
+    setCurrentPortfolioIndex(index);
+    setPortfolioModalVisible(true);
+  };
+  
+  // Navigate portfolio
+  const navigatePortfolio = (direction: 'prev' | 'next') => {
+    if (!user?.portfolio) return;
+    
+    const newIndex = direction === 'prev' 
+      ? (currentPortfolioIndex - 1 + user.portfolio.length) % user.portfolio.length
+      : (currentPortfolioIndex + 1) % user.portfolio.length;
+    
+    setCurrentPortfolioIndex(newIndex);
+    setSelectedPortfolioItem(user.portfolio[newIndex]);
   };
   
   if (!user) {
@@ -83,7 +131,7 @@ export default function ProfileDetailScreen() {
   // Check if this is the current user's profile
   const isOwnProfile = currentUser && currentUser.id === id;
   
-  // Get social links safely - FIXED: Added proper type checking
+  // Get social links safely
   const socialLinks = user.socialLinks || {};
   
   // Render provider-specific info
@@ -147,7 +195,7 @@ export default function ProfileDetailScreen() {
     </View>
   );
   
-  // Render social links - FIXED: Added proper type checking
+  // Render social links
   const renderSocialLinks = () => {
     if (!socialLinks || Object.keys(socialLinks).length === 0) return null;
     
@@ -198,25 +246,94 @@ export default function ProfileDetailScreen() {
     );
   };
   
-  // Render portfolio - FIXED: Added proper type checking
+  // Render enhanced portfolio
   const renderPortfolio = () => {
     const portfolio = user.portfolio || [];
     
     if (portfolio.length === 0) return null;
     
+    const featuredItems = portfolio.filter(item => item.featured);
+    const otherItems = portfolio.filter(item => !item.featured);
+    const displayItems = [...featuredItems, ...otherItems];
+    
     return (
-      <View style={styles.portfolioSection}>
-        <Text style={styles.sectionTitle}>Portfolio</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View style={styles.portfolioGrid}>
-            {portfolio.map((imageUrl: string, index: number) => (
-              <TouchableOpacity key={`portfolio-${index}`} style={styles.portfolioItem}>
-                <Image source={{ uri: imageUrl }} style={styles.portfolioImage} />
-              </TouchableOpacity>
-            ))}
+      <Animated.View entering={SlideInDown.delay(400)} style={styles.portfolioSection}>
+        <LinearGradient
+          colors={['rgba(99, 102, 241, 0.05)', 'rgba(59, 130, 246, 0.05)']}
+          style={styles.portfolioGradient}
+        >
+          <View style={styles.portfolioHeader}>
+            <Text style={styles.sectionTitle}>Portfolio</Text>
+            <View style={styles.portfolioStats}>
+              <Text style={styles.portfolioStatsText}>{portfolio.length} projets</Text>
+            </View>
           </View>
-        </ScrollView>
-      </View>
+          
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.portfolioScroll}>
+            <View style={styles.portfolioGrid}>
+              {displayItems.map((item, index) => (
+                <Animated.View 
+                  key={`portfolio-${item.id}`} 
+                  entering={ZoomIn.delay(500 + index * 100)}
+                >
+                  <TouchableOpacity 
+                    style={[styles.portfolioItem, item.featured && styles.portfolioItemFeatured]}
+                    onPress={() => handlePortfolioItemPress(item, index)}
+                    activeOpacity={0.8}
+                  >
+                    <Image source={{ uri: item.mediaUrl }} style={styles.portfolioImage} />
+                    
+                    {item.mediaType === 'video' && (
+                      <View style={styles.videoOverlay}>
+                        <BlurView intensity={20} style={styles.playButton}>
+                          <Play size={16} color="#fff" fill="#fff" />
+                        </BlurView>
+                      </View>
+                    )}
+                    
+                    {item.featured && (
+                      <View style={styles.featuredBadge}>
+                        <Star size={12} color="#FFD700" fill="#FFD700" />
+                      </View>
+                    )}
+                    
+                    <LinearGradient
+                      colors={['transparent', 'rgba(0,0,0,0.8)']}
+                      style={styles.portfolioOverlay}
+                    >
+                      <Text style={styles.portfolioTitle} numberOfLines={2}>
+                        {item.title}
+                      </Text>
+                      <Text style={styles.portfolioEventType}>
+                        {item.eventType}
+                      </Text>
+                      <Text style={styles.portfolioDate}>
+                        {new Date(item.eventDate).toLocaleDateString('fr-FR', {
+                          month: 'short',
+                          year: 'numeric'
+                        })}
+                      </Text>
+                    </LinearGradient>
+                  </TouchableOpacity>
+                </Animated.View>
+              ))}
+            </View>
+          </ScrollView>
+          
+          {portfolio.length > 3 && (
+            <TouchableOpacity 
+              style={styles.viewAllPortfolioButton}
+              onPress={() => {
+                // Open first item in modal to show all
+                handlePortfolioItemPress(portfolio[0], 0);
+              }}
+            >
+              <Eye size={16} color={Colors.primary} />
+              <Text style={styles.viewAllPortfolioText}>Voir tout le portfolio</Text>
+            </TouchableOpacity>
+          )}
+        </LinearGradient>
+      </Animated.View>
     );
   };
   
@@ -285,7 +402,7 @@ export default function ProfileDetailScreen() {
       {/* Social links */}
       {renderSocialLinks()}
       
-      {/* Portfolio */}
+      {/* Enhanced Portfolio */}
       {renderPortfolio()}
       
       {/* User's listings */}
@@ -354,6 +471,87 @@ export default function ProfileDetailScreen() {
           </View>
         )}
       </View>
+      
+      {/* Portfolio Modal */}
+      <Modal
+        visible={portfolioModalVisible}
+        animationType="slide"
+        presentationStyle="fullScreen"
+        onRequestClose={() => setPortfolioModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <BlurView intensity={80} style={styles.modalHeader}>
+            <TouchableOpacity 
+              style={styles.modalCloseButton}
+              onPress={() => setPortfolioModalVisible(false)}
+            >
+              <X size={24} color="#fff" />
+            </TouchableOpacity>
+            
+            {user?.portfolio && user.portfolio.length > 1 && (
+              <View style={styles.modalNavigation}>
+                <TouchableOpacity 
+                  style={styles.modalNavButton}
+                  onPress={() => navigatePortfolio('prev')}
+                >
+                  <ChevronLeft size={24} color="#fff" />
+                </TouchableOpacity>
+                
+                <Text style={styles.modalCounter}>
+                  {currentPortfolioIndex + 1} / {user.portfolio.length}
+                </Text>
+                
+                <TouchableOpacity 
+                  style={styles.modalNavButton}
+                  onPress={() => navigatePortfolio('next')}
+                >
+                  <ChevronRight size={24} color="#fff" />
+                </TouchableOpacity>
+              </View>
+            )}
+          </BlurView>
+          
+          {selectedPortfolioItem && (
+            <ScrollView style={styles.modalContent}>
+              <Image 
+                source={{ uri: selectedPortfolioItem.mediaUrl }} 
+                style={styles.modalImage}
+                contentFit="cover"
+              />
+              
+              <View style={styles.modalInfo}>
+                <Text style={styles.modalTitle}>{selectedPortfolioItem.title}</Text>
+                <Text style={styles.modalEventType}>{selectedPortfolioItem.eventType}</Text>
+                
+                {selectedPortfolioItem.clientName && (
+                  <Text style={styles.modalClient}>Client: {selectedPortfolioItem.clientName}</Text>
+                )}
+                
+                <Text style={styles.modalDate}>
+                  {new Date(selectedPortfolioItem.eventDate).toLocaleDateString('fr-FR', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </Text>
+                
+                <Text style={styles.modalDescription}>{selectedPortfolioItem.description}</Text>
+                
+                {selectedPortfolioItem.tags && selectedPortfolioItem.tags.length > 0 && (
+                  <View style={styles.modalTags}>
+                    {selectedPortfolioItem.tags.map((tag, index) => (
+                      <View key={`tag-${index}`} style={styles.modalTag}>
+                        <Text style={styles.modalTagText}>{tag}</Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+              </View>
+            </ScrollView>
+          )}
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -526,30 +724,122 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   portfolioSection: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
     marginHorizontal: 16,
     marginBottom: 16,
+    borderRadius: 16,
+    overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
   },
+  portfolioGradient: {
+    padding: 20,
+  },
+  portfolioHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  portfolioStats: {
+    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  portfolioStatsText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: Colors.primary,
+  },
+  portfolioScroll: {
+    marginHorizontal: -20,
+    paddingHorizontal: 20,
+  },
   portfolioGrid: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 16,
+    paddingRight: 20,
   },
   portfolioItem: {
-    width: 120,
-    height: 120,
-    borderRadius: 12,
+    width: 200,
+    height: 160,
+    borderRadius: 16,
     overflow: 'hidden',
+    position: 'relative',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  portfolioItemFeatured: {
+    borderWidth: 2,
+    borderColor: '#FFD700',
   },
   portfolioImage: {
     width: '100%',
     height: '100%',
+  },
+  videoOverlay: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+  },
+  playButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  featuredBadge: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    backgroundColor: 'rgba(255, 215, 0, 0.9)',
+    borderRadius: 12,
+    padding: 6,
+  },
+  portfolioOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 12,
+  },
+  portfolioTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#fff',
+    marginBottom: 4,
+  },
+  portfolioEventType: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginBottom: 2,
+  },
+  portfolioDate: {
+    fontSize: 11,
+    color: 'rgba(255, 255, 255, 0.7)',
+  },
+  viewAllPortfolioButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 16,
+    paddingVertical: 12,
+    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+    borderRadius: 12,
+    gap: 8,
+  },
+  viewAllPortfolioText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.primary,
   },
   listingsSection: {
     padding: 16,
@@ -664,5 +954,93 @@ const styles = StyleSheet.create({
   },
   backButton: {
     marginTop: 16,
+  },
+  // Modal styles
+  modalContainer: {
+    flex: 1,
+    backgroundColor: '#000',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 50,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  modalCloseButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  modalNavigation: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  modalNavButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  modalCounter: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  modalContent: {
+    flex: 1,
+  },
+  modalImage: {
+    width: width,
+    height: width,
+  },
+  modalInfo: {
+    padding: 20,
+    backgroundColor: '#fff',
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: Colors.text,
+    marginBottom: 8,
+  },
+  modalEventType: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.primary,
+    marginBottom: 8,
+  },
+  modalClient: {
+    fontSize: 14,
+    color: Colors.textLight,
+    marginBottom: 8,
+  },
+  modalDate: {
+    fontSize: 14,
+    color: Colors.textLight,
+    marginBottom: 16,
+  },
+  modalDescription: {
+    fontSize: 16,
+    color: Colors.text,
+    lineHeight: 24,
+    marginBottom: 16,
+  },
+  modalTags: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  modalTag: {
+    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  modalTagText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: Colors.primary,
   },
 });

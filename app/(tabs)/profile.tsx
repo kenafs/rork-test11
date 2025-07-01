@@ -18,9 +18,7 @@ import {
   MessageCircle, 
   LogOut,
   User,
-  TrendingUp,
-  Calendar,
-  Award
+  TrendingUp
 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -33,11 +31,11 @@ export default function ProfileScreen() {
   
   if (!isAuthenticated || !user) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: Colors.background }]}>
         <View style={styles.loginPrompt}>
           <User size={64} color={Colors.textLight} />
-          <Text style={styles.loginTitle}>Connexion requise</Text>
-          <Text style={styles.loginSubtitle}>
+          <Text style={[styles.loginTitle, { color: Colors.text }]}>Connexion requise</Text>
+          <Text style={[styles.loginSubtitle, { color: Colors.textLight }]}>
             Connectez-vous pour accéder à votre profil
           </Text>
           <Button
@@ -91,20 +89,20 @@ export default function ProfileScreen() {
     color: string;
     onPress?: () => void;
   }) => (
-    <TouchableOpacity style={styles.statCard} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity style={[styles.statCard, { backgroundColor: Colors.surface }]} onPress={onPress} activeOpacity={0.7}>
       <LinearGradient
         colors={[`${color}20`, `${color}10`]}
         style={styles.statIcon}
       >
         <Icon size={24} color={color} />
       </LinearGradient>
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
+      <Text style={[styles.statValue, { color: Colors.text }]}>{value}</Text>
+      <Text style={[styles.statLabel, { color: Colors.textLight }]}>{label}</Text>
     </TouchableOpacity>
   );
   
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: Colors.backgroundAlt }]}>
       <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         {/* Header with gradient */}
         <LinearGradient
@@ -171,7 +169,7 @@ export default function ProfileScreen() {
             <StatCard
               icon={FileText}
               value={userListings.length}
-              label="Offres"
+              label={user.userType === 'business' ? 'Offres' : 'Annonces'}
               color="#4CAF50"
               onPress={() => router.push('/my-listings')}
             />
@@ -186,9 +184,9 @@ export default function ProfileScreen() {
         </View>
         
         {/* Menu Items */}
-        <View style={styles.menuContainer}>
+        <View style={[styles.menuContainer, { backgroundColor: Colors.surface }]}>
           <TouchableOpacity 
-            style={styles.menuItem}
+            style={[styles.menuItem, { borderBottomColor: Colors.border }]}
             onPress={() => router.push('/my-listings')}
           >
             <View style={styles.menuItemLeft}>
@@ -198,15 +196,17 @@ export default function ProfileScreen() {
               >
                 <FileText size={20} color="#4CAF50" />
               </LinearGradient>
-              <Text style={styles.menuItemText}>Mes annonces</Text>
+              <Text style={[styles.menuItemText, { color: Colors.text }]}>
+                {user.userType === 'business' ? 'Mes offres' : 'Mes annonces'}
+              </Text>
             </View>
-            <View style={styles.menuItemBadge}>
+            <View style={[styles.menuItemBadge, { backgroundColor: Colors.primary }]}>
               <Text style={styles.menuItemBadgeText}>{userListings.length}</Text>
             </View>
           </TouchableOpacity>
           
           <TouchableOpacity 
-            style={styles.menuItem}
+            style={[styles.menuItem, { borderBottomColor: Colors.border }]}
             onPress={() => router.push('/quotes')}
           >
             <View style={styles.menuItemLeft}>
@@ -216,15 +216,15 @@ export default function ProfileScreen() {
               >
                 <TrendingUp size={20} color="#2196F3" />
               </LinearGradient>
-              <Text style={styles.menuItemText}>Mes devis</Text>
+              <Text style={[styles.menuItemText, { color: Colors.text }]}>Mes devis</Text>
             </View>
-            <View style={styles.menuItemBadge}>
+            <View style={[styles.menuItemBadge, { backgroundColor: Colors.primary }]}>
               <Text style={styles.menuItemBadgeText}>{userQuotes.length}</Text>
             </View>
           </TouchableOpacity>
           
           <TouchableOpacity 
-            style={styles.menuItem}
+            style={[styles.menuItem, { borderBottomColor: Colors.border }]}
             onPress={() => router.push('/favorites')}
           >
             <View style={styles.menuItemLeft}>
@@ -234,15 +234,15 @@ export default function ProfileScreen() {
               >
                 <Heart size={20} color="#E91E63" />
               </LinearGradient>
-              <Text style={styles.menuItemText}>Mes favoris</Text>
+              <Text style={[styles.menuItemText, { color: Colors.text }]}>Mes favoris</Text>
             </View>
-            <View style={styles.menuItemBadge}>
+            <View style={[styles.menuItemBadge, { backgroundColor: Colors.primary }]}>
               <Text style={styles.menuItemBadgeText}>{userFavorites.length}</Text>
             </View>
           </TouchableOpacity>
           
           <TouchableOpacity 
-            style={styles.menuItem}
+            style={[styles.menuItem, { borderBottomColor: Colors.border }]}
             onPress={() => router.push(`/reviews?id=${user.id}&type=${user.userType}`)}
           >
             <View style={styles.menuItemLeft}>
@@ -252,15 +252,15 @@ export default function ProfileScreen() {
               >
                 <Star size={20} color="#FFD700" />
               </LinearGradient>
-              <Text style={styles.menuItemText}>Mes avis</Text>
+              <Text style={[styles.menuItemText, { color: Colors.text }]}>Mes avis</Text>
             </View>
-            <View style={styles.menuItemBadge}>
+            <View style={[styles.menuItemBadge, { backgroundColor: Colors.primary }]}>
               <Text style={styles.menuItemBadgeText}>{receivedReviews.length}</Text>
             </View>
           </TouchableOpacity>
           
           <TouchableOpacity 
-            style={styles.menuItem}
+            style={[styles.menuItem, { borderBottomColor: Colors.border }]}
             onPress={() => router.push('/(tabs)/messages')}
           >
             <View style={styles.menuItemLeft}>
@@ -270,12 +270,12 @@ export default function ProfileScreen() {
               >
                 <MessageCircle size={20} color="#9C27B0" />
               </LinearGradient>
-              <Text style={styles.menuItemText}>Messages</Text>
+              <Text style={[styles.menuItemText, { color: Colors.text }]}>Messages</Text>
             </View>
           </TouchableOpacity>
           
           <TouchableOpacity 
-            style={styles.menuItem}
+            style={[styles.menuItem, { borderBottomColor: Colors.border }]}
             onPress={() => router.push('/settings')}
           >
             <View style={styles.menuItemLeft}>
@@ -285,7 +285,7 @@ export default function ProfileScreen() {
               >
                 <Settings size={20} color="#607080" />
               </LinearGradient>
-              <Text style={styles.menuItemText}>Paramètres</Text>
+              <Text style={[styles.menuItemText, { color: Colors.text }]}>Paramètres</Text>
             </View>
           </TouchableOpacity>
         </View>
@@ -295,8 +295,8 @@ export default function ProfileScreen() {
       </ScrollView>
       
       {/* FIXED: Logout Button positioned absolutely to avoid bottom bar overlap */}
-      <View style={styles.logoutContainer}>
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+      <View style={[styles.logoutContainer, { backgroundColor: Colors.backgroundAlt }]}>
+        <TouchableOpacity style={[styles.logoutButton, { backgroundColor: Colors.surface, borderColor: '#F4433620' }]} onPress={handleLogout}>
           <LogOut size={20} color="#F44336" />
           <Text style={styles.logoutText}>Se déconnecter</Text>
         </TouchableOpacity>
@@ -308,7 +308,6 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.backgroundAlt,
   },
   scrollContainer: {
     flex: 1,
@@ -323,13 +322,11 @@ const styles = StyleSheet.create({
   loginTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: Colors.text,
     marginTop: 16,
     marginBottom: 8,
   },
   loginSubtitle: {
     fontSize: 16,
-    color: Colors.textLight,
     textAlign: 'center',
     marginBottom: 24,
     lineHeight: 24,
@@ -414,11 +411,10 @@ const styles = StyleSheet.create({
   statCard: {
     flex: 1,
     minWidth: '45%',
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 20,
     alignItems: 'center',
-    shadowColor: Colors.shadow,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
@@ -435,20 +431,17 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 24,
     fontWeight: '800',
-    color: Colors.text,
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 14,
-    color: Colors.textLight,
     fontWeight: '500',
   },
   menuContainer: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     marginHorizontal: 20,
     marginBottom: 20,
-    shadowColor: Colors.shadow,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
@@ -461,7 +454,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
   },
   menuItemLeft: {
     flexDirection: 'row',
@@ -478,10 +470,8 @@ const styles = StyleSheet.create({
   menuItemText: {
     fontSize: 16,
     fontWeight: '600',
-    color: Colors.text,
   },
   menuItemBadge: {
-    backgroundColor: Colors.primary,
     borderRadius: 12,
     minWidth: 24,
     height: 24,
@@ -507,13 +497,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff',
     borderRadius: 16,
     paddingVertical: 16,
     gap: 12,
     borderWidth: 1,
-    borderColor: '#F4433620',
-    shadowColor: Colors.shadowDark,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 12,

@@ -1,4 +1,111 @@
-import { Provider, Venue } from '@/types';
+import { Provider, Venue, PortfolioItem } from '@/types';
+
+// Portfolio items for DJ Alex
+const djAlexPortfolio: PortfolioItem[] = [
+  {
+    id: 'portfolio-1',
+    title: 'Mariage Château de Versailles',
+    description: 'Animation DJ pour un mariage de 150 invités dans les jardins du château. Ambiance romantique et festive.',
+    mediaUrl: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800&auto=format&fit=crop',
+    mediaType: 'image',
+    eventType: 'Mariage',
+    eventDate: Date.now() - (30 * 24 * 60 * 60 * 1000), // 30 days ago
+    clientName: 'Marie & Pierre',
+    tags: ['Mariage', 'Château', 'Romantique'],
+    featured: true,
+  },
+  {
+    id: 'portfolio-2',
+    title: 'Soirée Corporate Tech Summit',
+    description: 'Animation musicale pour un événement corporate de 300 personnes. Mix électro et lounge.',
+    mediaUrl: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800&auto=format&fit=crop',
+    mediaType: 'image',
+    eventType: 'Corporate',
+    eventDate: Date.now() - (45 * 24 * 60 * 60 * 1000), // 45 days ago
+    clientName: 'TechCorp',
+    tags: ['Corporate', 'Électro', 'Networking'],
+    featured: true,
+  },
+  {
+    id: 'portfolio-3',
+    title: 'Festival Summer Vibes',
+    description: 'Set DJ au festival Summer Vibes devant 2000 personnes. Ambiance house et deep house.',
+    mediaUrl: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&auto=format&fit=crop',
+    mediaType: 'image',
+    eventType: 'Festival',
+    eventDate: Date.now() - (60 * 24 * 60 * 60 * 1000), // 60 days ago
+    tags: ['Festival', 'House', 'Outdoor'],
+    featured: false,
+  },
+  {
+    id: 'portfolio-4',
+    title: 'Anniversaire VIP',
+    description: 'Soirée privée pour un anniversaire VIP. Mix personnalisé selon les goûts du client.',
+    mediaUrl: 'https://images.unsplash.com/photo-1571266028243-d220c9c3b8c2?w=800&auto=format&fit=crop',
+    mediaType: 'image',
+    eventType: 'Anniversaire',
+    eventDate: Date.now() - (15 * 24 * 60 * 60 * 1000), // 15 days ago
+    clientName: 'Alexandre',
+    tags: ['Anniversaire', 'VIP', 'Privé'],
+    featured: false,
+  },
+];
+
+// Portfolio items for Cuisine Élégante
+const cuisineElegantePortfolio: PortfolioItem[] = [
+  {
+    id: 'portfolio-5',
+    title: 'Banquet Gastronomique',
+    description: 'Menu 5 services pour un dîner de gala de 200 convives. Cuisine française moderne.',
+    mediaUrl: 'https://images.unsplash.com/photo-1555244162-803834f70033?w=800&auto=format&fit=crop',
+    mediaType: 'image',
+    eventType: 'Gala',
+    eventDate: Date.now() - (20 * 24 * 60 * 60 * 1000),
+    clientName: 'Fondation Caritative',
+    tags: ['Gala', 'Gastronomie', 'Français'],
+    featured: true,
+  },
+  {
+    id: 'portfolio-6',
+    title: 'Cocktail Dînatoire',
+    description: 'Buffet cocktail pour un événement corporate. 50 variétés de canapés et mignardises.',
+    mediaUrl: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&auto=format&fit=crop',
+    mediaType: 'image',
+    eventType: 'Corporate',
+    eventDate: Date.now() - (35 * 24 * 60 * 60 * 1000),
+    clientName: 'Entreprise Innovation',
+    tags: ['Corporate', 'Cocktail', 'Canapés'],
+    featured: true,
+  },
+];
+
+// Portfolio items for Le Jardin Secret
+const jardinSecretPortfolio: PortfolioItem[] = [
+  {
+    id: 'portfolio-7',
+    title: 'Mariage en Terrasse',
+    description: 'Cérémonie et réception de mariage dans notre jardin secret. Décoration florale exceptionnelle.',
+    mediaUrl: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=800&auto=format&fit=crop',
+    mediaType: 'image',
+    eventType: 'Mariage',
+    eventDate: Date.now() - (25 * 24 * 60 * 60 * 1000),
+    clientName: 'Sophie & Thomas',
+    tags: ['Mariage', 'Jardin', 'Romantique'],
+    featured: true,
+  },
+  {
+    id: 'portfolio-8',
+    title: 'Soirée Privée VIP',
+    description: 'Réception privée pour 60 invités avec service personnalisé et menu sur mesure.',
+    mediaUrl: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&auto=format&fit=crop',
+    mediaType: 'image',
+    eventType: 'Privé',
+    eventDate: Date.now() - (40 * 24 * 60 * 60 * 1000),
+    clientName: 'Famille Dubois',
+    tags: ['Privé', 'VIP', 'Sur mesure'],
+    featured: true,
+  },
+];
 
 export const mockProviders: Provider[] = [
   {
@@ -13,7 +120,7 @@ export const mockProviders: Provider[] = [
       longitude: 2.3522,
       city: 'Paris',
     },
-    rating: 0, // FIXED: Set to 0
+    rating: 0,
     reviewCount: 0,
     services: ['DJ', 'Sound Equipment', 'Lighting'],
     description: "Professional DJ with 10 years of experience in weddings, corporate events, and private parties. I bring high-quality sound equipment and can adapt to any musical style.",
@@ -27,12 +134,7 @@ export const mockProviders: Provider[] = [
       website: 'https://djalex-events.com',
       facebook: 'https://facebook.com/djalex.events',
     },
-    portfolio: [
-      'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1571266028243-d220c9c3b8c2?w=800&auto=format&fit=crop',
-    ],
+    portfolio: djAlexPortfolio,
     createdAt: Date.now() - 86400000 * 120,
   },
   {
@@ -47,7 +149,7 @@ export const mockProviders: Provider[] = [
       longitude: 2.3376,
       city: 'Paris',
     },
-    rating: 0, // FIXED: Set to 0
+    rating: 0,
     reviewCount: 0,
     services: ['Catering', 'Chef Service', 'Food Styling'],
     description: "Gourmet catering service specializing in French cuisine with a modern twist. We use locally-sourced ingredients and can accommodate dietary restrictions.",
@@ -60,11 +162,7 @@ export const mockProviders: Provider[] = [
       instagram: 'https://instagram.com/cuisine_elegante',
       website: 'https://cuisine-elegante.fr',
     },
-    portfolio: [
-      'https://images.unsplash.com/photo-1555244162-803834f70033?w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1551218808-94e220e084d2?w=800&auto=format&fit=crop',
-    ],
+    portfolio: cuisineElegantePortfolio,
     createdAt: Date.now() - 86400000 * 90,
   },
   {
@@ -79,7 +177,7 @@ export const mockProviders: Provider[] = [
       longitude: 4.8357,
       city: 'Lyon',
     },
-    rating: 0, // FIXED: Set to 0
+    rating: 0,
     reviewCount: 0,
     services: ['Waitstaff', 'Bartenders', 'Event Coordination'],
     description: "Professional waitstaff and bartenders for any event. Our team is experienced, punctual, and provides exceptional service.",
@@ -92,10 +190,7 @@ export const mockProviders: Provider[] = [
       website: 'https://service-elite.com',
       linkedin: 'https://linkedin.com/company/service-elite',
     },
-    portfolio: [
-      'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&auto=format&fit=crop',
-    ],
+    portfolio: [],
     createdAt: Date.now() - 86400000 * 60,
   },
 ];
@@ -113,7 +208,7 @@ export const mockVenues: Venue[] = [
       longitude: 2.3526,
       city: 'Paris',
     },
-    rating: 0, // FIXED: Set to 0
+    rating: 0,
     reviewCount: 0,
     venueType: 'Restaurant with Garden',
     description: "A hidden gem in the heart of Paris with a beautiful garden terrace. Perfect for intimate gatherings and cocktail parties.",
@@ -128,11 +223,7 @@ export const mockVenues: Venue[] = [
       website: 'https://jardinsecret.fr',
       facebook: 'https://facebook.com/jardinsecretparis',
     },
-    portfolio: [
-      'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1551218808-94e220e084d2?w=800&auto=format&fit=crop',
-    ],
+    portfolio: jardinSecretPortfolio,
     createdAt: Date.now() - 86400000 * 150,
   },
   {
@@ -147,7 +238,7 @@ export const mockVenues: Venue[] = [
       longitude: 2.3522,
       city: 'Paris',
     },
-    rating: 0, // FIXED: Set to 0
+    rating: 0,
     reviewCount: 0,
     venueType: 'Industrial Loft',
     description: "Spacious industrial loft with exposed brick walls and high ceilings. Ideal for corporate events, photo shoots, and private parties.",
@@ -161,10 +252,7 @@ export const mockVenues: Venue[] = [
       website: 'https://loft-industriel.com',
       instagram: 'https://instagram.com/loft_industriel_paris',
     },
-    portfolio: [
-      'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=800&auto=format&fit=crop',
-    ],
+    portfolio: [],
     createdAt: Date.now() - 86400000 * 100,
   },
   {
@@ -179,7 +267,7 @@ export const mockVenues: Venue[] = [
       longitude: 5.3698,
       city: 'Marseille',
     },
-    rating: 0, // FIXED: Set to 0
+    rating: 0,
     reviewCount: 0,
     venueType: 'Historic Château',
     description: "Magnificent 18th-century château surrounded by vineyards. Perfect for weddings, galas, and corporate retreats.",
@@ -194,11 +282,7 @@ export const mockVenues: Venue[] = [
       instagram: 'https://instagram.com/chateau_des_lumieres',
       facebook: 'https://facebook.com/chateaudeslumieres',
     },
-    portfolio: [
-      'https://images.unsplash.com/photo-1464207687429-7505649dae38?w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?w=800&auto=format&fit=crop',
-    ],
+    portfolio: [],
     createdAt: Date.now() - 86400000 * 200,
   },
 ];
