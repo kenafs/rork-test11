@@ -50,6 +50,10 @@ export interface User {
   linkedin?: string;
   portfolio?: PortfolioItem[];
   createdAt: number;
+  // Add optional properties that might be accessed directly
+  specialties?: string;
+  address?: string;
+  city?: string;
 }
 
 export interface Provider extends User {
@@ -122,6 +126,12 @@ export interface Review {
   comment: string;
   createdAt: number;
   quoteId?: string;
+  // Add missing properties
+  listingId?: string;
+  providerId?: string;
+  venueId?: string;
+  response?: string;
+  helpful?: number;
 }
 
 export interface Message {
