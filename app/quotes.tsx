@@ -6,7 +6,7 @@ import { useQuotes } from '@/hooks/useQuotes';
 import Colors from '@/constants/colors';
 import Button from '@/components/Button';
 import QuotePreview from '@/components/QuotePreview';
-import { FileText, Calendar, Euro, CheckCircle, XCircle, Clock, Eye, CreditCard, CheckSquare, X, Sparkles, CalendarPlus } from 'lucide-react-native';
+import { FileText, Euro, CheckCircle, XCircle, Clock, Eye, CreditCard, CheckSquare, X, Sparkles, CalendarPlus } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import Animated, { 
@@ -721,7 +721,7 @@ ${quote.specialRequests ? `Demandes spéciales: ${quote.specialRequests}` : ''}`
                         <Text style={styles.quoteAmount}>{quote.total.toFixed(2)}€</Text>
                       </View>
                       <View style={styles.quoteDetailItem}>
-                        <Calendar size={12} color={Colors.textLight} />
+                        <Clock size={12} color={Colors.textLight} />
                         <Text style={styles.quoteDate}>
                           {new Date(quote.createdAt).toLocaleDateString('fr-FR')}
                         </Text>

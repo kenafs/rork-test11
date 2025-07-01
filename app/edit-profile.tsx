@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, TextInput, TouchableOpacity, Alert, Image, Modal } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TextInput, TouchableOpacity, Alert, Modal, Platform } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
+import { Image } from 'expo-image';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { PortfolioItem } from '@/types';
 import Colors from '@/constants/colors';
 import Button from '@/components/Button';
-import { User, Mail, Phone, MapPin, Globe, Instagram, Camera, Save, Plus, Trash2, X, Calendar, Tag } from 'lucide-react-native';
+import { User, Mail, Phone, MapPin, Globe, Instagram, Camera, Save, Plus, Trash2, X, Calendar, Tag, Image as ImageIcon, Video } from 'lucide-react-native';
 import Animated, { FadeIn, SlideInDown } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
+import * as ImagePicker from 'expo-image-picker';
+import * as Haptics from 'expo-haptics';
 
 export default function EditProfileScreen() {
   const router = useRouter();
@@ -83,6 +86,47 @@ export default function EditProfileScreen() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
   
+  // Image picker for portfolio
+  const pickImage = async () => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    
+    try {
+      // Request permissions
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission requise', 'Nous avons besoin de l\'accès à votre galerie pour ajouter des photos');
+        return;
+      }
+      
+      // Launch image picker
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        allowsEditing: true,
+        aspect: [16, 9],
+        quality: 0.8,
+        allowsMultipleSelection: false,
+      });
+      
+      if (!result.canceled && result.assets[0]) {
+        const asset = result.assets[0];
+        setPortfolioForm(prev => ({
+          ...prev,
+          mediaUrl: asset.uri,
+          mediaType: asset.type === 'video' ? 'video' : 'image'
+        }));
+        
+        if (Platform.OS !== 'web') {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        }
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      Alert.alert('Erreur', 'Impossible de sélectionner l\'image');
+    }
+  };
+  
   // Portfolio management functions
   const openPortfolioModal = (item?: PortfolioItem) => {
     if (item) {
@@ -117,7 +161,7 @@ export default function EditProfileScreen() {
   
   const savePortfolioItem = () => {
     if (!portfolioForm.title.trim() || !portfolioForm.mediaUrl.trim()) {
-      Alert.alert('Erreur', 'Le titre et l\'URL du média sont obligatoires');
+      Alert.alert('Erreur', 'Le titre et le média sont obligatoires');
       return;
     }
     
@@ -141,6 +185,10 @@ export default function EditProfileScreen() {
     }
     
     setShowPortfolioModal(false);
+    
+    if (Platform.OS !== 'web') {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
   };
   
   const deletePortfolioItem = (id: string) => {
@@ -152,7 +200,12 @@ export default function EditProfileScreen() {
         { 
           text: 'Supprimer', 
           style: 'destructive',
-          onPress: () => setPortfolio(prev => prev.filter(item => item.id !== id))
+          onPress: () => {
+            setPortfolio(prev => prev.filter(item => item.id !== id));
+            if (Platform.OS !== 'web') {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+            }
+          }
         }
       ]
     );
@@ -356,6 +409,12 @@ export default function EditProfileScreen() {
                     >
                       <Image source={{ uri: item.mediaUrl }} style={styles.portfolioImage} />
                       
+                      {item.mediaType === 'video' && (
+                        <View style={styles.videoIndicator}>
+                          <Video size={16} color="#fff" />
+                        </View>
+                      )}
+                      
                       {item.featured && (
                         <View style={styles.featuredBadge}>
                           <Text style={styles.featuredText}>★</Text>
@@ -440,6 +499,28 @@ export default function EditProfileScreen() {
           
           <ScrollView style={styles.modalContent}>
             <View style={styles.modalForm}>
+              {/* Media Selection */}
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Photo/Vidéo *</Text>
+                <TouchableOpacity style={styles.mediaPickerButton} onPress={pickImage}>
+                  {portfolioForm.mediaUrl ? (
+                    <View style={styles.selectedMediaContainer}>
+                      <Image source={{ uri: portfolioForm.mediaUrl }} style={styles.selectedMedia} />
+                      {portfolioForm.mediaType === 'video' && (
+                        <View style={styles.videoOverlay}>
+                          <Video size={24} color="#fff" />
+                        </View>
+                      )}
+                    </View>
+                  ) : (
+                    <View style={styles.mediaPickerPlaceholder}>
+                      <ImageIcon size={32} color={Colors.textLight} />
+                      <Text style={styles.mediaPickerText}>Sélectionner une photo/vidéo</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              </View>
+              
               <View style={styles.formGroup}>
                 <Text style={styles.label}>Titre *</Text>
                 <TextInput
@@ -461,19 +542,6 @@ export default function EditProfileScreen() {
                   multiline
                   numberOfLines={3}
                   textAlignVertical="top"
-                  placeholderTextColor={Colors.textLight}
-                />
-              </View>
-              
-              <View style={styles.formGroup}>
-                <Text style={styles.label}>URL de l'image/vidéo *</Text>
-                <TextInput
-                  style={styles.modalInput}
-                  placeholder="https://..."
-                  value={portfolioForm.mediaUrl}
-                  onChangeText={(text) => setPortfolioForm(prev => ({ ...prev, mediaUrl: text }))}
-                  keyboardType="url"
-                  autoCapitalize="none"
                   placeholderTextColor={Colors.textLight}
                 />
               </View>
@@ -676,6 +744,14 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  videoIndicator: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    borderRadius: 12,
+    padding: 4,
+  },
   featuredBadge: {
     position: 'absolute',
     top: 8,
@@ -813,6 +889,41 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.text,
     backgroundColor: Colors.backgroundAlt,
+  },
+  mediaPickerButton: {
+    borderWidth: 2,
+    borderColor: Colors.border,
+    borderRadius: 12,
+    borderStyle: 'dashed',
+    overflow: 'hidden',
+  },
+  selectedMediaContainer: {
+    position: 'relative',
+    height: 200,
+  },
+  selectedMedia: {
+    width: '100%',
+    height: '100%',
+  },
+  videoOverlay: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: [{ translateX: -12 }, { translateY: -12 }],
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    borderRadius: 20,
+    padding: 8,
+  },
+  mediaPickerPlaceholder: {
+    height: 200,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.backgroundAlt,
+  },
+  mediaPickerText: {
+    fontSize: 16,
+    color: Colors.textLight,
+    marginTop: 8,
   },
   checkboxContainer: {
     flexDirection: 'row',

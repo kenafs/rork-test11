@@ -170,6 +170,46 @@ const createDemoQuotes = (clientId: string): Quote[] => [
     createdAt: Date.now() - (7 * 24 * 60 * 60 * 1000), // 7 days ago
     updatedAt: Date.now() - (12 * 60 * 60 * 1000), // 12 hours ago
   },
+  {
+    id: 'quote-demo-4',
+    listingId: 'listing-4',
+    providerId: 'alex.dubois@djpro.com', // DJ Alex again
+    clientId: clientId,
+    title: 'Animation DJ anniversaire',
+    description: 'Animation DJ pour fête d\'anniversaire avec éclairage et sonorisation.',
+    items: [
+      {
+        id: 'item-10',
+        name: 'Animation DJ',
+        description: 'Animation musicale de 20h à 1h du matin',
+        quantity: 1,
+        unitPrice: 600,
+        total: 600,
+      },
+      {
+        id: 'item-11',
+        name: 'Éclairage festif',
+        description: 'Éclairage coloré pour ambiance festive',
+        quantity: 1,
+        unitPrice: 100,
+        total: 100,
+      },
+    ],
+    subtotal: 700,
+    tax: 140,
+    total: 840,
+    currency: 'EUR',
+    status: 'completed',
+    validUntil: Date.now() - (5 * 24 * 60 * 60 * 1000), // Expired 5 days ago
+    eventDate: Date.now() - (10 * 24 * 60 * 60 * 1000), // Event was 10 days ago
+    eventLocation: 'Salle des fêtes, Boulogne',
+    eventDuration: 5,
+    specialRequests: 'Musique années 2000 et hits actuels.',
+    paidAt: Date.now() - (15 * 24 * 60 * 60 * 1000), // Paid 15 days ago
+    completedAt: Date.now() - (10 * 24 * 60 * 60 * 1000), // Completed 10 days ago
+    createdAt: Date.now() - (20 * 24 * 60 * 60 * 1000), // Created 20 days ago
+    updatedAt: Date.now() - (10 * 24 * 60 * 60 * 1000), // Updated 10 days ago
+  },
 ];
 
 export const useQuotes = create<QuotesState>()(

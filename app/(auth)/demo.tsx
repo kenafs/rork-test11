@@ -266,7 +266,7 @@ export default function DemoScreen() {
                 <View style={styles.accountInfo}>
                   <Text style={[styles.accountType, { color: Colors.primary }]}>
                     {getAccountTypeLabel(account.userType)}
-                    {account.hasReceivedQuotes && ' 🎯'}
+                    {account.hasReceivedQuotes && <Text> 🎯</Text>}
                   </Text>
                   <Text style={[styles.accountName, { color: Colors.text }]}>{account.name}</Text>
                 </View>
@@ -382,7 +382,7 @@ export default function DemoScreen() {
                 </View>
                 <View style={styles.accountInfo}>
                   <Text style={[styles.accountType, { color: Colors.primary }]}>
-                    {getAccountTypeLabel(account.userType)} 🔄
+                    {getAccountTypeLabel(account.userType)} <Text>🔄</Text>
                   </Text>
                   <Text style={[styles.accountName, { color: Colors.text }]}>{account.name}</Text>
                 </View>
