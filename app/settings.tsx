@@ -96,55 +96,28 @@ export default function SettingsScreen() {
   const handlePrivacy = () => {
     Alert.alert(
       "Confidentialité et sécurité", 
-      "Paramètres de confidentialité:
-
-• Vos données sont protégées
-• Contrôlez qui peut vous voir
-• Gérez vos préférences de contact
-
-Cette section sera bientôt disponible avec plus d'options."
+      "Paramètres de confidentialité:\n\n• Vos données sont protégées\n• Contrôlez qui peut vous voir\n• Gérez vos préférences de contact\n\nCette section sera bientôt disponible avec plus d'options."
     );
   };
 
   const handlePayments = () => {
     Alert.alert(
       "Moyens de paiement", 
-      "Gestion des paiements:
-
-• Ajouter une carte bancaire
-• Configurer les virements
-• Historique des transactions
-• Intégration Stripe sécurisée
-
-Cette fonctionnalité sera disponible prochainement."
+      "Gestion des paiements:\n\n• Ajouter une carte bancaire\n• Configurer les virements\n• Historique des transactions\n• Intégration Stripe sécurisée\n\nCette fonctionnalité sera disponible prochainement."
     );
   };
 
   const handleHelp = () => {
     Alert.alert(
       "Centre d'aide", 
-      "Besoin d'aide ?
-
-📧 Email: support@eventapp.com
-📞 Téléphone: +33 1 23 45 67 89
-💬 Chat en direct disponible
-
-Nous sommes là pour vous aider !"
+      "Besoin d'aide ?\n\n📧 Email: support@eventapp.com\n📞 Téléphone: +33 1 23 45 67 89\n💬 Chat en direct disponible\n\nNous sommes là pour vous aider !"
     );
   };
 
   const handleAbout = () => {
     Alert.alert(
       "À propos de l'application", 
-      "Event App v1.0.0
-
-🎉 Plateforme de mise en relation pour événements
-👥 Connecte clients, prestataires et établissements
-🇫🇷 Développé en France
-
-© 2024 Event App. Tous droits réservés.
-
-Développé avec ❤️ par l'équipe Event App"
+      "Event App v1.0.0\n\n🎉 Plateforme de mise en relation pour événements\n👥 Connecte clients, prestataires et établissements\n🇫🇷 Développé en France\n\n© 2024 Event App. Tous droits réservés.\n\nDéveloppé avec ❤️ par l'équipe Event App"
     );
   };
 
