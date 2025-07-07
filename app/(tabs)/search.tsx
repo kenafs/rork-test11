@@ -114,7 +114,10 @@ export default function SearchScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 20 }]}
+        contentContainerStyle={[styles.scrollContent, { 
+          paddingTop: insets.top + 20,
+          paddingBottom: insets.bottom + 120
+        }]}
       >
         {/* Header */}
         <Animated.View style={[styles.header, headerStyle]}>
@@ -206,7 +209,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 120,
+    flexGrow: 1,
   },
   header: {
     paddingHorizontal: 24,

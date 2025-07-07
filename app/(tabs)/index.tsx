@@ -8,7 +8,7 @@ import { useLocation } from '@/hooks/useLocation';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useFavoritesComputed } from '@/hooks/useFavorites';
 import { useSettings } from '@/hooks/useSettings';
-import { getColors } from '@/constants/colors';
+import Colors from '@/constants/colors';
 import SearchBar from '@/components/SearchBar';
 import CategoryFilter from '@/components/CategoryFilter';
 import ListingCard from '@/components/ListingCard';
@@ -56,8 +56,6 @@ export default function HomeScreen() {
     hasPermission
   } = useLocation();
   const { t } = useLanguage();
-  const { darkMode } = useSettings();
-  const Colors = getColors(darkMode);
   
   const { favorites } = useFavoritesComputed();
   
@@ -128,7 +126,10 @@ export default function HomeScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 20 }]}
+        contentContainerStyle={[styles.scrollContent, { 
+          paddingTop: insets.top + 20,
+          paddingBottom: insets.bottom + 120
+        }]}
       >
         {/* Welcome Header - Simple and clean */}
         <Animated.View entering={FadeIn.delay(200)} style={styles.welcomeHeader}>
@@ -226,7 +227,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 120,
+    flexGrow: 1,
   },
   welcomeHeader: {
     paddingHorizontal: 24,

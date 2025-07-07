@@ -9,6 +9,7 @@ import { trpc, trpcClient } from "@/lib/trpc";
 import Colors from "@/constants/colors";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { Platform } from 'react-native';
 
 export const unstable_settings = {
   initialRouteName: "index",
@@ -62,7 +63,7 @@ function RootLayoutNav() {
             <StatusBar 
               style="dark" 
               backgroundColor="transparent" 
-              translucent 
+              translucent={Platform.OS === 'android'}
             />
             <Stack
               screenOptions={{
@@ -80,7 +81,6 @@ function RootLayoutNav() {
                 },
                 animation: 'slide_from_right',
                 animationDuration: 300,
-                // FIXED: Enable gesture handling for better swipe back on iOS
                 gestureEnabled: true,
                 gestureDirection: 'horizontal',
               }}

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, ScrollView, TextInput, Alert, Platform, TouchableOpacity } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/hooks/useAuth';
 import { useListings } from '@/hooks/useListings';
 import { useLocation } from '@/hooks/useLocation';
@@ -14,6 +15,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 export default function CreateListingScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { user, isAuthenticated } = useAuth();
   const { createListing, isLoading } = useListings();
   const { latitude, longitude, city } = useLocation();
@@ -40,9 +42,12 @@ export default function CreateListingScreen() {
   
   if (!isAuthenticated || !user) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top }]}>
         <Stack.Screen options={{ title: "Créer une annonce" }} />
-        <View style={styles.loginPrompt}>
+        <View style={[styles.loginPrompt, { 
+          paddingTop: insets.top + 40,
+          paddingBottom: insets.bottom + 40
+        }]}>
           <Text style={styles.loginTitle}>Connexion requise</Text>
           <Text style={styles.loginSubtitle}>
             Vous devez être connecté pour créer une annonce
@@ -218,7 +223,7 @@ export default function CreateListingScreen() {
   const placeholders = getPlaceholders();
   
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <Stack.Screen options={{ 
         title: user.userType === 'business' ? "Publier une offre" : "Créer une annonce",
         headerStyle: { backgroundColor: Colors.primary },
@@ -240,7 +245,9 @@ export default function CreateListingScreen() {
       
       <ScrollView 
         style={styles.scrollView} 
-        contentContainerStyle={styles.contentContainer}
+        contentContainerStyle={[styles.contentContainer, { 
+          paddingBottom: insets.bottom + 40
+        }]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
@@ -470,7 +477,6 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 20,
-    paddingBottom: 40,
   },
   formCard: {
     backgroundColor: '#fff',

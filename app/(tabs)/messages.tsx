@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, View, Text, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/hooks/useAuth';
 import { useMessages } from '@/hooks/useMessages';
 import Colors from '@/constants/colors';
@@ -19,6 +20,7 @@ interface MessageContact {
 
 export default function MessagesScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { user, isAuthenticated } = useAuth();
   const { getAllConversations, fetchConversations, isLoading } = useMessages();
   
@@ -119,9 +121,12 @@ export default function MessagesScreen() {
   
   if (!isAuthenticated || !user) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top }]}>
         <Stack.Screen options={{ title: "Messages" }} />
-        <View style={styles.loginPrompt}>
+        <View style={[styles.loginPrompt, { 
+          paddingTop: insets.top + 40,
+          paddingBottom: insets.bottom + 40
+        }]}>
           <MessageCircle size={64} color={Colors.textLight} />
           <Text style={styles.loginTitle}>Connectez-vous pour accéder à vos messages</Text>
           <Text style={styles.loginDescription}>
@@ -139,7 +144,7 @@ export default function MessagesScreen() {
   }
   
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <Stack.Screen 
         options={{ 
           title: "Messages",
@@ -160,7 +165,9 @@ export default function MessagesScreen() {
           keyExtractor={(item) => `conversation-${item.participantId}`}
           renderItem={renderConversation}
           style={styles.conversationsList}
-          contentContainerStyle={styles.conversationsContent}
+          contentContainerStyle={[styles.conversationsContent, { 
+            paddingBottom: insets.bottom + 100
+          }]}
           refreshControl={
             <RefreshControl
               refreshing={isLoading}
@@ -169,7 +176,10 @@ export default function MessagesScreen() {
           }
         />
       ) : (
-        <View style={styles.emptyState}>
+        <View style={[styles.emptyState, { 
+          paddingTop: insets.top + 40,
+          paddingBottom: insets.bottom + 40
+        }]}>
           <MessageCircle size={64} color={Colors.textLight} />
           <Text style={styles.emptyTitle}>Aucune conversation</Text>
           <Text style={styles.emptyText}>
@@ -232,7 +242,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   conversationsContent: {
-    paddingBottom: 100,
+    flexGrow: 1,
   },
   conversationItem: {
     flexDirection: 'row',

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Alert, Platform, Modal } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuotes } from '@/hooks/useQuotes';
 import Colors from '@/constants/colors';
@@ -27,6 +28,7 @@ import * as ExpoCalendar from 'expo-calendar';
 
 export default function QuotesScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { user, isAuthenticated } = useAuth();
   const { getQuotesForUser, acceptQuote, rejectQuote, payQuote, completeQuote, fetchQuotes, processPayment } = useQuotes();
   const [selectedQuote, setSelectedQuote] = useState<any>(null);
@@ -580,11 +582,14 @@ ${quote.specialRequests ? `Demandes spéciales: ${quote.specialRequests}` : ''}`
   
   if (!isAuthenticated || !user) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top }]}>
         <Stack.Screen options={{ title: "Devis" }} />
         <LinearGradient
           colors={[Colors.primary, Colors.secondary]}
-          style={styles.loginPromptGradient}
+          style={[styles.loginPromptGradient, { 
+            paddingTop: insets.top + 40,
+            paddingBottom: insets.bottom + 40
+          }]}
         >
           <Animated.View entering={FadeIn.delay(200)} style={styles.loginPrompt}>
             <BlurView intensity={20} style={styles.loginPromptCard}>
@@ -639,7 +644,7 @@ ${quote.specialRequests ? `Demandes spéciales: ${quote.specialRequests}` : ''}`
   const headerText = getHeaderText();
   
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <Stack.Screen options={{ 
         title: "Devis",
         headerStyle: { backgroundColor: Colors.primary },
@@ -647,7 +652,12 @@ ${quote.specialRequests ? `Demandes spéciales: ${quote.specialRequests}` : ''}`
         headerTitleStyle: { fontWeight: "700" }
       }} />
       
-      <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
+      <ScrollView 
+        style={styles.content} 
+        contentContainerStyle={[styles.scrollContent, { 
+          paddingBottom: insets.bottom + 120
+        }]}
+      >
         {/* Enhanced Header with Gradient */}
         <LinearGradient
           colors={[Colors.primary, Colors.secondary]}
@@ -867,7 +877,7 @@ ${quote.specialRequests ? `Demandes spéciales: ${quote.specialRequests}` : ''}`
         presentationStyle="pageSheet"
         onRequestClose={() => setShowPreview(false)}
       >
-        <View style={styles.modalContainer}>
+        <View style={[styles.modalContainer, { paddingTop: insets.top }]}>
           <BlurView intensity={80} style={styles.modalHeader}>
             <LinearGradient
               colors={[Colors.primary, Colors.secondary]}
@@ -898,7 +908,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 120,
+    flexGrow: 1,
   },
   header: {
     paddingTop: 12,
@@ -1267,7 +1277,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 20,
-    paddingTop: 50,
   },
   modalTitle: {
     fontSize: 16,

@@ -45,7 +45,11 @@ export default function ListingDetailScreen() {
   
   if (!listing) {
     return (
-      <View style={[styles.notFoundContainer, { paddingTop: insets.top + 20, backgroundColor: Colors.background }]}>
+      <View style={[styles.notFoundContainer, { 
+        paddingTop: insets.top + 20, 
+        paddingBottom: insets.bottom + 20,
+        backgroundColor: Colors.background 
+      }]}>
         <Text style={[styles.notFoundText, { color: Colors.text }]}>Annonce non trouvée</Text>
         <Button 
           title="Retour" 
@@ -235,7 +239,7 @@ export default function ListingDetailScreen() {
       </Animated.View>
       
       <AnimatedScrollView 
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 140 }]}
         onScroll={scrollHandler}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
@@ -371,7 +375,11 @@ export default function ListingDetailScreen() {
       {!isOwnListing && (
         <Animated.View 
           entering={SlideInDown.delay(1000)}
-          style={[styles.actionContainer, { paddingBottom: insets.bottom + 20, backgroundColor: Colors.background, borderTopColor: Colors.border }]}
+          style={[styles.actionContainer, { 
+            paddingBottom: insets.bottom + 20, 
+            backgroundColor: Colors.background, 
+            borderTopColor: Colors.border 
+          }]}
         >
           <View style={styles.actionButtons}>
             <Button
@@ -429,7 +437,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   scrollContent: {
-    paddingBottom: 120,
+    flexGrow: 1,
   },
   imageContainer: {
     height: 300,

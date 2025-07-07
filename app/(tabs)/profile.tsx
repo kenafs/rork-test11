@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/hooks/useAuth';
 import { useListings } from '@/hooks/useListings';
 import { useQuotes } from '@/hooks/useQuotes';
@@ -24,6 +25,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { user, logout, isAuthenticated } = useAuth();
   const { getUserListings } = useListings();
   const { getQuotesForUser } = useQuotes();
@@ -32,7 +34,10 @@ export default function ProfileScreen() {
   if (!isAuthenticated || !user) {
     return (
       <View style={[styles.container, { backgroundColor: Colors.background }]}>
-        <View style={styles.loginPrompt}>
+        <View style={[styles.loginPrompt, { 
+          paddingTop: insets.top + 40,
+          paddingBottom: insets.bottom + 40
+        }]}>
           <User size={64} color={Colors.textLight} />
           <Text style={[styles.loginTitle, { color: Colors.text }]}>Connexion requise</Text>
           <Text style={[styles.loginSubtitle, { color: Colors.textLight }]}>
@@ -103,11 +108,17 @@ export default function ProfileScreen() {
   
   return (
     <View style={[styles.container, { backgroundColor: Colors.backgroundAlt }]}>
-      <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.scrollContainer} 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[styles.scrollContent, { 
+          paddingBottom: insets.bottom + 140
+        }]}
+      >
         {/* Header with gradient */}
         <LinearGradient
           colors={[Colors.primary, Colors.secondary]}
-          style={styles.header}
+          style={[styles.header, { paddingTop: insets.top + 20 }]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
         >
@@ -289,13 +300,13 @@ export default function ProfileScreen() {
             </View>
           </TouchableOpacity>
         </View>
-        
-        {/* CRITICAL FIX: Added extra bottom spacing to ensure logout button is visible */}
-        <View style={styles.bottomSpacer} />
       </ScrollView>
       
       {/* FIXED: Logout Button positioned absolutely to avoid bottom bar overlap */}
-      <View style={[styles.logoutContainer, { backgroundColor: Colors.backgroundAlt }]}>
+      <View style={[styles.logoutContainer, { 
+        backgroundColor: Colors.backgroundAlt,
+        bottom: insets.bottom + 100
+      }]}>
         <TouchableOpacity style={[styles.logoutButton, { backgroundColor: Colors.surface, borderColor: '#F4433620' }]} onPress={handleLogout}>
           <LogOut size={20} color="#F44336" />
           <Text style={styles.logoutText}>Se déconnecter</Text>
@@ -311,6 +322,9 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
   loginPrompt: {
     flex: 1,
@@ -335,7 +349,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   header: {
-    paddingTop: 60,
     paddingBottom: 40,
     paddingHorizontal: 20,
     borderBottomLeftRadius: 30,
@@ -484,12 +497,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
   },
-  bottomSpacer: {
-    height: 140, // Space for logout button + tab bar
-  },
   logoutContainer: {
     position: 'absolute',
-    bottom: 100, // Above tab bar
     left: 20,
     right: 20,
   },

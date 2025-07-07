@@ -3,8 +3,11 @@ import { Tabs } from "expo-router";
 import { Home, Search, PlusCircle, MessageCircle, User } from "lucide-react-native";
 import Colors from "@/constants/colors";
 import { Platform } from "react-native";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function TabLayout() {
+  const insets = useSafeAreaInsets();
+  
   return (
     <Tabs
       screenOptions={{
@@ -12,8 +15,8 @@ export default function TabLayout() {
         tabBarInactiveTintColor: Colors.textLight,
         tabBarStyle: {
           borderTopColor: 'transparent',
-          height: Platform.OS === 'ios' ? 85 : 70,
-          paddingBottom: Platform.OS === 'ios' ? 30 : 16,
+          height: Platform.OS === 'ios' ? 85 + insets.bottom : 70,
+          paddingBottom: Platform.OS === 'ios' ? insets.bottom + 30 : 16,
           paddingTop: 12,
           backgroundColor: Colors.background,
           shadowColor: '#000',
