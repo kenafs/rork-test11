@@ -255,3 +255,13 @@ export interface AppSettings {
     allowMessages: boolean;
   };
 }
+
+export interface SettingItem {
+  icon: React.ComponentType<{ size: number; color: string }>;
+  title: string;
+  subtitle: string;
+  type: 'navigation' | 'switch';
+  onPress?: () => void;
+  value?: boolean;
+  onToggle?: () => void;
+}

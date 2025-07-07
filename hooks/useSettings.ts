@@ -5,27 +5,25 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 interface SettingsState {
   darkMode: boolean;
   language: string;
-  notifications: {
-    messages: boolean;
-    quotes: boolean;
-    marketing: boolean;
-  };
+  notifications: boolean;
+  emailNotifications: boolean;
+  pushNotifications: boolean;
   
   toggleDarkMode: () => void;
   setLanguage: (language: string) => void;
-  updateNotificationSettings: (settings: Partial<SettingsState['notifications']>) => void;
+  toggleNotifications: () => void;
+  toggleEmailNotifications: () => void;
+  togglePushNotifications: () => void;
 }
 
 export const useSettings = create<SettingsState>()(
   persist(
     (set, get) => ({
-      darkMode: false, // FIXED: Default to light mode
+      darkMode: false, // Default to light mode
       language: 'fr',
-      notifications: {
-        messages: true,
-        quotes: true,
-        marketing: false,
-      },
+      notifications: true,
+      emailNotifications: true,
+      pushNotifications: true,
       
       toggleDarkMode: () => {
         set(state => ({ darkMode: !state.darkMode }));
@@ -35,10 +33,16 @@ export const useSettings = create<SettingsState>()(
         set({ language });
       },
       
-      updateNotificationSettings: (settings) => {
-        set(state => ({
-          notifications: { ...state.notifications, ...settings }
-        }));
+      toggleNotifications: () => {
+        set(state => ({ notifications: !state.notifications }));
+      },
+      
+      toggleEmailNotifications: () => {
+        set(state => ({ emailNotifications: !state.emailNotifications }));
+      },
+      
+      togglePushNotifications: () => {
+        set(state => ({ pushNotifications: !state.pushNotifications }));
       },
     }),
     {
